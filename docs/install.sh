@@ -49,7 +49,7 @@ source /etc/profile
 
 # 克隆并构建项目
 echo "克隆并构建项目..."
-git clone https://github.com/zgimszhd61/java-sec-code-plus.git
+git clone https://github.com/XiaomingX/JSEF.git
 cd java-sec-code-plus
 mvn install
 mvn package
