@@ -14,6 +14,8 @@
 
 本项目不依赖复杂环境，支持本地一键启动与Docker部署，所有漏洞案例均基于真实业务逻辑设计，避免“为了漏洞而漏洞”的演示性代码，更贴近实际开发场景。
 
+**新结构说明：** 项目代码已重构，所有漏洞相关控制器现在位于 `com.freedom.securitysamples.vulnerability` 包下。每个漏洞类别内部进一步细分为 `vuln` (包含不安全/脆弱实现) 和 `sec` (包含安全/修复实现) 子包，便于直接对比学习。API 路由也已统一为 `/api/v1/{vulnerability-type}/unsafe/{scenario}` 和 `/api/v1/{vulnerability-type}/safe/{scenario}` 格式。
+
 
 ## 🔥 核心优势（为什么选择JSEF？）
 | 优势                | 具体说明                                                                 |
@@ -21,7 +23,7 @@
 | **漏洞实例真实可复现** | 35+漏洞覆盖OWASP Top 10全类型，每个案例均模拟真实业务场景（如用户登录、数据查询、文件上传）。 |
 | **学习闭环完整**     | 每个漏洞配套：原理文档+复现步骤+不安全代码+安全代码对比+防御最佳实践。         |
 | **部署零门槛**       | 支持`mvn`一键启动、Docker容器化部署，无需手动配置数据库/中间件。             |
-| **代码规范清晰**     | 采用Spring Boot最佳实践编码，漏洞代码与安全代码目录分离，便于对比学习。       |
+| **代码规范清晰**     | 采用Spring Boot最佳实践编码，漏洞代码与安全代码已按 `vuln`/`sec` 目录分离，便于对比学习。       |
 | **资源生态丰富**     | 内置API文档、漏洞复现手册、安全编码规范，持续更新CVE最新漏洞案例。           |
 | **高度可扩展**       | 提供插件化漏洞案例接口，支持开发者自定义新增漏洞场景或扩展防御方案。         |
 
@@ -43,7 +45,7 @@ cd JSEF
 mvn clean package -DskipTests
 
 # 3. 启动服务
-java -jar target/springboot-security-sample-0.0.1-SNAPSHOT.jar
+java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
 ```
 
 ### 方式2：Docker一键部署
@@ -58,52 +60,12 @@ docker run -d -p 8080:8080 --name jsef-demo jsef-security-sample:latest
 ### 验证部署成功
 启动后访问以下地址：
 - 项目首页：`http://localhost:8080`（查看项目导航与漏洞列表）
-- API文档（Swagger）：`http://localhost:8080/swagger-ui.html`（查看所有漏洞接口详情）
+- API文档（Swagger）：`http://localhost:8080/swagger-ui/index.html`（查看所有漏洞接口详情）
 - 漏洞手册：`http://localhost:8080/docs`（查看在线漏洞复现指南）
 
 
 ## 📋 漏洞案例分类（35+全列表）
-<details>
-<summary>点击展开完整漏洞分类（含OWASP Top 10全覆盖）</summary>
-
-### 1. 注入类漏洞（Injection）
-- SQL注入：基础拼接注入、报错注入、盲注、预编译对比实例
-- 命令注入：Runtime.exec()滥用、ProcessBuilder注入场景
-- 模板注入：FreeMarker/Thymeleaf/Velocity注入案例
-- SPEL注入：Spring表达式注入漏洞与防御
-- XSS：反射型XSS、存储型XSS、DOM型XSS（含CSP防御演示）
-- LDAP注入：目录服务查询注入场景与防御
-- XML外部实体（XXE）：XML解析器配置不当导致的信息泄露
-
-### 2. 认证与授权漏洞（Broken Authentication）
-- 身份认证绕过：Cookie伪造、Session固定攻击
-- 越权访问：水平越权（用户间数据访问）、垂直越权（低权限访问管理员接口）
-- 弱口令风险：明文密码验证、密码复杂度绕过
-- JWT漏洞：签名绕过、过期时间篡改、密钥泄露
-- 会话管理缺陷：会话超时设置不当、会话ID暴露
-
-### 3. 敏感信息泄露（Sensitive Data Exposure）
-- 明文传输：HTTP未加密导致Cookie/Token泄露
-- 错误页面泄露：堆栈信息暴露、配置信息泄露
-- 日志泄露：敏感数据（手机号、身份证）明文打印日志
-- 第三方依赖泄露：依赖组件版本暴露（含CVE-2023-20860等案例）
-- 密码存储不当：明文存储、弱哈希算法（MD5/SHA1）使用
-
-### 4. 不安全的配置（Security Misconfiguration）
-- 默认密码风险：管理员默认密码未修改
-- 不安全HTTP方法：允许PUT/DELETE方法未授权访问
-- CORS配置不当：跨域资源共享权限过度开放
-- 缓存机制漏洞：敏感页面被缓存导致信息泄露
-- 安全响应头缺失：缺失CSP、X-Frame-Options等防护头
-
-### 5. 其他高危漏洞
-- 文件上传漏洞：后缀名绕过、MIME类型伪造、文件内容解析漏洞
-- 路径遍历：目录穿越读取系统文件（如/etc/passwd）
-- 反序列化漏洞：Jackson/Gson反序列化远程代码执行
-- 依赖混淆：供应链攻击演示（含依赖劫持案例）
-- 服务器端请求伪造（SSRF）：内部服务访问与数据窃取
-- 反序列化漏洞：Java序列化/反序列化机制滥用
-</details>
+关于所有已实现的漏洞案例的详细列表，请参阅 [VULNERABILITIES.md](VULNERABILITIES.md)。
 
 
 ## 🎯 适用场景

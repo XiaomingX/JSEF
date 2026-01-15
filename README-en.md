@@ -14,6 +14,8 @@
 
 This project does not rely on complex environments, supporting one-click local startup and Docker deployment. All vulnerability cases are designed based on real business logic, avoiding "vulnerabilities created merely for demonstration purposes" and being more aligned with actual development scenarios.
 
+**New Structure Note:** The project code has been refactored. All vulnerability-related controllers are now located under the `com.freedom.securitysamples.vulnerability` package. Each vulnerability category is further divided into `vuln` (containing insecure/vulnerable implementations) and `sec` (containing secure/fixed implementations) sub-packages for direct comparative learning. API routes have also been unified to the format `/api/v1/{vulnerability-type}/unsafe/{scenario}` and `/api/v1/{vulnerability-type}/safe/{scenario}`.
+
 
 ## 🔥 Core Advantages (Why Choose JSEF?)
 | Advantage | Detailed Description |
@@ -21,7 +23,7 @@ This project does not rely on complex environments, supporting one-click local s
 | **Real Reproducible Vulnerability Examples** | 35+ vulnerabilities covering all OWASP Top 10 categories, each simulating real business scenarios (e.g., user login, data query, file upload). |
 | **Complete Learning Loop** | Each vulnerability is equipped with: principle documentation + reproduction steps + insecure code + secure code comparison + defense best practices. |
 | **Zero-Threshold Deployment** | Supports one-click startup via `mvn` and Docker containerization, no manual database/middleware configuration required. |
-| **Clear Code Standards** | Adopts Spring Boot best practices for coding; insecure and secure code are stored in separate directories for easy comparative learning. |
+| **Clear Code Standards** | Adopts Spring Boot best practices for coding; insecure and secure code are now separated into `vuln`/`sec` directories for easy comparative learning. |
 | **Rich Resource Ecosystem** | Built-in API documentation, vulnerability reproduction manual, and secure coding standards; continuously updates with the latest CVE vulnerability cases. |
 | **High Extensibility** | Provides a pluggable vulnerability case interface, supporting developers to customize and add new vulnerability scenarios or extend defense solutions. |
 
@@ -43,7 +45,7 @@ cd JSEF
 mvn clean package -DskipTests
 
 # 3. Start the service
-java -jar target/springboot-security-sample-0.0.1-SNAPSHOT.jar
+java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
 ```
 
 ### Method 2: One-Click Docker Deployment
@@ -58,53 +60,12 @@ docker run -d -p 8080:8080 --name jsef-demo jsef-security-sample:latest
 ### Verify Successful Deployment
 After startup, access the following addresses:
 - Project Homepage: `http://localhost:8080` (view project navigation and vulnerability list)
-- API Documentation (Swagger): `http://localhost:8080/swagger-ui.html` (view details of all vulnerability interfaces)
+- API Documentation (Swagger): `http://localhost:8080/swagger-ui/index.html` (view details of all vulnerability interfaces)
 - Vulnerability Manual: `http://localhost:8080/docs` (view online vulnerability reproduction guide)
 
 
 ## 📋 Vulnerability Case Categories (Full List of 35+)
-<details>
-<summary>Click to Expand Full Vulnerability Categories (Covers All OWASP Top 10)</summary>
-
-### 1. Injection Vulnerabilities
-- SQL Injection: Basic concatenation injection, error-based injection, blind injection, prepared statement comparison examples
-- Command Injection: Misuse of Runtime.exec(), ProcessBuilder injection scenarios
-- Template Injection: FreeMarker/Thymeleaf/Velocity injection cases
-- SPEL Injection: Spring Expression Language injection vulnerabilities and defense
-- XSS: Reflected XSS, Stored XSS, DOM-based XSS (including CSP defense demonstration)
-- LDAP Injection: Directory service query injection scenarios and defense
-- XML External Entity (XXE): Information leakage caused by improper XML parser configuration
-
-### 2. Broken Authentication & Authorization Vulnerabilities
-- Authentication Bypass: Cookie forgery, session fixation attacks
-- Privilege Escalation: Horizontal Privilege Escalation (data access between users), Vertical Privilege Escalation (low-privilege access to admin interfaces)
-- Weak Password Risks: Plaintext password verification, password complexity bypass
-- JWT Vulnerabilities: Signature bypass, expiration time tampering, secret key leakage
-- Session Management Flaws: Improper session timeout settings, session ID exposure
-
-### 3. Sensitive Data Exposure
-- Plaintext Transmission: Cookie/Token leakage due to unencrypted HTTP
-- Error Page Leakage: Stack trace exposure, configuration information leakage
-- Log Leakage: Plaintext logging of sensitive data (phone numbers, ID cards)
-- Third-Party Dependency Leakage: Exposure of dependency component versions (including cases like CVE-2023-20860)
-- Improper Password Storage: Plaintext storage, use of weak hashing algorithms (MD5/SHA1)
-
-### 4. Security Misconfiguration
-- Default Password Risks: Unchanged default admin passwords
-- Insecure HTTP Methods: Unauthorized access to PUT/DELETE methods
-- Improper CORS Configuration: Overly permissive Cross-Origin Resource Sharing
-- Cache Mechanism Vulnerabilities: Sensitive page caching leading to information leakage
-- Missing Security Headers: Lack of protective headers such as CSP and X-Frame-Options
-
-### 5. Other High-Risk Vulnerabilities
-- File Upload Vulnerabilities: File extension bypass, MIME type spoofing, file content parsing vulnerabilities
-- Path Traversal: Directory traversal to read system files (e.g., /etc/passwd)
-- Deserialization Vulnerabilities: Remote code execution via Jackson/Gson deserialization
-- Dependency Confusion: Supply chain attack demonstration (including dependency hijacking cases)
-- Server-Side Request Forgery (SSRF): Internal service access and data theft
-- Deserialization Vulnerabilities: Misuse of Java serialization/deserialization mechanisms
-</details>
-
+For a detailed list of all implemented vulnerability cases, please refer to [VULNERABILITIES-en.md](VULNERABILITIES-en.md).
 
 ## 🎯 Application Scenarios
 | User Group | Application Scenario |
