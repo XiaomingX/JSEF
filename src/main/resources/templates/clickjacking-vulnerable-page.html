@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Action</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .container { border: 2px solid #ccc; padding: 20px; display: inline-block; }
+        h1 { color: #333; }
+        .button {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        .button:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirm Action</h1>
+        <p>Click the button below to confirm your action.</p>
+        <button class="button" onclick="alert('Action Confirmed! In a real attack, this could be deleting an account.')">Confirm Action</button>
+    </div>
+</body>
+</html>
