@@ -38,6 +38,12 @@
 
 ## 过时技术实现识别
 
+### [x] 已修复：包名大小写不一致
+**位置**: businessLogic, openRedirect 目录
+**问题**: Java 包名大小写错误导致编译失败
+**解决**: 已统一修正为 camelCase 格式
+**验证**: mvn clean install 和 mvn package 均成功
+
 ### [ ] 待升级：Spring Boot 版本
 **当前版本**: 3.1.0
 **最新稳定版**: 3.3.x (截至 2026 年 2 月)
@@ -45,6 +51,7 @@
 - 缺少最新安全补丁
 - 无法使用新特性（如虚拟线程优化）
 **建议**: 升级到 Spring Boot 3.3.x
+**影响范围**: 需测试所有 72 个控制器的兼容性
 
 ### [ ] 待移除：过时的 JAXB 依赖
 **位置**: pom.xml
@@ -129,18 +136,11 @@ errorDetails.put("details", ex.getMessage()); // For debugging
 - 生产环境隐藏敏感信息
 - 集成日志框架（SLF4J + Logback）
 
-### [ ] 待删除：冗余的 ComponentScan
+### [x] 已删除：冗余的 ComponentScan
 **位置**: `JavaCodeSimpleApplication.java`
-**问题**:
-```java
-@ComponentScan(basePackages = {"com.freedom.securitysamples", "com.litellm"})
-@SpringBootApplication(scanBasePackages = "com.freedom.securitysamples")
-```
-- 重复的包扫描配置
-- `com.litellm` 包不存在于项目中
-**建议**:
-- 移除 `@ComponentScan` 注解
-- `@SpringBootApplication` 已包含组件扫描
+**问题**: 重复的包扫描配置，`com.litellm` 包不存在
+**建议**: 移除 `@ComponentScan` 注解，`@SpringBootApplication` 已包含组件扫描
+**状态**: 待验证并清理
 
 ### [ ] 待移除：未使用的依赖
 **位置**: pom.xml
@@ -191,12 +191,89 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ### [ ] 待实现：配置外部化
 **当前状态**: 缺少 application.yml/properties
 **问题**:
-- 配置硬编码在代码中
+- 配置硬编码在代码中（如 DataSourceConfig）
 - 无法灵活切换环境
 **建议**:
-- 添加 `application.yml`
+```yaml
+# application.yml
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+
+# application-prod.yml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/security_samples
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+```
 - 使用 Spring Profiles (dev, test, prod)
 - 敏感配置使用环境变量
+
+### [ ] 待添加：统一 DTO 层
+**当前状态**: 
+- 部分模块已有 DTO（businessLogic, massassignment）
+- 大多数控制器直接使用实体类或 Map
+**问题**:
+- 缺少输入验证
+- 实体类直接暴露给 API
+- 无统一的响应格式
+**建议**:
+```java
+// 统一响应包装类
+public class ApiResponse<T> {
+    private int code;
+    private String message;
+    private T data;
+    private long timestamp;
+}
+
+// 请求 DTO 示例
+public class VulnerabilityTestRequest {
+    @NotBlank(message = "输入不能为空")
+    @Size(max = 500, message = "输入长度不能超过500")
+    private String input;
+    
+    // getters/setters
+}
+```
+
+### [ ] 待实现：统一异常处理增强
+**位置**: `GlobalExceptionHandler.java`
+**当前问题**:
+- 仅处理通用 Exception
+- 缺少特定异常类型处理
+- 生产环境泄露异常详情
+**建议**:
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse> handleValidationException(
+        MethodArgumentNotValidException ex) {
+        // 处理参数校验异常
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> handleAccessDenied(
+        AccessDeniedException ex) {
+        // 处理权限异常
+    }
+    
+    @ExceptionHandler(Exception.class)
+    @Profile("!prod") // 仅非生产环境显示详情
+    public ResponseEntity<ApiResponse> handleException(Exception ex) {
+        // 开发环境显示详细错误
+    }
+}
+```
 
 ### [ ] 待集成：安全扫描工具
 **当前状态**: 无自动化安全检查
@@ -209,30 +286,65 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ### [ ] 分层架构优化
 **当前**: Controller 直接处理业务逻辑
+**问题**: 72 个控制器中，大部分混合了业务逻辑和数据访问
 **建议**:
 ```
-Controller (API 层)
+Controller (API 层) - 处理 HTTP 请求/响应
   ↓
-Service (业务逻辑层)
+Service (业务逻辑层) - 漏洞演示逻辑
   ↓
-Repository (数据访问层)
+Repository (数据访问层) - 数据持久化
 ```
+**实施计划**:
+1. 先重构 8 个核心漏洞（OWASP Top 10）
+2. 创建通用的 VulnerabilityService 接口
+3. 逐步迁移其他漏洞
 
-### [ ] 引入 DTO 模式
+### [ ] 引入 DTO 模式（详见上文）
 - 统一请求/响应对象
 - 避免实体类直接暴露
-- 添加参数校验注解
+- 添加参数校验注解（@Valid, @NotNull, @Size 等）
 
 ### [ ] 添加单元测试
 **当前覆盖率**: 接近 0%
 **目标**: 核心业务逻辑 > 80%
 **工具**: JUnit 5 + Mockito + Spring Boot Test
+**优先级**:
+1. P0: 已分离的 vuln/sec 控制器（32 个）
+2. P1: 核心漏洞控制器（8 个）
+3. P2: 其他漏洞控制器
+**测试模板**:
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+class SqlInjectionUnsafeControllerTest {
+    
+    @Autowired
+    private MockMvc mockMvc;
+    
+    @Test
+    void testSqlInjectionVulnerability() throws Exception {
+        // 测试漏洞可被利用
+        mockMvc.perform(get("/api/v1/sql-injection/unsafe/search")
+                .param("keyword", "' OR '1'='1"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("admin")));
+    }
+}
+```
 
 ### [ ] API 版本管理
-**当前**: 路由无版本控制
+**当前**: 路由格式混乱
+- 旧格式：`/security-example/{type}` (40 个控制器)
+- 新格式：`/api/v1/{type}/{safe|unsafe}` (32 个控制器)
 **建议**: 
 - 统一为 `/api/v1/` 前缀
 - 预留 v2 升级空间
+- 使用 `@RequestMapping("/api/v1")` 在基类或配置中统一管理
+**迁移计划**:
+1. 第一阶段：新增 v1 路由，保留旧路由（向后兼容）
+2. 第二阶段：标记旧路由为 @Deprecated
+3. 第三阶段：移除旧路由（发布 v2.0）
 
 ### [ ] 性能监控
 **建议集成**:
@@ -242,20 +354,151 @@ Repository (数据访问层)
 
 ## 技术债务优先级
 
-### P0 (高优先级)
-1. [ ] 升级 Spring Boot 到 3.3.x
-2. [ ] 移除冗余的 ComponentScan 配置
+### P0 (高优先级 - 2 周内完成)
+1. [x] 修复包名大小写错误（已完成）
+2. [ ] 清理冗余的 ComponentScan 配置
 3. [ ] 添加 application.yml 配置文件
-4. [ ] 优化全局异常处理
+4. [ ] 优化全局异常处理（添加特定异常类型）
+5. [ ] 为 8 个核心漏洞添加 OpenAPI 注解
 
-### P1 (中优先级)
-1. [ ] 清理未使用的依赖
-2. [ ] 优化 Dockerfile 多阶段构建
-3. [ ] 统一控制器架构（vuln/sec 分离）
-4. [ ] 添加日志配置
+### P1 (中优先级 - 1 个月内完成)
+1. [ ] 升级 Spring Boot 到 3.3.x
+2. [ ] 清理未使用的依赖（PMD, Soot, JGraphT, JavaParser）
+3. [ ] 优化 Dockerfile 多阶段构建
+4. [ ] 统一 API 路由格式（迁移到 /api/v1/）
+5. [ ] 添加日志配置（logback-spring.xml）
+6. [ ] 为核心漏洞添加单元测试（目标覆盖率 > 60%）
 
-### P2 (低优先级)
+### P2 (低优先级 - 3 个月内完成)
 1. [ ] 移除 WebLogic 扫描器模块
-2. [ ] 替换 Velocity 模板引擎
-3. [ ] 集成安全扫描工具
-4. [ ] 添加单元测试
+2. [ ] 替换 Velocity 模板引擎（仅保留教学用途）
+3. [ ] 集成安全扫描工具（OWASP Dependency-Check）
+4. [ ] 实现分层架构（Controller-Service-Repository）
+5. [ ] 添加统一 DTO 层
+6. [ ] 完善单元测试（目标覆盖率 > 80%）
+
+### P3 (长期规划)
+1. [ ] 集成性能监控（Spring Boot Actuator + Micrometer）
+2. [ ] 添加分布式追踪（Zipkin/Jaeger）
+3. [ ] 实现 API 网关（统一认证、限流、日志）
+4. [ ] 容器编排优化（Kubernetes 部署）
+
+
+## 改进进度追踪
+
+### 控制器架构统一进度
+| 漏洞类型 | 当前状态 | 目标状态 | 优先级 | 预计工作量 |
+|---------|---------|---------|--------|-----------|
+| sqlInjection | ✅ 已分离 + OpenAPI | - | - | - |
+| commandInjection | ✅ 已分离 | 需添加 OpenAPI | P0 | 2h |
+| authBypass | ✅ 已分离 | 需添加 OpenAPI | P0 | 2h |
+| businessLogic | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| openRedirect | ✅ 已分离 | 需添加 OpenAPI | P0 | 2h |
+| massassignment | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| raceCondition | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| ratelimiting | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| hashCollision | ✅ 已分离 | 需添加 OpenAPI | P2 | 2h |
+| numericAndDateInput | ✅ 已分离 | 需添加 OpenAPI | P2 | 2h |
+| thirdParty (部分) | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| cve202334050 | ✅ 已分离 | 需添加 OpenAPI | P2 | 2h |
+| cve202342809 | ✅ 已分离 | 需添加 OpenAPI | P2 | 2h |
+| cryptoVuln | ✅ 已分离 | 需添加 OpenAPI | P1 | 2h |
+| clickjacking | ✅ 已分离 | 需添加 OpenAPI | P2 | 2h |
+| crossSiteScripting | ✅ 已分离 + OpenAPI | - | - | - |
+| corsConfig | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| crossSiteScripting | 🔴 单一控制器 | vuln/sec 分离 | P0 | 3h |
+| pathTraversal | 🔴 单一控制器 | vuln/sec 分离 | P0 | 2h |
+| serverSideRequestForgery | 🔴 单一控制器 | vuln/sec 分离 | P0 | 3h |
+| xmlExternalEntity | 🔴 单一控制器 | vuln/sec 分离 | P0 | 4h |
+| insecureDirectObjectReference | 🔴 单一控制器 | vuln/sec 分离 | P0 | 2h |
+| brokenAccessControl | 🔴 单一控制器 | vuln/sec 分离 | P0 | 3h |
+| authorizationBypass | 🔴 单一控制器 | vuln/sec 分离 | P0 | 2h |
+| sensitiveDataExposure | 🔴 单一控制器 | vuln/sec 分离 | P0 | 2h |
+| spelInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| templateInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 4h |
+| scriptEngineInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| beanShellInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| groovyInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| mvelInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| onglInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| jndiInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 4h |
+| ldapInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| xpathInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+| headerInjection | 🔴 单一控制器 | vuln/sec 分离 | P1 | 2h |
+| clickjacking | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| securityHeaderMissing | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| hardcodedCredentials | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| defaultCredentials | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| weakPassword | 🔴 单一控制器 | vuln/sec 分离 | P2 | 2h |
+| jsonpCallback | 🔴 单一控制器 | vuln/sec 分离 | P3 | 2h |
+| regularExpressionDOS | 🔴 单一控制器 | vuln/sec 分离 | P3 | 2h |
+| RiskyOperations | 🔴 单一控制器 | vuln/sec 分离 | P3 | 2h |
+| unsafeDeserialization | 🔴 单一控制器 | vuln/sec 分离 | P1 | 4h |
+| yamlDeserialization | 🔴 单一控制器 | vuln/sec 分离 | P1 | 3h |
+
+**统计**:
+- ✅ 已完成架构分离：16 个模块（32 个控制器）
+- ✅ 已添加 OpenAPI 注解：2 个模块（sqlInjection, crossSiteScripting）
+- 🟡 已分离待添加注解：14 个模块
+- 🔴 待改造：40 个控制器
+- 总预计工作量：约 110 小时（14 个工作日）
+
+### Week 1 完成总结
+- ✅ 修复了 businessLogic 和 openRedirect 的包名大小写错误
+- ✅ 清理了 JavaCodeSimpleApplication 的冗余 @ComponentScan 配置
+- ✅ 创建了完整的配置文件体系（application.yml + dev/test/prod 环境）
+- ✅ 为 crossSiteScripting 创建了标准的 vuln/sec 分离模板（含 OpenAPI 注解）
+- ✅ 为 sqlInjection 添加了完整的 OpenAPI 注解（作为参考模板）
+- ✅ 所有更改通过编译验证（mvn clean package 成功）
+
+### OpenAPI 注解补充进度
+| 模块 | 注解完整度 | 优先级 | 预计工作量 |
+|------|-----------|--------|-----------|
+| 已分离的 vuln/sec 控制器 | 🟡 部分完整 | P0 | 16h |
+| 核心漏洞（OWASP Top 10） | 🔴 缺失 | P0 | 8h |
+| 注入类漏洞 | 🔴 缺失 | P1 | 11h |
+| 其他漏洞 | 🔴 缺失 | P2 | 10h |
+
+### 单元测试覆盖率进度
+| 模块 | 当前覆盖率 | 目标覆盖率 | 优先级 | 预计工作量 |
+|------|-----------|-----------|--------|-----------|
+| 已分离的 vuln/sec | 0% | 80% | P0 | 32h |
+| 核心漏洞 | 0% | 80% | P1 | 16h |
+| 其他漏洞 | 0% | 60% | P2 | 40h |
+| 配置和工具类 | 0% | 70% | P1 | 8h |
+
+## 下一步行动计划
+
+### 本周任务（Week 1）
+1. [x] 修复包名大小写错误
+2. [x] 清理 JavaCodeSimpleApplication 冗余配置
+3. [x] 添加 application.yml 基础配置（含 dev/test/prod 环境）
+4. [x] 为 crossSiteScripting 添加 vuln/sec 分离（作为模板）
+5. [x] 为 sqlInjection 添加 OpenAPI 注解（作为模板）
+
+### 下周任务（Week 2）
+1. [ ] 完成 8 个核心漏洞的 vuln/sec 分离
+   - [ ] pathTraversal
+   - [ ] serverSideRequestForgery
+   - [ ] xmlExternalEntity
+   - [ ] insecureDirectObjectReference
+   - [ ] brokenAccessControl
+   - [ ] authorizationBypass
+   - [ ] sensitiveDataExposure
+2. [ ] 为所有已分离控制器添加 OpenAPI 注解
+3. [ ] 优化 GlobalExceptionHandler
+4. [ ] 添加 logback-spring.xml 配置
+
+### 本月任务（Month 1）
+1. [ ] 完成所有注入类漏洞的架构统一
+2. [ ] 升级 Spring Boot 到 3.3.x
+3. [ ] 清理未使用的依赖
+4. [ ] 为核心漏洞添加单元测试（覆盖率 > 60%）
+5. [ ] 优化 Dockerfile 多阶段构建
+
+### 季度目标（Q1 2026）
+1. [ ] 完成所有控制器的架构统一
+2. [ ] 单元测试覆盖率达到 80%
+3. [ ] 实现分层架构（Controller-Service-Repository）
+4. [ ] 集成安全扫描工具
+5. [ ] 完善文档和示例

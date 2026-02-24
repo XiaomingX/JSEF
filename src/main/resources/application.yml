@@ -1,0 +1,79 @@
+# Java Security Education Framework (JSEF) - 主配置文件
+spring:
+  application:
+    name: jsef-security-samples
+  
+  profiles:
+    active: dev
+  
+  # 数据源配置
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # H2 控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # JPA 配置
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # MVC 配置
+  mvc:
+    throw-exception-if-no-handler-found: true
+  
+  # Web 配置
+  web:
+    resources:
+      add-mappings: true
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: false
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.freedom.securitysamples: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用自定义配置
+app:
+  name: "Java Security Education Framework"
+  version: "1.0.0"
+  description: "Web 安全漏洞教学演示平台"
+  vulnerability-count: 35

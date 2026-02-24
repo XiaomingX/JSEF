@@ -35,6 +35,7 @@ com/freedom/securitysamples/vulnerability/authorizationBypass/AuthorizationBypas
 com/freedom/securitysamples/vulnerability/newfea/notaboutsafty/FutureExamplesController$RadixTree.class
 com/freedom/securitysamples/vulnerability/hashCollision/sec/HashCollisionSafeController.class
 com/freedom/securitysamples/vulnerability/clickjacking/sec/ClickjackingSafeController.class
+com/freedom/securitysamples/vulnerability/crossSiteScripting/vuln/CrossSiteScriptingUnsafeController.class
 com/freedom/securitysamples/vulnerability/cve202342809/RedisMessage.class
 com/freedom/securitysamples/vulnerability/newfea/HiController.class
 com/freedom/securitysamples/vulnerability/ratelimiting/vuln/RateLimitingUnsafeController.class
@@ -73,6 +74,7 @@ com/freedom/securitysamples/vulnerability/newfea/notaboutsafty/ProxyController$U
 com/freedom/securitysamples/vulnerability/numericAndDateInput/vuln/NumericAndDateInputUnsafeController.class
 com/freedom/securitysamples/vulnerability/jndiInjection/JndiInjectionVulnerabilityController.class
 com/freedom/securitysamples/vulnerability/newfea/notaboutsafty/FutureExamplesController$TargetObject.class
+com/freedom/securitysamples/vulnerability/crossSiteScripting/sec/CrossSiteScriptingSafeController.class
 com/freedom/securitysamples/vulnerability/cve202334050/sec/Cve202334050SafeController.class
 com/freedom/securitysamples/config/GlobalExceptionHandler.class
 com/freedom/securitysamples/vulnerability/cve202334050/UserMessage.class

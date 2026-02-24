@@ -26,6 +26,7 @@
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/sec/ClickjackingSafeController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/model/Product.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/scriptEngineInjection/ScriptEngineInjectionVulnerabilityController.java
+/Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/crossSiteScripting/sec/CrossSiteScriptingSafeController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/JacksonDeserializationSecurityController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/sec/FastjsonDeserializationSafeController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/hashCollision/vuln/HashCollisionUnsafeController.java
@@ -75,6 +76,7 @@
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/onglInjection/OgnlInjectionVulnerabilityController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/mvelInjection/MvelInjectionVulnerabilityController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/securityHeaderMissing/SecurityHeaderMissingController.java
+/Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/crossSiteScripting/vuln/CrossSiteScriptingUnsafeController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/ratelimiting/sec/RateLimitingSafeController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/HelloController.java
 /Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF-v1/src/main/java/com/freedom/securitysamples/vulnerability/groovyInjection/GroovyInjectionVulnerabilityController.java
