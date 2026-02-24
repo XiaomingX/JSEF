@@ -1,0 +1,50 @@
+# 生产环境配置
+spring:
+  # 生产环境使用 MySQL（需配置环境变量）
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/security_samples?useSSL=true&serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  h2:
+    console:
+      enabled: false
+  
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+# 生产环境隐藏敏感错误信息
+server:
+  error:
+    include-stacktrace: never
+    include-exception: false
+    include-message: never
+
+# 生产环境日志级别
+logging:
+  level:
+    root: WARN
+    com.freedom.securitysamples: INFO
+    org.springframework.web: WARN
+    org.springframework.security: INFO
+  file:
+    name: logs/jsef-application.log
+    max-size: 10MB
+    max-history: 30
+
+# 生产环境关闭 Swagger UI
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false

@@ -56,27 +56,6 @@ Java Security Education Framework (JSEF) - Spring Boot 安全实践平台，提�
 **位置**: `businessLogic/`, `openRedirect/`
 **说明**: 已修复所有包名大小写不一致问题，项目可正常编译和打包
 
-### [ ] 待删除：WebLogic 扫描器模块
-**位置**: `data-security-research2-v1/weblogicScanner/`
-**原因**: 
-- 该模块是独立的 Python 工具，与主项目 Java/Spring Boot 技术栈不一致
-- 专注于 WebLogic CVE 扫描，与教学平台核心业务偏离
-- 维护成本高，且已有专业的漏洞扫描工具
-**建议**: 
-- 移除整个 `data-security-research2-v1` 目录
-- 如需保留，应独立为单独的仓库
-
-### [ ] 待决策：CVE 特定漏洞示例归属
-**位置**: `src/main/java/com/freedom/securitysamples/cve/`
-**当前状态**:
-- CVE 目录仅包含 README.md（记录了 9 个未验证的 CVE）
-- 已实现的 CVE 在 vulnerability 目录下：cve202334050, cve202342809
-**决策选项**:
-1. **保持现状**：CVE 作为特殊漏洞类型，继续放在 vulnerability 下
-2. **迁移到 cve 目录**：将 cve202334050, cve202342809 移至 cve/ 目录
-3. **删除空目录**：删除 cve/ 目录，所有漏洞统一在 vulnerability 下
-**推荐**: 选项 3 - 删除空目录，保持架构一致性
-
 ### [ ] 待改造：混合架构的控制器统一
 **位置**: 多个 vulnerability 子目录
 **当前状态**:
@@ -129,17 +108,49 @@ Java Security Education Framework (JSEF) - Spring Boot 安全实践平台，提�
 3. 统一路由格式为 `/api/v1/{vulnerability-type}/{unsafe|safe}/{endpoint}`
 4. 添加 OpenAPI 注解
 
-### [x] 已优化：业务逻辑漏洞示例
+### [x] 已完成：业务逻辑漏洞示例
 **位置**: `vulnerability/businessLogic/`
-**当前状态**:
-- IP 欺骗（IpSpoofingVulnerabilityController）
-- 价格篡改（PriceTamperingUnsafe/SafeController）- 已按 vuln/sec 分离
-**建议扩展**:
-- [ ] 库存绕过（并发购买超卖）
-- [ ] 优惠券滥用（重复使用、叠加使用）
-- [ ] 订单金额篡改（修改总价、运费）
-- [ ] 积分/余额操纵（负数充值、溢出攻击）
-- [ ] 业务流程绕过（跳过支付步骤）
+**完成状态**: 7/7 场景全部实现 ✅
+
+**已实现场景**:
+1. **IP 欺骗**（IpSpoofingVulnerabilityController）
+   - 不安全：信任 X-Forwarded-For 等请求头
+   - 安全：验证代理链，使用白名单
+
+2. **价格篡改**（PriceTamperingUnsafe/SafeController）
+   - 不安全：信任客户端提交的价格
+   - 安全：服务端查询真实价格
+
+3. **库存超卖**（InventoryOversellUnsafe/SafeController）
+   - 不安全：并发购买时检查和扣减不是原子操作
+   - 安全：使用 ReentrantLock 和乐观锁防止超卖
+
+4. **优惠券滥用**（CouponAbuseUnsafe/SafeController）
+   - 不安全：未验证使用状态、有效期和叠加规则
+   - 安全：严格验证 + 锁机制 + 用户使用历史
+
+5. **订单金额篡改**（OrderAmountTamperingUnsafe/SafeController）
+   - 不安全：信任客户端提交的总价、运费、折扣
+   - 安全：服务端重新计算所有金额字段
+
+6. **积分/余额操纵**（AccountManipulationUnsafe/SafeController）
+   - 不安全：允许负数充值、整数溢出、并发提现
+   - 安全：验证正数、检查溢出、使用锁保证原子性
+
+7. **业务流程绕过**（WorkflowBypassUnsafe/SafeController）
+   - 不安全：未验证状态转换，可跳过支付直接发货
+   - 安全：状态机验证，定义合法转换规则
+
+**统计数据**:
+- 控制器文件：15 个（7 unsafe + 7 safe + 1 legacy）
+- 模型文件：5 个（Product, Inventory, Coupon, Order, UserAccount）
+- API 端点：约 60 个
+- 代码行数：约 2500 行
+
+**待扩展场景**（可选）:
+- [ ] 退款漏洞（重复退款、金额篡改）
+- [ ] 会员等级绕过（直接修改等级）
+- [ ] 限购绕过（突破购买数量限制）
 
 ### [ ] 待补充：API 文档完整性
 **位置**: 各 Controller 类
