@@ -1,0 +1,39 @@
+# 开发环境配置
+spring:
+  # 开发环境使用 H2 内存数据库
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+  
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# 开发环境显示详细错误信息
+server:
+  error:
+    include-stacktrace: always
+    include-exception: true
+
+# 开发环境日志级别
+logging:
+  level:
+    root: DEBUG
+    com.freedom.securitysamples: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+
+# SpringDoc 开发环境配置
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
