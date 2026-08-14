@@ -77,7 +77,61 @@ For a detailed list of all implemented vulnerability cases, please refer to [VUL
 | **CTF Players** | Hands-on practice for basic vulnerabilities, familiarizing with common vulnerability exploitation techniques. |
 
 
+## 🔬 SAST Capability & Multi-Model Vulnerability-Hunting Benchmark
+
+JSEF is not only a teaching platform, but also ships a benchmark for **validating basic SAST capabilities** and **comparing vulnerability-hunting ability across multiple LLMs**. The design is based on first principles of SAST (proof of untrusted-data reachability from source to sink). Samples carry a discriminating-difficulty gradient, making it easy to cross-compare false positives, false negatives, average time, timeouts, report conciseness, and coverage completeness.
+
+### Core Capabilities
+
+| Capability Dimension | Description |
+|----------------------|-------------|
+| Taint propagation (no variable break) | Single-hop / multi-hop / indirect (Map/field) gradient, checking whether intermediate variables drop taint |
+| State machine / call-chain tracking | Cross-method / cross-file / gadget chain, checking reachability analysis depth |
+| Framework semantics understanding | Spring parameter binding, SpEL, `@RequestParam`-driven implicit source/sink |
+| False-positive suppression | OWASP-style true/false confusion samples, checking discrimination of "looks dangerous but safe" code |
+
+### Samples & Difficulty Grading
+
+Samples are graded **L1-L5** (each level increases reasoning distance and semantic dependency to separate tools/models by tier; L0 is only a capability baseline reference, see `MY_PLAN.md` A3 — no sample is currently tagged L0):
+
+| Level | Meaning | Example |
+|-------|---------|---------|
+| L1 | Single-hop direct | `Runtime.exec(userInput)` |
+| L2 | Multi-hop (no break) | source -> intermediate var -> builder -> sink |
+| L3 | Indirect / cross-method | taint via Map/field; via method return value across functions |
+| L4 | Cross-file / framework semantics | Controller -> ServiceA -> ServiceB -> sink; Spring4Shell SpEL semantics |
+| L5 | gadget chain | multiple safe classes combined into dangerous reachability (CC deserialization chain abstraction) |
+
+### Current Sample Scale
+
+> Data source: `benchmark/expectedresults.csv` (source of truth, kept in two-way sync with `// [CHECKPOINT]` annotations in source, 133 entries total)
+
+- **133** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples)
+- **93 VULN** (should be reported) + **40 SAFE** (should not be reported, used to compute TN/FP)
+- Difficulty distribution: L1 x 89, L2 x 17, L3 x 16, L4 x 8, L5 x 3
+- CWE coverage (34 categories, VULN only): Expression Injection (917) x 18, Deserialization (502) x 12, Command Injection (78) x 9, Hardcoded Credentials/Key (798) x 5, SQLi (89) x 4, Business Logic (840) x 4, Template Injection (1336) x 3, Clickjacking/Missing Security Header (1021) x 3, XPath (643) x 2, LDAP (90) x 2, SSRF (918) x 2, XXE (611) x 2, IDOR (639) x 2, Weak Hash (327) x 2, Auth Bypass (287) x 2, Authorization Bypass (285) x 2, Open Redirect (601) x 2, plus Path Traversal (22)/Weak Random (330)/XSS (79)/NoSQL (943)/JWT (345)/CORS (942)/Weak Password (521)/Sensitive Data Exposure (532)/Mass Assignment (915)/Race Condition (362)/Numeric Input (20)/Missing Rate Limiting (307)/ReDoS (1333)/Hash Collision (694)/JSONP (352)/Header Injection (113)/Risky Operations (111) x 1 each
+
+Sample organization:
+- `benchmark/cases/vuln/` and `benchmark/cases/sec/`: discriminating-difficulty gradient samples (with safe counterparts)
+- `benchmark/cases/vendor/`: high-quality competitor samples abstracted from OWASP Benchmark / Juliet / PrimeVul / CVEfixes, with source-URL provenance
+
+### How to Run & Cross-Compare
+
+1. Start JSEF: `mvn clean package -DskipTests && java -jar target/*.jar`
+2. Select the subject under test: a SAST tool (CodeQL/SonarQube/Snyk) + an LLM (switch models in Claude Code, using the same prompt `benchmark/prompts/vuln_hunt.md`)
+3. Each subject scans `benchmark/cases/` once, producing SARIF or `id -> {hit,file,line}` results, recording time
+4. Run the scoring script for cross-comparison metrics (from repo root):
+   ```bash
+   python3 benchmark/scripts/scorecard.py --expected benchmark/expectedresults.csv --result <result.json|.sarif> --name <subject-name>
+   ```
+   Outputs Recall / Precision / **Youden Score (TPR - FPR)** / average time / timeout count / report conciseness / coverage completeness, grouped by CWE and level.
+
+See [`benchmark/README.md`](benchmark/README.md) and [`MY_PLAN.md`](MY_PLAN.md) for detailed design and protocol.
+
+
 ## 📚 Official Documentation
+- [📊 Benchmark Design & Protocol](benchmark/README.md): usage and extension of the SAST/LLM vulnerability-hunting acceptance benchmark
+- [🗺️ Benchmark Implementation Plan](MY_PLAN.md): capability model, sample grading, and todo progress
 - [📥 Deployment Guide](docs/deployment.md): Full deployment solutions for local/Mac/Linux/Windows/Docker
 - [🔍 Vulnerability Reproduction Guide](docs/vulnerability-guide.md): Detailed reproduction steps for each vulnerability (including Payload examples)
 - [💻 API Reference](docs/api-reference.md): Description of request parameters and response formats for all interfaces (supports Swagger online debugging)

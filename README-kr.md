@@ -77,7 +77,61 @@ docker run -d -p 8080:8080 --name jsef-demo jsef-security-sample:latest
 | **CTF 플레이어** | 기본 취약점 실습 연습을 통해 일반적인 취약점 악용 기법을 익힙니다. |
 
 
+## 🔬 SAST 역량 및 멀티모델 취약점 탐지 Benchmark
+
+JSEF는 교육 플랫폼일 뿐만 아니라, **SAST 기본 역량 검증**과 **여러 LLM 간 취약점 탐지 능력 차이 비교**에 쓰는 benchmark를 내장하고 있습니다. 설계는 SAST 제1원리(source에서 sink까지의 불신 데이터 도달 가능성 증명)에 기반하며, 샘플에는 변별력 구배를 두어 오탐·미탐·평균 소요시간·타임아웃·보고서 간결성·완전성(coverage)을 교차 비교하기 쉽게 했습니다.
+
+### 핵심 역량
+
+| 역량 차원 | 설명 |
+|---------|------|
+| 오염 전파（변수 단절 없음） | 단홉/다홉/간접（Map/필드） 구배, 중간 변수에서 오염이 유실되는지 검증 |
+| 상태 머신 / 호출 체인 추적 | 메서드 간/파일 간/gadget chain, 도달 가능성 분석 깊이 검증 |
+| 프레임워크 의미 이해 | Spring 파라미터 바인딩, SpEL, `@RequestParam`이 유도하는 암묵적 source/sink |
+| 오탐 억제 | OWASP식 진위 혼동 샘플, "위험해 보이나 안전한" 코드 판별 검증 |
+
+### 샘플과 난이도 등급
+
+샘플은 **L1-L5**로 등급화됩니다（각 단계마다 추론 거리와 의미 의존을 늘려 도구/모델 격차를 벌림；L0은 역량 기준 참고용만, `MY_PLAN.md` A3 참조 — 현재 L0로 표시된 샘플은 없음）：
+
+| 등급 | 의미 | 예 |
+|------|------|------|
+| L1 | 단홉 직결 | `Runtime.exec(userInput)` |
+| L2 | 다홉（변수 단절 없음） | source -> 중간 변수 -> builder -> sink |
+| L3 | 간접 / 메서드 간 | 오염이 Map/필드 경유；메서드 반환값으로 함수 간 이동 |
+| L4 | 파일 간 / 프레임워크 의미 / 상태 머신 | Controller -> ServiceA -> ServiceB -> sink；Spring4Shell SpEL 의미 |
+| L5 | gadget chain | 여러 안전 클래스가 조합되어 위험한 도달 가능성 형성（CC 역직렬화 체인 추상） |
+
+### 현재 샘플 규모
+
+> 데이터 출처：`benchmark/expectedresults.csv`（진실 원천, 소스의 `// [CHECKPOINT]` 주석과 양방향 일치, 총 133건）
+
+- **133건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 포괄）
+- **93건의 VULN**（보고되어야 함） + **40건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
+- 난이도 분포：L1 x 89、L2 x 17、L3 x 16、L4 x 8、L5 x 3
+- CWE 커버（총 34종, VULN만）：표현식 주입(917) x 18、역직렬화(502) x 12、명령어 주입(78) x 9、하드코딩 자격증명/키(798) x 5、SQLi(89) x 4、비즈니스 로직(840) x 4、템플릿 주입(1336) x 3、클릭재킹/보안 헤더 누락(1021) x 3、XPath(643) x 2、LDAP(90) x 2、SSRF(918) x 2、XXE(611) x 2、IDOR(639) x 2、약한 해시(327) x 2、인증 우회(287) x 2、인가 우회(285) x 2、오픈 리다이렉트(601) x 2、그리고 경로 조작(22)/약한 난수(330)/XSS(79)/NoSQL(943)/JWT(345)/CORS(942)/약한 비밀번호(521)/민감정보 노출(532)/대량 할당(915)/경쟁 조건(362)/수치 입력(20)/속도 제한 누락(307)/ReDoS(1333)/해시 충돌(694)/JSONP(352)/헤더 주입(113)/위험 연산(111) 각 x 1
+
+샘플 구성：
+- `benchmark/cases/vuln/` 및 `benchmark/cases/sec/`：변별력 있는 구배 샘플（안전 대조 포함）
+- `benchmark/cases/vendor/`：OWASP Benchmark / Juliet / PrimeVul / CVEfixes에서 추상한 고품질 경쟁 샘플（출처 URL 포함）
+
+### 실행 및 교차 비교 방법
+
+1. JSEF 시작：`mvn clean package -DskipTests && java -jar target/*.jar`
+2. 피험체 선정：SAST 도구（CodeQL/SonarQube/Snyk） + LLM（Claude Code에서 모델 전환, 동일 프롬프트 `benchmark/prompts/vuln_hunt.md` 사용）
+3. 각 피험체가 `benchmark/cases/`를 한 번 스캔하여 SARIF 또는 `id -> {hit,file,line}` 결과 출력, 소요시간 기록
+4. 채점 스크립트로 교차 비교 지표 산출（저장소 루트에서 실행）：
+   ```bash
+   python3 benchmark/scripts/scorecard.py --expected benchmark/expectedresults.csv --result <result.json|.sarif> --name <피험체명>
+   ```
+   Recall / Precision / **Youden Score (TPR - FPR)** / 평균 소요시간 / 타임아웃 수 / 보고서 간결성 / 완전성을 CWE와 등급별로 그룹화하여 출력.
+
+자세한 설계와 프로토콜은 [`benchmark/README.md`](benchmark/README.md)와 [`MY_PLAN.md`](MY_PLAN.md)를 참조.
+
+
 ## 📚 공식 문서
+- [📊 Benchmark 설계 및 프로토콜](benchmark/README.md)：SAST/LLM 취약점 탐지 검수 benchmark 사용과 확장
+- [🗺️ Benchmark 구현 계획](MY_PLAN.md)：역량 모델, 샘플 등급, 할 일 진행상황
 - [📥 배포 가이드](docs/deployment.md)：로컬/Mac/Linux/Windows/Docker 배포 전체方案
 - [🔍 취약점 재현 매뉴얼](docs/vulnerability-guide.md)：각 취약점에 대한 상세 재현 단계（Payload 예시 포함）
 - [💻 API 참조서](docs/api-reference.md)：모든 인터페이스에 대한 요청 매개변수 및 응답 형식 설명（Swagger 온라인 디버깅 지원）
