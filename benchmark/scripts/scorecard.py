@@ -104,6 +104,9 @@ def load_expected(expected_path):
                 line = int(row["line"])
             except (ValueError, TypeError):
                 line = -1
+            # trace 列可选：逗号分隔的 file:line 节点列表（entry->critical_operation 中间链）
+            trace_raw = (row.get("trace") or "").strip()
+            trace_nodes = [t.strip() for t in trace_raw.split(",") if t.strip()] if trace_raw else []
             samples.append({
                 "id": row["id"].strip(),
                 "cwe": row["cwe"].strip(),
@@ -114,6 +117,7 @@ def load_expected(expected_path):
                 "source": row.get("source", "").strip(),
                 "sink": row.get("sink", "").strip(),
                 "category": row.get("category", "").strip(),
+                "trace": trace_nodes,
             })
     return samples
 
@@ -182,7 +186,9 @@ def _parse_sarif(raw):
             rule_id = str(res.get("ruleId", "CWE-OTHER"))
             cwe = rule_id.replace("CWE-", "") if rule_id.startswith("CWE-") else rule_id
             msg = res.get("message", {}).get("text", "")
-            for loc in res.get("locations", []):
+            locs = res.get("locations", [])
+            trace_nodes = []
+            for loc in locs:
                 phys = loc.get("physicalLocation", {})
                 uri = phys.get("artifactLocation", {}).get("uri", "")
                 region = phys.get("region", {})
@@ -198,6 +204,18 @@ def _parse_sarif(raw):
                     "message": msg,
                     "elapsed_ms": int(res["elapsed_ms"]) if "elapsed_ms" in res else None,
                 }
+                # 多个 physicalLocation 视为推理路径 trace（file:line 节点）
+                if len(locs) > 1:
+                    trace_nodes.append("%s:%d" % (uri_norm, line))
+            # 第一个 location 作为主 finding，其余位置汇总到 trace
+            if locs:
+                first = locs[0]
+                fphys = first.get("physicalLocation", {})
+                furi = fphys.get("artifactLocation", {}).get("uri", "").replace("\\", "/")
+                fline = int(fphys.get("region", {}).get("startLine", -1))
+                fkey = "%s@%s:%d" % (cwe, furi, fline)
+                if fkey in findings:
+                    findings[fkey]["trace"] = trace_nodes
             if "elapsed_ms" in res:
                 elapsed_list.append(int(res["elapsed_ms"]))
     return findings, elapsed_list
@@ -218,6 +236,9 @@ def _parse_simple_json(data):
                 continue
             hit = bool(item.get("hit", False))
             elapsed = item.get("elapsed_ms")
+            trace = item.get("trace") or []
+            if isinstance(trace, str):
+                trace = [t.strip() for t in trace.split(",") if t.strip()]
             findings[sid] = {
                 "hit": hit,
                 "file": item.get("file", ""),
@@ -225,6 +246,7 @@ def _parse_simple_json(data):
                 "cwe": str(item.get("cwe", "")).replace("CWE-", ""),
                 "message": item.get("message", ""),
                 "elapsed_ms": int(elapsed) if elapsed is not None else None,
+                "trace": list(trace),
             }
             if elapsed is not None:
                 elapsed_list.append(int(elapsed))
@@ -238,6 +260,7 @@ def _parse_simple_json(data):
                 file_ = ""
                 cwe = ""
                 message = ""
+                trace = []
             else:
                 hit = bool(val.get("hit", False))
                 line = int(val.get("line", -1))
@@ -245,6 +268,9 @@ def _parse_simple_json(data):
                 file_ = val.get("file", "")
                 cwe = str(val.get("cwe", "")).replace("CWE-", "")
                 message = val.get("message", "")
+                trace = val.get("trace") or []
+                if isinstance(trace, str):
+                    trace = [t.strip() for t in trace.split(",") if t.strip()]
             findings[sid] = {
                 "hit": hit,
                 "file": file_,
@@ -252,6 +278,7 @@ def _parse_simple_json(data):
                 "cwe": cwe,
                 "message": message,
                 "elapsed_ms": int(elapsed) if elapsed is not None else None,
+                "trace": list(trace),
             }
             if elapsed is not None:
                 elapsed_list.append(int(elapsed))
@@ -282,7 +309,8 @@ def align(samples, findings, use_sarif, line_tolerance=0):
     Returns:
         list[dict]: 在样本字段基础上追加 ``outcome`` ∈ {TP, FN, FP, TN}、
         ``reported``(bool)、``elapsed_ms``(int|None)、``result_line``(int|None，
-        被测结果标注的行号)、``exact_location``(bool，定位是否精确)。
+        被测结果标注的行号)、``exact_location``(bool，定位是否精确)、
+        ``result_trace``(list[str]，被测对象声明的推理路径节点)。
 
         定位精度判定（仅对 vuln 且 reported 的样本）：
         - ``exact_hit``：result_line 与 expected line 完全相等。
@@ -303,9 +331,11 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         result_line = None
         exact_location = False
         near_hit = False
+        result_trace = []
         if rep is not None:
             elapsed = rep.get("elapsed_ms")
             result_line = rep.get("line")
+            result_trace = list(rep.get("trace") or [])
             if reported and s["type"] == "vuln" and isinstance(result_line, int) and result_line >= 0:
                 diff = abs(result_line - s["line"])
                 if diff == 0:
@@ -327,6 +357,7 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         entry["result_line"] = result_line
         entry["exact_location"] = exact_location
         entry["near_hit"] = near_hit
+        entry["result_trace"] = result_trace
         aligned.append(entry)
     return aligned
 
@@ -457,6 +488,79 @@ def coverage_metrics(samples, aligned):
     }
 
 
+def compute_trace_metrics(aligned, line_tolerance=0):
+    """计算路径证据链（trace）指标，仅对支持 trace 的 expected 样本统计。
+
+    借鉴 VulnGym 的 ``entry_point -> critical_operation -> trace`` 多节点理念，
+    将 expected 的 trace（来自 CSV ``trace`` 列）与被测结果声明的 ``result_trace``
+    做节点集合匹配（方向无关，``file:line`` 节点用 ``--line-tolerance`` 容差）。
+
+    Args:
+        aligned: align() 的输出（含 ``trace`` 期望节点与 ``result_trace`` 实测节点）。
+        line_tolerance: 节点行号容差（int，默认 0）。
+
+    Returns:
+        dict: {trace_recall, trace_precision, trace_expected_nodes,
+               trace_reported_nodes, trace_support_count}
+            - trace_recall = 命中 expected 节点数 / expected 节点数（仅对支持 trace 的样本）。
+            - trace_precision = 命中 expected 节点数 / 被测 trace 节点数。
+            - trace_support_count = 支持 trace 评测的 expected 样本数。
+    """
+    def _node_key(node):
+        """归一化 trace 节点为 (file_norm, line) 元组，便于容差匹配。"""
+        if ":" not in node:
+            return (node.replace("\\", "/"), None)
+        f, _, l = node.rpartition(":")
+        try:
+            return (f.replace("\\", "/"), int(l))
+        except ValueError:
+            return (node.replace("\\", "/"), None)
+
+    def _match(expected_node, reported_nodes):
+        """判断 expected 节点是否被 reported 节点集合命中（方向无关 + 行容差）。"""
+        ef, el = _node_key(expected_node)
+        for rn in reported_nodes:
+            rf, rl = _node_key(rn)
+            if rf != ef:
+                continue
+            if el is None or rl is None:
+                return rf == ef
+            if line_tolerance > 0:
+                if abs(rl - el) <= line_tolerance:
+                    return True
+            elif rl == el:
+                return True
+        return False
+
+    total_expected = 0
+    total_reported = 0
+    total_hit = 0
+    support = 0
+    for a in aligned:
+        exp_trace = a.get("trace") or []
+        if not exp_trace:
+            continue  # 仅对支持 trace 的 expected 样本统计
+        support += 1
+        res_trace = a.get("result_trace") or []
+        total_expected += len(exp_trace)
+        total_reported += len(res_trace)
+        for en in exp_trace:
+            if _match(en, res_trace):
+                total_hit += 1
+
+    def safe_div(num, den):
+        return (num / den) if den else 0.0
+
+    return {
+        "trace_recall": safe_div(total_hit, total_expected),
+        "trace_precision": safe_div(total_hit, total_reported),
+        "trace_expected_nodes": total_expected,
+        "trace_reported_nodes": total_reported,
+        "trace_hit_nodes": total_hit,
+        "trace_support_count": support,
+    }
+
+
 # --------------------------------------------------------------------------- #
 # 时延 / 超时 / 简洁度
 # --------------------------------------------------------------------------- #
@@ -541,7 +645,7 @@ def render_markdown(name, metrics, timing, simplicity, completeness):
 # --------------------------------------------------------------------------- #
 # 单对象评分（供 --result 与 --results-dir 复用）
 # --------------------------------------------------------------------------- #
-def score_object(samples, result_path, timeout_ms, line_tolerance=0):
+def score_object(samples, result_path, timeout_ms, line_tolerance=0, check_trace=False):
     """对一个被测对象结果文件算分，返回 (report_dict, aligned)。
 
     Args:
@@ -549,11 +653,13 @@ def score_object(samples, result_path, timeout_ms, line_tolerance=0):
         result_path: 单个结果文件（.sarif 或 .json）。
         timeout_ms: 超时阈值（ms）。
         line_tolerance: 命中行号容差（int）。
+        check_trace: 是否计算路径证据链指标（--check-trace）。
 
     Returns:
         tuple: (report, aligned)
             - report: 含 name / metrics / timing / simplicity / completeness /
-              by_cwe / by_level 的 dict。
+              by_cwe / by_level 的 dict；若 check_trace 则 metrics 含
+              trace_recall / trace_precision，否则为 null。
             - aligned: align() 输出。
     """
     use_sarif = result_path.lower().endswith(".sarif")
@@ -561,6 +667,18 @@ def score_object(samples, result_path, timeout_ms, line_tolerance=0):
     aligned = align(samples, findings, use_sarif, line_tolerance=line_tolerance)
     metrics = compute_metrics(aligned)
     timing = timing_and_quality(aligned, timeout_ms)
+
+    if check_trace:
+        tm = compute_trace_metrics(aligned, line_tolerance=line_tolerance)
+        metrics["trace_recall"] = tm["trace_recall"]
+        metrics["trace_precision"] = tm["trace_precision"]
+        metrics["trace_support_count"] = tm["trace_support_count"]
+        metrics["trace_expected_nodes"] = tm["trace_expected_nodes"]
+        metrics["trace_reported_nodes"] = tm["trace_reported_nodes"]
+        metrics["trace_hit_nodes"] = tm["trace_hit_nodes"]
+    else:
+        metrics["trace_recall"] = None
+        metrics["trace_precision"] = None
 
     tp = metrics["TP"]
     fp = metrics["FP"]
@@ -591,7 +709,7 @@ def _find_result_file(obj_dir):
     return None
 
 
-def build_cross_matrix(samples, results_dir, timeout_ms, line_tolerance=0):
+def build_cross_matrix(samples, results_dir, timeout_ms, line_tolerance=0, check_trace=False):
     """遍历 results_dir 下每个 <object>/ 子目录，聚合为 cross_matrix 结构。
 
     Args:
@@ -616,7 +734,8 @@ def build_cross_matrix(samples, results_dir, timeout_ms, line_tolerance=0):
             continue
         try:
             report, _aligned = score_object(
-                samples, result_path, timeout_ms, line_tolerance=line_tolerance)
+                samples, result_path, timeout_ms,
+                line_tolerance=line_tolerance, check_trace=check_trace)
         except (ValueError, FileNotFoundError) as exc:
             print("[警告] 对象 %s 跳过: %s" % (name, exc), file=sys.stderr)
             continue
@@ -631,6 +750,9 @@ def build_cross_matrix(samples, results_dir, timeout_ms, line_tolerance=0):
                 "FP": m["FP"], "TN": m["TN"],
                 "exact_hit_rate": m["exact_hit_rate"],
                 "near_hit_rate": m["near_hit_rate"],
+                "trace_recall": m.get("trace_recall"),
+                "trace_precision": m.get("trace_precision"),
+                "trace_support_count": m.get("trace_support_count"),
                 "timing": t,
             },
             "by_cwe": report["by_cwe"],
@@ -668,6 +790,9 @@ def main(argv=None):
     parser.add_argument("--line-tolerance", type=int, default=0,
                         help="命中行号容差（int，默认 0）：|result_line-expected_line|<=容差视为容差内命中，"
                              "仅用于定位精度统计，不改 TP/FN 判定")
+    parser.add_argument("--check-trace", action="store_true",
+                        help="开启路径证据链评测：对支持 trace 的 expected 样本（CSV trace 列非空）"
+                             "与被测结果 trace 计算 trace_recall/trace_precision；否则为 null。向后兼容。")
     parser.add_argument("--out", default=None,
                         help="写出结构化 JSON 路径；多对象模式下若为目录则在其中写 cross_matrix.json")
     parser.add_argument("--verbose", action="store_true",
@@ -686,7 +811,7 @@ def main(argv=None):
         try:
             cross = build_cross_matrix(
                 samples, args.results_dir, args.timeout_ms,
-                line_tolerance=args.line_tolerance)
+                line_tolerance=args.line_tolerance, check_trace=args.check_trace)
         except FileNotFoundError as exc:
             print("[错误] %s" % exc, file=sys.stderr)
             return 2
@@ -708,7 +833,7 @@ def main(argv=None):
     try:
         report, aligned = score_object(
             samples, result_path, args.timeout_ms,
-            line_tolerance=args.line_tolerance)
+            line_tolerance=args.line_tolerance, check_trace=args.check_trace)
     except (FileNotFoundError, ValueError) as exc:
         print("[错误] %s" % exc, file=sys.stderr)
         return 2
@@ -722,6 +847,17 @@ def main(argv=None):
     # 4) 输出
     md = render_markdown(name, metrics, timing, simplicity, cov_total)
     print(md)
+
+    if args.check_trace:
+        tr = metrics.get("trace_recall")
+        tp_ = metrics.get("trace_precision")
+        print("\n[路径证据链 trace] 支持样本=%d，expected 节点=%d，被测节点=%d，命中=%d"
+              % (metrics.get("trace_support_count", 0),
+                 metrics.get("trace_expected_nodes", 0),
+                 metrics.get("trace_reported_nodes", 0),
+                 metrics.get("trace_hit_nodes", 0)))
+        print("  trace_recall=%.3f  trace_precision=%.3f" % (tr if tr is not None else 0.0,
+                                                              tp_ if tp_ is not None else 0.0))
 
     if args.verbose:
         by_cwe = report["by_cwe"]

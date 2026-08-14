@@ -39,6 +39,13 @@ import sys
 # 匹配 // [CHECKPOINT ... id=JSEF-XXX ...]
 CHECKPOINT_RE = re.compile(r"//\s*\[CHECKPOINT\b[^\]]*?\bid=([^\s,\]]+)")
 
+# 可选 trace 字段：trace=FileA.java:lineB,FileC.java:lineD
+# 非贪婪捕获到下一个空白或 ] 为止，逗号分隔的 file:line 节点列表。
+TRACE_RE = re.compile(r"trace=([^\]\s]+)")
+
+# 单个 trace 节点：相对仓库根路径:行号
+TRACE_NODE_RE = re.compile(r"^(?P<file>.+):(?P<line>\d+)$")
+
 
 def load_csv_ids(expected_path):
     """读取 CSV，返回 (id->line, id_list_in_order)。
@@ -105,7 +112,9 @@ def scan_source_ids(dirs):
                         for i, line in enumerate(fh, 1):
                             m = CHECKPOINT_RE.search(line)
                             if m:
-                                found[(fp, i)] = m.group(1).strip()
+                                trace_m = TRACE_RE.search(line)
+                                found[(fp, i)] = (m.group(1).strip(),
+                                                 trace_m.group(1) if trace_m else "")
             continue
         for line in proc.stdout.splitlines():
             # 形如 path:lineno:content
@@ -120,7 +129,9 @@ def scan_source_ids(dirs):
                 lineno = int(lineno_s)
             except ValueError:
                 lineno = -1
-            found[(path, lineno)] = m.group(1).strip()
+            trace_m = TRACE_RE.search(content)
+            found[(path, lineno)] = (m.group(1).strip(),
+                                      trace_m.group(1) if trace_m else "")
     return found
 
 
@@ -148,10 +159,13 @@ def main(argv=None):
 
     source_found = scan_source_ids([args.cases_dir, args.src_dir])
 
-    # 源码 id -> 位置列表
+    # 源码 id -> 位置列表（含 trace 字符串）
     src_id_locations = {}
-    for (path, lineno), sid in source_found.items():
+    src_id_trace = {}  # id -> trace 字符串（来自 CHECKPOINT 注解的 trace=）
+    for (path, lineno), (sid, trace_str) in source_found.items():
         src_id_locations.setdefault(sid, []).append((path, lineno))
+        if trace_str:
+            src_id_trace[sid] = trace_str
 
     csv_ids = set(csv_map)
     src_ids = set(src_id_locations)
@@ -224,6 +238,40 @@ def main(argv=None):
         rc = 1
         print("\n[CSV line 列无效]（共 %d）：%s" % (
             len(missing_line_ids), ", ".join(missing_line_ids)))
+
+    # 5) trace 节点有效性（仅告警，不阻断，不置 rc=1）
+    trace_ids = sorted(src_id_trace)
+    trace_invalid = 0
+    if trace_ids:
+        print("\n[trace 节点] 共 %d 个样本带 trace" % len(trace_ids))
+        for sid in trace_ids:
+            trace_str = src_id_trace[sid]
+            nodes = [n.strip() for n in trace_str.split(",") if n.strip()]
+            for node in nodes:
+                nm = TRACE_NODE_RE.match(node)
+                if not nm:
+                    trace_invalid += 1
+                    print("  - id=%s trace node %s 格式非法（应为 相对路径:行号）" % (sid, node))
+                    continue
+                nfile = nm.group("file")
+                nline = int(nm.group("line"))
+                # 相对于仓库根解析（grep 给出的 path 已经是相对路径）
+                if not os.path.isfile(nfile):
+                    trace_invalid += 1
+                    print("  - id=%s trace node %s NOT FOUND" % (sid, node))
+                    continue
+                try:
+                    with open(nfile, encoding="utf-8", errors="ignore") as fh:
+                        total_lines = sum(1 for _ in fh)
+                except OSError:
+                    total_lines = 0
+                if nline < 1 or nline > total_lines:
+                    trace_invalid += 1
+                    print("  - id=%s trace node %s 行号越界（文件共 %d 行）"
+                          % (sid, node, total_lines))
+        print("[trace 节点] %d 个无效" % trace_invalid)
+    else:
+        print("\n[trace 节点] 共 0 个样本带 trace")
 
     print("\n" + "=" * 64)
     if rc == 0:
