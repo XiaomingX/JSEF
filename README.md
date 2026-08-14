@@ -93,7 +93,7 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 ### 样本与区分度分级
 
-样本按 **L0-L5** 分级，逐级加大推理距离与语义依赖，以拉开不同工具/模型的能力档次：
+样本按 **L1-L5** 分级（逐级加大推理距离与语义依赖，以拉开不同工具/模型的能力档次；L0 仅作能力基准参考，见 `MY_PLAN.md` A3，当前无样本标记为 L0）：
 
 | 级别 | 含义 | 示例 |
 |------|------|------|
@@ -105,12 +105,12 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 ### 当前样本规模
 
-> 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致）
+> 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致，共 133 条）
 
-- **52 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本）
-- **33 个 VULN**（应报）+ **19 个 SAFE**（不应报，用于算 TN/FP）
-- 难度分布：L1 x 29、L2 x 8、L3 x 6、L4 x 6、L5 x 3
-- CWE 覆盖：命令注入(78) x 17、SpEL/表达式注入(917) x 9、反序列化(502) x 9、SQLi(89) x 7、LDAP(90) x 2、XPath(643) x 2、XSS(79) x 2、路径穿越(22) x 2、弱随机(330) x 2
+- **133 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本）
+- **93 个 VULN**（应报）+ **40 个 SAFE**（不应报，用于算 TN/FP）
+- 难度分布：L1 x 89、L2 x 17、L3 x 16、L4 x 8、L5 x 3
+- CWE 覆盖（共 34 类，仅计 VULN）：表达式注入(917) x 18、反序列化(502) x 12、命令注入(78) x 9、硬编码凭证/密钥(798) x 5、SQLi(89) x 4、业务逻辑(840) x 4、模板注入(1336) x 3、点击劫持/缺安全头(1021) x 3、XPath(643) x 2、LDAP(90) x 2、SSRF(918) x 2、XXE(611) x 2、IDOR(639) x 2、弱哈希(327) x 2、认证失效(287) x 2、授权失效(285) x 2、开放重定向(601) x 2，以及路径穿越(22)/弱随机(330)/XSS(79)/NoSQL(943)/JWT(345)/CORS(942)/弱口令(521)/敏感信息泄露(532)/批量赋值(915)/竞态(362)/数值输入(20)/限流缺失(307)/ReDoS(1333)/哈希碰撞(694)/JSONP(352)/头注入(113)/危险操作(111) 各 x 1
 
 样本组织：
 - `benchmark/cases/vuln/` 与 `benchmark/cases/sec/`：有区分度的梯度样本（含安全对照）
@@ -132,7 +132,6 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 ## 官方文档
 - [部署指南](docs/deployment.md)：本地/Mac/Linux/Windows/Docker部署全方案
-- [ 部署指南](docs/deployment.md)：本地/Mac/Linux/Windows/Docker部署全方案
 - [ 漏洞复现手册](docs/vulnerability-guide.md)：每个漏洞的详细复现步骤（含Payload示例）
 - [ API文档](docs/api-reference.md)：所有接口的请求参数、响应格式说明（支持Swagger在线调试）
 - [ 安全编码规范](docs/secure-coding-guide.md)：基于Spring Boot的安全编码最佳实践
