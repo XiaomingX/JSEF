@@ -1,0 +1,39 @@
+﻿id,cwe,level,type,file,line,source,sink,category
+JSEF-SQLI-001,89,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java,59,@RequestParam username,jdbcTemplate.queryForList,sql-injection
+JSEF-SQLI-002,89,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java,94,@RequestParam username email role,jdbcTemplate.queryForList,sql-injection
+JSEF-SQLI-001S,89,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/sec/SqlInjectionSafeController.java,78,@RequestParam username,jdbcTemplate.query,sql-injection
+JSEF-CMDi-001,78,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java,32,@RequestParam command,Runtime.getRuntime().exec,command-injection
+JSEF-CMDi-002,78,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java,109,@RequestParam command,ProcessBuilder.start,command-injection
+JSEF-CMDi-001S,78,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/sec/CommandInjectionSafeController.java,46,@RequestParam fileName,Runtime.getRuntime().exec,command-injection
+JSEF-SPEL-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java,41,@RequestParam userControlledInput,spelParser.parseExpression,spel-injection
+JSEF-SPEL-002,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java,57,@RequestParam userControlledInput,spelParser.parseRaw,spel-injection
+JSEF-SPEL-003,917,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java,194,@RequestParam userControlledInput,spelParser.parseExpression,spel-injection
+JSEF-FASTJSON-001,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java,27,@RequestBody untrustedJsonStr,JSON.parseObject,fastjson-deserialization
+JSEF-FASTJSON-002,502,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java,39,@RequestBody untrustedJsonStr,JSON.parseObject(AutoType),fastjson-deserialization
+JSEF-FASTJSON-003,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java,53,@RequestBody untrustedJsonStr,JSON.parse,fastjson-deserialization
+JSEF-FASTJSON-001S,502,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/sec/FastjsonDeserializationSafeController.java,29,@RequestBody untrustedJsonStr,JSON.parseObject,fastjson-deserialization
+JSEF-DESER-001,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java,29,HTTP param serializedData,ObjectInputStream.readObject,unsafe-deserialization
+JSEF-DESER-003,502,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java,52,@RequestBody jsonData,ObjectMapper.readValue(enableDefaultTyping),unsafe-deserialization
+JSEF-DESER-004,502,L5,vuln,src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java,81,gadget-chain(InvokerTransformer),TransformedMap.decorate,unsafe-deserialization
+JSEF-XPATH-001,643,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java,58,@RequestParam expression,XPath.compile,xpath-injection
+JSEF-XPATH-002,643,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java,90,@RequestParam expression,DOMXPath.selectNodes,xpath-injection
+JSEF-LDAP-001,90,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java,54,@RequestParam userInput,InitialDirContext.search,ldap-injection
+JSEF-LDAP-002,90,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java,97,@RequestParam dept title,InitialDirContext.search,ldap-injection
+JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-TP-001S,78,L1,safe,benchmark/cases/sec/TaintSingleHopSafe.java,30,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-TP-002,78,L2,vuln,benchmark/cases/vuln/TaintMultiHop.java,24,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-TP-002S,78,L2,safe,benchmark/cases/sec/TaintMultiHopSafe.java,29,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-TP-003,78,L3,vuln,benchmark/cases/vuln/TaintIndirectMap.java,30,Map.get(cmd),Runtime.getRuntime().exec,command-injection
+JSEF-TP-003S,78,L3,safe,benchmark/cases/sec/TaintIndirectMapSafe.java,32,Map.get(cmd),Runtime.getRuntime().exec,command-injection
+JSEF-TP-004,78,L3,vuln,benchmark/cases/vuln/TaintCrossMethod.java,27,methodA(input),Runtime.getRuntime().exec,command-injection
+JSEF-TP-004S,78,L3,safe,benchmark/cases/sec/TaintCrossMethodSafe.java,28,methodA(input),Runtime.getRuntime().exec,command-injection
+JSEF-TP-005,917,L4,vuln,benchmark/cases/vuln/SpelFrameworkSemantics.java,44,@RequestParam(class.module.classLoader),SpelEvaluationContext/parseExpression,spel-injection
+JSEF-TP-005S,917,L4,safe,benchmark/cases/sec/SpelFrameworkSemanticsSafe.java,38,@RequestParam(class.module.classLoader),SimpleEvaluationContext,spel-injection
+JSEF-LOG4J-001,917,L3,vuln,benchmark/cases/vuln/Log4jJndiInjection.java,39,untrusted log input,JndiLookup.lookup,log4j-jndi
+JSEF-LOG4J-001S,917,L3,safe,benchmark/cases/sec/Log4jJndiInjectionSafe.java,38,untrusted log input,JndiLookup.lookup,log4j-jndi
+JSEF-CONF-SQL-001,89,L1,vuln,benchmark/cases/vuln/ConfusionSqlWhitelist.java,18,user input,jdbcTemplate.queryForList,sql-injection
+JSEF-CONF-SQL-001S,89,L1,safe,benchmark/cases/sec/ConfusionSqlWhitelistSafe.java,19,user input,jdbcTemplate.queryForList,sql-injection
+JSEF-CONF-SPEL-001,917,L1,vuln,benchmark/cases/vuln/ConfusionSpelConstantSink.java,18,user input,spelParser.parseExpression,spel-injection
+JSEF-CONF-SPEL-001S,917,L1,safe,benchmark/cases/sec/ConfusionSpelConstantSafe.java,17,user input,spelParser.parseExpression,spel-injection
+JSEF-CONF-CMD-001,78,L1,vuln,benchmark/cases/vuln/ConfusionCmdSanitized.java,17,user input,Runtime.getRuntime().exec,command-injection
+JSEF-CONF-CMD-001S,78,L1,safe,benchmark/cases/sec/ConfusionCmdSanitizedSafe.java,17,user input,Runtime.getRuntime().exec,command-injection

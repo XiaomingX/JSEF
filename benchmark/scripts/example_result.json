@@ -1,0 +1,90 @@
+[
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 59,
+    "cwe": "CWE-89",
+    "message": "用户输入直接拼接进 SQL，存在 SQL 注入；建议使用 PreparedStatement 参数化。"
+  },
+  {
+    "id": "JSEF-SQLI-002",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 94,
+    "cwe": "CWE-89",
+    "message": "多跳污点未追踪到（漏报，模拟弱 SAST）。"
+  },
+  {
+    "id": "JSEF-CMDi-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 32,
+    "cwe": "CWE-78",
+    "message": "用户输入直接传入 Runtime.exec，命令注入；建议白名单校验 + 固定参数列表。"
+  },
+  {
+    "id": "JSEF-SPEL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java",
+    "line": 41,
+    "cwe": "CWE-917",
+    "message": "用户输入直达 SpEL parseExpression，SpEL 注入；建议改用 SimpleEvaluationContext。"
+  },
+  {
+    "id": "JSEF-SPEL-002",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java",
+    "line": 57,
+    "cwe": "CWE-917",
+    "message": "漏报（模拟）。"
+  },
+  {
+    "id": "JSEF-FASTJSON-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java",
+    "line": 27,
+    "cwe": "CWE-502",
+    "message": "不可信 JSON 反序列化，fastjson 反序列化风险；建议使用允许列表。"
+  },
+  {
+    "id": "JSEF-DESER-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 29,
+    "cwe": "CWE-502",
+    "message": "ObjectInputStream.readObject 处理不可信流，反序列化漏洞。"
+  },
+  {
+    "id": "JSEF-XPATH-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java",
+    "line": 58,
+    "cwe": "CWE-643",
+    "message": "用户输入拼接进 XPath 表达式，XPath 注入。"
+  },
+  {
+    "id": "JSEF-LDAP-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 54,
+    "cwe": "CWE-90",
+    "message": "用户输入拼接进 LDAP 查询，LDAP 注入。"
+  },
+  {
+    "id": "JSEF-SQLI-001S",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/sec/SqlInjectionSafeController.java",
+    "line": 78,
+    "cwe": "CWE-89",
+    "message": "误报（模拟 FP）：安全对照样本被错误标记。"
+  },
+  {
+    "id": "JSEF-CMDi-001S",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/sec/CommandInjectionSafeController.java",
+    "line": 46,
+    "cwe": "CWE-78",
+    "message": "误报（模拟 FP）：白名单已拦截仍被标记。"
+  }
+]
