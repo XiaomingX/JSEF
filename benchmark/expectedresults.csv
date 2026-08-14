@@ -132,3 +132,37 @@ JSEF-HASHCOLL-001S,694,L1,safe,src/main/java/com/freedom/securitysamples/vulnera
 JSEF-JSONP-001,352,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/jsonpCallback/JsonpCallbackInjectionController.java,41,callback,response body (script callback concat),jsonp-callback-injection
 JSEF-HEADERINJ-001,113,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/headerInjection/HeaderInjectionVulnerabilityController.java,41,@RequestParam untrustedHeaderValue,HttpHeaders.add (header injection),header-injection
 JSEF-RISKY-001,111,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/RiskyOperations/UnsafeOperationsVulnerabilityController.java,50,@RequestParam memoryAddressInput,Unsafe.getInt (arbitrary memory read),risky-operations
+JSEF-L0-SQL-001,89,L0,vuln,benchmark/cases/vuln/level0/L0SqlDirect.java,25,userInput,Statement.executeQuery,sql-injection
+JSEF-L0-SQL-001S,89,L0,safe,benchmark/cases/sec/level0/L0SqlDirectSafe.java,25,userInput,Statement.executeQuery,sql-injection
+JSEF-L0-CMD-001,78,L0,vuln,benchmark/cases/vuln/level0/L0CmdDirect.java,22,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-L0-CMD-001S,78,L0,safe,benchmark/cases/sec/level0/L0CmdDirectSafe.java,29,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-L0-XSS-001,79,L0,vuln,benchmark/cases/vuln/level0/L0XssDirect.java,22,userInput,response.getWriter().print,xss-reflected
+JSEF-L0-XSS-001S,79,L0,safe,benchmark/cases/sec/level0/L0XssDirectSafe.java,22,userInput,response.getWriter().print,xss-reflected
+JSEF-L0-PT-001,22,L0,vuln,benchmark/cases/vuln/level0/L0PathDirect.java,23,userInput,new FileInputStream,path-traversal
+JSEF-L0-PT-001S,22,L0,safe,benchmark/cases/sec/level0/L0PathDirectSafe.java,29,userInput,new FileInputStream,path-traversal
+JSEF-L0-XXE-001,611,L0,vuln,benchmark/cases/vuln/level0/L0XxeDirect.java,25,untrusted xml,DocumentBuilder.parse,xxe
+JSEF-L0-XXE-001S,611,L0,safe,benchmark/cases/sec/level0/L0XxeDirectSafe.java,28,untrusted xml,DocumentBuilder.parse,xxe
+JSEF-L0-SSRF-001,918,L0,vuln,benchmark/cases/vuln/level0/L0SsrfDirect.java,22,userInput,URL.openConnection,ssrf
+JSEF-L0-SSRF-001S,918,L0,safe,benchmark/cases/sec/level0/L0SsrfDirectSafe.java,29,userInput,URL.openConnection,ssrf
+JSEF-L0-SPEL-001,917,L0,vuln,benchmark/cases/vuln/level0/L0SpelDirect.java,21,userInput,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L0-SPEL-001S,917,L0,safe,benchmark/cases/sec/level0/L0SpelDirectSafe.java,20,userInput,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L0-DESER-001,502,L0,vuln,benchmark/cases/vuln/level0/L0DeserDirect.java,26,untrusted bytes,ObjectInputStream.readObject,unsafe-deserialization
+JSEF-L0-DESER-001S,502,L0,safe,benchmark/cases/sec/level0/L0DeserDirectSafe.java,24,untrusted bytes,ObjectInputStream.readObject,unsafe-deserialization
+JSEF-L0-LDAP-001,90,L0,vuln,benchmark/cases/vuln/level0/L0LdapDirect.java,25,userInput,InitialDirContext.search,ldap-injection
+JSEF-L0-LDAP-001S,90,L0,safe,benchmark/cases/sec/level0/L0LdapDirectSafe.java,25,userInput,InitialDirContext.search,ldap-injection
+JSEF-L4-SQL-001,89,L4,vuln,benchmark/cases/vuln/level4/ChainSqlController.java,34,@RequestParam input,Statement.executeQuery,sql-injection
+JSEF-L4-SQL-001S,89,L4,safe,benchmark/cases/sec/level4/ChainSqlControllerSafe.java,26,@RequestParam input,Statement.executeQuery,sql-injection
+JSEF-L4-SQL-002,89,L4,vuln,benchmark/cases/vuln/level4/ChainSqlMapper.java,29,mapper sql,Statement.executeQuery,sql-injection
+JSEF-L4-SQL-002S,89,L4,safe,benchmark/cases/sec/level4/ChainSqlServiceSafe.java,38,mapper param,PreparedStatement.executeQuery,sql-injection
+JSEF-L4-BIND-001,915,L4,vuln,benchmark/cases/vuln/level4/SpringBindingTaint.java,43,@ModelAttribute(form.role),authorization check on role,mass-assignment
+JSEF-L4-BIND-001S,915,L4,safe,benchmark/cases/sec/level4/SpringBindingTaintSafe.java,24,@ModelAttribute(form),authorization check on role,mass-assignment
+JSEF-L4-CFG-001,489,L4,vuln,benchmark/cases/vuln/level4/ConfigFlagGatedSink.java,37,expr,ClassLoader.loadClass/reflection,config-gated-sink
+JSEF-L4-CFG-001S,489,L4,safe,benchmark/cases/sec/level4/ConfigFlagGatedSinkSafe.java,20,expr,ClassLoader.loadClass/reflection,config-gated-sink
+JSEF-L4-INT-001,917,L4,vuln,benchmark/cases/vuln/level4/InterceptTaint.java,42,interceptor-injected request attribute,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L4-INT-001S,917,L4,safe,benchmark/cases/sec/level4/InterceptTaintSafe.java,19,interceptor-injected request attribute,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L5-JDBC-001,89,L5,vuln,benchmark/cases/vuln/level5/GadgetChainJdbc.java,42,chained url fragment,DriverManager.getConnection,sql-injection
+JSEF-L5-JDBC-001S,89,L5,safe,benchmark/cases/sec/level5/GadgetChainJdbcSafe.java,35,chained url fragment,DriverManager.getConnection,sql-injection
+JSEF-L5-S4S-001,917,L5,vuln,benchmark/cases/vuln/level5/Spring4ShellChain.java,44,class.module.classLoader path,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L5-S4S-001S,917,L5,safe,benchmark/cases/sec/level5/Spring4ShellChainSafe.java,23,class.module.classLoader path,SpelExpressionParser.parseExpression,spel-injection
+JSEF-L5-LOG4J-001,917,L5,vuln,benchmark/cases/vuln/level5/Log4jToJndiChain.java,57,multi-hop concatenated jndi key,JndiLookup.lookup,log4j-jndi
+JSEF-L5-LOG4J-001S,917,L5,safe,benchmark/cases/sec/level5/Log4jToJndiChainSafe.java,30,multi-hop concatenated jndi key,JndiLookup.lookup,log4j-jndi
