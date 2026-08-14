@@ -37,7 +37,7 @@ benchmark/
     └── claude-<model>/
 ```
 
-> 注：`expectedresults.csv` 已落地并持续维护，**当前共 259 个 checkpoint（含表头 260 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
+> 注：`expectedresults.csv` 已落地并持续维护，**当前共 299 个 checkpoint（含表头 300 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
 
 ---
 
@@ -55,6 +55,19 @@ benchmark/
 > 历史说明：早期 `MY_PLAN.md` A3 与本文档旧版曾标注"当前 `expectedresults.csv` 中无样本标记为 L0"，该表述已于 Phase 1（L0 基线补全）落地后**更正**——详见 `MY_PLAN.md` Phase G 与 `plans/00-benchmark-gap-completion.md`。
 
 每条样本在源码精确行标注 `// [CHECKPOINT id=... cwe=... level=... expect=VULN|SAFE]`，元数据同步写入 `expectedresults.csv`。
+
+#### 可选 `trace=` 字段（路径证据链）
+
+借鉴 VulnGym 的 `entry_point → critical_operation → trace` 多节点理念，checkpoint 注解支持可选 `trace=` 字段，记录从入口（entry_point）到危险操作（critical_operation）之间的**中间推理节点**：
+
+```
+// [CHECKPOINT id=JSEF-XXX cwe=NNN level=L4 source=... sink=... expect=VULN trace=FileA.java:lineB,FileC.java:lineD]
+```
+
+- **格式**：逗号分隔的 `file:line` 节点列表，如 `trace=OrderController.java:42,TenantService.java:18`。节点为相对仓库根的路径。
+- **作用**：支持"路径正确性"评测——被测结果（SARIF 多 location 或结果 JSON 携带 `trace` 列表）声明的路径节点可与期望节点比对，产出 `trace_recall`（命中期望节点比例）与 `trace_precision`（命中节点中有效比例）。详见 §5 `--check-trace` 与 `benchmark/scripts/scorecard.py` 的 `compute_trace_metrics`。
+- **适用场景**：**仅 L3+ 且涉及跨节点（跨方法/跨文件/业务链）的样本**使用；单点直连样本（L0–L2 单跳）不加 `trace=`，保持单点命中评测语义。
+- `trace=` 与 CSV 第 10 列 `trace` 对应：`expectedresults.csv` 表头已含 `trace` 列，节点用逗号分隔写入。
 
 ---
 
@@ -109,6 +122,7 @@ benchmark/
 | `--timeout-ms <ms>` | 单次样本超时阈值，用于超时统计（默认 120000）。 |
 | `--name <object>` | 被测对象名（单对象模式写 `scorecard.json` 时用）。 |
 | `--out <path>` | 输出 JSON 路径。 |
+| `--check-trace` | 可选。开启路径证据链评测：对 CSV 中带 `trace` 列的样本（即支持 trace 的 expected 样本），将 expected 节点与本对象结果声明的 `trace` 节点比对，额外产出 `trace_recall` / `trace_precision` / `trace_expected_nodes` / `trace_reported_nodes` / `trace_support_count`。仅对支持 trace 的样本统计，不影响主 Recall/Precision/F1/MCC。 |
 
 > scorecard 已升级为行业标准口径（时延/定位/F1/MCC/交叉矩阵），对应 `MY_PLAN.md` Phase G（G1）与 `plans/00-benchmark-gap-completion.md` Phase 6。
 
@@ -136,6 +150,8 @@ python3 benchmark/scripts/validate_checkpoints.py \
 - **退出码 0 = 通过**（无孤儿/重复/漂移）；**退出码 1 = 存在问题**；找不到 CSV 或表头缺列返回 2。
 - 该脚本为纯标准库实现（无第三方依赖），不依赖项目 Maven 构建。
 - 此校验是 AGENTS.md / CLAUDE.md 门禁的硬性自测项，未通过则样本任务视为未完成。
+
+**trace 节点有效性告警（仅告警，不阻断）**：脚本会解析 `// [CHECKPOINT]` 注解中的 `trace=` 字段（及 CSV `trace` 列），对每个 `file:line` 节点做三项检查——格式合法性（应为 `相对路径:行号`）、文件存在性、行号越界。命中问题时打印告警（如 `id=JSEF-XXX trace node Foo.java:99 NOT FOUND`），计入无效计数并展示，但**不置退出码为 1**，不影响门禁通过。即：trace 节点有问题只提示、不阻断，与孤儿/重复/漂移等硬门禁项区分。
 
 > 详见脚本头部 docstring：`benchmark/scripts/validate_checkpoints.py`。
 
@@ -230,3 +246,41 @@ python3 benchmark/scripts/validate_checkpoints.py \
 5. **提交**：遵循仓库 `CLAUDE.md` / `AGENTS.md` 的 checkpoint 门禁要求。
 
 > id 全局唯一：`benchmark/cases` 与 `src/main` 下的同类样本可用不同序号（如 cases 用 `001`、src 用 `002`），但每个 `id` 必须在 CSV 与源码中同时存在且一一对应。
+
+---
+
+## 10. JSEF ↔ VulnGym 分类映射
+
+> 背景：腾讯 **VulnGym**（v0.1.4）采用自订两级 taxonomy（`vuln_category_l1` / `vuln_category_l2`），**不用 CWE 编号**；JSEF 采用 CWE 编号 + `category` slug。为横向对标，下表将 VulnGym 的 `vuln_category_l2`（业务逻辑 12+1 子类 + 传统类）映射到 JSEF 实际 `category`（经 `awk/Python` 实查 `expectedresults.csv` 第 9 列，均为真实存在 slug，未编造）。映射覆盖 V1–V4 补齐的全部业务语义子类与沙箱逃逸维度（详见 `plans/01-vulngym-gap-completion.md`）。
+
+| VulnGym `vuln_category_l2` | JSEF `category` slug | CWE | 状态 |
+|----------------------------|----------------------|-----|------|
+| BL-AGENT-CAPABILITY（AI/Agent 能力边界绕过） | `agent-capability-bypass` | 285 / 862 | 本项目已补齐（V1/G1） |
+| BL-ORIGIN-INTEGRITY（来源/签名/完整性校验缺失） | `origin-integrity` | 345 / 347 | 本项目已补齐（V1/G2） |
+| BL-MULTI-TENANT（多租户隔离失效） | `multi-tenant` | 639 / 285 | 本项目已补齐（V1/G3） |
+| BL-TRUST-BOUNDARY（隐式信任内部输入） | `trust-boundary` | 502 / 94 | 本项目已补齐（V1/G4） |
+| BL-INSECURE-DEFAULT（不安全默认配置） | `insecure-default` | 1188 / 16 | 已有覆盖（含 `config-gated-sink` 等） |
+| BL-PRIV-ESC（权限提升） | `priv-esc` | 269 / 285 | 本项目已补齐（V1/G7，垂直越权精分） |
+| BL-AUTHZ-MISSING（授权缺失/新端点漏鉴权） | `missing-authorization` | 862 | 本项目已补齐（V1/G8） |
+| BL-AUTHZ-BROKEN（授权逻辑错误） | `authorization-bypass` / `broken-access-control` | 285 / 639 | 已有覆盖 |
+| BL-AUTH-BYPASS（认证绕过） | `auth-bypass` / `jwt-auth-bypass` | 287 / 345 | 已有覆盖 |
+| BL-WORKFLOW-VIOLATION（状态机违规） | `business-logic` / `race-condition` | 840 / 362 | 已有覆盖 |
+| BL-MASS-ASSIGNMENT（参数污染） | `mass-assignment` | 915 | 已有覆盖 |
+| BL-RACE-LOGIC（业务竞态） | `race-condition` | 362 | 已有覆盖 |
+| Sandbox Escape（沙箱逃逸） | `sandbox-escape` | 265 / 284 | 本项目已补齐（V2/G5） |
+| 代码注入（传统） | `spel-injection` / `ognl-injection` / `groovy-injection` / `mvel-injection` / `beanshell-injection` / `script-engine-injection` / `template-injection` | 917 / 94 / 1336 | 已有覆盖 |
+| 路径穿越（传统） | `path-traversal` | 22 | 已有覆盖 |
+| 命令注入（传统） | `command-injection` | 78 | 已有覆盖 |
+| XSS（传统） | `xss-reflected` | 79 | 已有覆盖 |
+| SSRF（传统） | `ssrf` | 918 | 已有覆盖 |
+| 反序列化（传统） | `fastjson-deserialization` / `jackson-poly-deserialization` / `yaml-deserialization` / `unsafe-deserialization` | 502 | 已有覆盖 |
+| 模板注入（传统） | `template-injection` | 1336 | 已有覆盖 |
+| 供应链（传统） | `vulnerable-components` | 1104 | 已有覆盖 |
+| 其余注入族（SQL/LDAP/NoSQL/XPath/XXE 等） | `sql-injection*` / `ldap-injection` / `nosql-injection` / `xpath-injection` / `xxe` / `header-injection` / `log-injection` / `jsonp-callback-injection` | 89 / 90 / 943 / 643 / 611 / 93 | 已有覆盖 |
+
+**映射结论**：
+- JSEF 在 VulnGym 全部 21 个 `vuln_category_l2` 维度上均有对应 `category`：业务逻辑 12+1 子类中，8 个由 V1/V2 补齐（标"本项目已补齐"），其余由既有样本覆盖；传统类全部已有覆盖。
+- VulnGym 独有且 JSEF 原缺失、现经补齐已对齐的子类：`agent-capability-bypass` / `origin-integrity` / `multi-tenant` / `trust-boundary` / `insecure-default` / `priv-esc` / `missing-authorization` / `sandbox-escape`（共 8 类，对应 G1–G8 / G5）。
+- 路径评测维度：JSEF 通过可选 `trace=` 字段（§3）与 scorecard `--check-trace`（§5.1）对标 VulnGym 的 `entry_point → critical_operation → trace` 多节点理念，同时保留 JSEF 在 precision/F1/MCC 上的相对优势。
+
+> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 299 checkpoint，含表头 300 行）。

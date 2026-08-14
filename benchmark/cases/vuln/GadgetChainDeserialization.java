@@ -96,7 +96,7 @@ public class GadgetChainDeserialization {
         Transformer chain = chained(t1, t2, t3, t4);
 
         // 不可信输入触发链：组合后形成 Runtime.exec 可达性
-        // [CHECKPOINT id=JSEF-GADGET-001 cwe=502 level=L5 source=untrusted bytes sink=Method.invoke(exec) expect=VULN]
+        // [CHECKPOINT id=JSEF-GADGET-001 cwe=502 level=L5 source=untrusted bytes sink=Method.invoke(exec) expect=VULN trace=benchmark/cases/vuln/GadgetChainDeserialization.java:96,benchmark/cases/vuln/GadgetChainDeserialization.java:100]
         return chain.apply(untrusted);
     }
 

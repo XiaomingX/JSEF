@@ -31,7 +31,7 @@ public class ChainController {
 
     @GetMapping("/benchmark/chain/unsafe")
     public String handle(@RequestParam String input) {
-        // [CHECKPOINT id=JSEF-CHAIN-001 cwe=78 level=L4 source=@RequestParam input sink=Runtime.exec expect=VULN]
+        // [CHECKPOINT id=JSEF-CHAIN-001 cwe=78 level=L4 source=@RequestParam input sink=Runtime.exec expect=VULN trace=benchmark/cases/vuln/ChainServiceA.java:23,benchmark/cases/vuln/ChainServiceB.java:20]
         return serviceA.process(input); // 污点 input 跨编译单元流向 ChainServiceA -> ChainServiceB(Runtime.exec)
     }
 }

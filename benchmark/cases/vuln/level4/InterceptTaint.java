@@ -39,7 +39,7 @@ public class InterceptTaint implements HandlerInterceptor {
      */
     public void handle(Object request) {
         String expr = (String) getAttribute(request, "expr"); // 污点来自拦截器层
-        // [CHECKPOINT id=JSEF-L4-INT-001 cwe=917 level=L4 source=interceptor-injected request attribute sink=SpelExpressionParser.parseExpression expect=VULN]
+        // [CHECKPOINT id=JSEF-L4-INT-001 cwe=917 level=L4 source=interceptor-injected request attribute sink=SpelExpressionParser.parseExpression expect=VULN trace=benchmark/cases/vuln/level4/InterceptTaint.java:32,benchmark/cases/vuln/level4/InterceptTaint.java:41]
         parseExpression(expr);
     }
 

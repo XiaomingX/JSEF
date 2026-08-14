@@ -41,7 +41,7 @@ public class Spring4ShellChain {
         target.module.classLoader = propPath; // 框架语义：属性路径写入对象图
 
         // 组合可达性：属性路径链 -> SpEL 求值（sink）
-        // [CHECKPOINT id=JSEF-L5-S4S-001 cwe=917 level=L5 source=class.module.classLoader path sink=SpelExpressionParser.parseExpression expect=VULN]
+        // [CHECKPOINT id=JSEF-L5-S4S-001 cwe=917 level=L5 source=class.module.classLoader path sink=SpelExpressionParser.parseExpression expect=VULN trace=benchmark/cases/vuln/level5/Spring4ShellChain.java:41,benchmark/cases/vuln/level5/Spring4ShellChain.java:45]
         parseExpression(String.valueOf(target.module.classLoader));
     }
 

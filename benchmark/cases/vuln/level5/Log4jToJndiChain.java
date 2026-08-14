@@ -54,7 +54,7 @@ public class Log4jToJndiChain {
         int start = key.indexOf("${jndi:");
         int end = key.indexOf('}', start);
         String lookupKey = key.substring(start + 2, end);
-        // [CHECKPOINT id=JSEF-L5-LOG4J-001 cwe=917 level=L5 source=multi-hop concatenated jndi key sink=JndiLookup.lookup expect=VULN]
+        // [CHECKPOINT id=JSEF-L5-LOG4J-001 cwe=917 level=L5 source=multi-hop concatenated jndi key sink=JndiLookup.lookup expect=VULN trace=benchmark/cases/vuln/level5/Log4jToJndiChain.java:46,benchmark/cases/vuln/level5/Log4jToJndiChain.java:47,benchmark/cases/vuln/level5/Log4jToJndiChain.java:48]
         return jndiLookup(lookupKey);
     }
 

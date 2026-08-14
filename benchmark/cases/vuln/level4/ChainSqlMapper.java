@@ -26,7 +26,7 @@ public class ChainSqlMapper {
     public String query(String sql) throws Exception {
         // 污点经 ChainSqlController -> ChainSqlService -> ChainSqlMapper 到达此处 executeQuery
         Statement stmt = conn.createStatement();
-        // [CHECKPOINT id=JSEF-L4-SQL-002 cwe=89 level=L4 source=mapper sql sink=Statement.executeQuery expect=VULN]
+        // [CHECKPOINT id=JSEF-L4-SQL-002 cwe=89 level=L4 source=mapper sql sink=Statement.executeQuery expect=VULN trace=benchmark/cases/vuln/level4/ChainSqlController.java:34,benchmark/cases/vuln/level4/ChainSqlService.java:23]
         ResultSet rs = stmt.executeQuery(sql);
         return String.valueOf(rs.next());
     }

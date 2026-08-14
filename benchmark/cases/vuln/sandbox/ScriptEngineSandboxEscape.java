@@ -33,7 +33,7 @@ public class ScriptEngineSandboxEscape {
 
         // 沙箱"看似受限"：仅暴露有限绑定对象，未禁止反射
         // 危险 sink：脚本内部可通过反射拿到 Runtime，逃逸沙箱约束
-        // [CHECKPOINT id=JSEF-V2-001 cwe=284 level=L4 source=untrustedScript sink=Runtime.getRuntime().exec(exec via reflection) expect=VULN]
+        // [CHECKPOINT id=JSEF-V2-001 cwe=284 level=L4 source=untrustedScript sink=Runtime.getRuntime().exec(exec via reflection) expect=VULN trace=benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java:46,benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java:56]
         return engine.eval(untrustedScript);
     }
 
@@ -52,7 +52,7 @@ public class ScriptEngineSandboxEscape {
             Object runtime = getRuntime.invoke(null);
 
             // 危险 sink：反射驱动 Runtime.exec —— 沙箱限制被突破
-            // [CHECKPOINT id=JSEF-V2-001B cwe=284 level=L4 source=sandboxBoundValue(reflection pivot) sink=Runtime.getRuntime().exec expect=VULN]
+            // [CHECKPOINT id=JSEF-V2-001B cwe=284 level=L4 source=sandboxBoundValue(reflection pivot) sink=Runtime.getRuntime().exec expect=VULN trace=benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java:49,benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java:50,benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java:51]
             Method exec = runtimeClass.getMethod("exec", String.class);
             return exec.invoke(runtime, command);
         } catch (Exception e) {

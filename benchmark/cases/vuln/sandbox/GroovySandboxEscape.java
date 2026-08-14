@@ -68,7 +68,7 @@ public class GroovySandboxEscape {
         scope.set("pivot", "localhost-demo");
 
         // 危险 sink：运行时经元编程/反射逃逸 AST 限制，调用 Runtime.exec
-        // [CHECKPOINT id=JSEF-V2-002 cwe=265 level=L5 source=untrustedScript sink=Runtime.getRuntime().exec(meta-programming) expect=VULN]
+        // [CHECKPOINT id=JSEF-V2-002 cwe=265 level=L5 source=untrustedScript sink=Runtime.getRuntime().exec(meta-programming) expect=VULN trace=benchmark/cases/vuln/sandbox/GroovySandboxEscape.java:63,benchmark/cases/vuln/sandbox/GroovySandboxEscape.java:68,benchmark/cases/vuln/sandbox/GroovySandboxEscape.java:82]
         return escapeThroughMeta(scope, "echo localhost-demo");
     }
 

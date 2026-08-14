@@ -39,7 +39,7 @@ public class GadgetChainJdbc {
     /** 危险转换器：把输入作为 JDBC URL 连接（仅 localhost 演示语义）。 */
     static Converter jdbcUrl() {
         return url -> {
-            // [CHECKPOINT id=JSEF-L5-JDBC-001 cwe=89 level=L5 source=chained url fragment sink=DriverManager.getConnection expect=VULN]
+            // [CHECKPOINT id=JSEF-L5-JDBC-001 cwe=89 level=L5 source=chained url fragment sink=DriverManager.getConnection expect=VULN trace=benchmark/cases/vuln/level5/GadgetChainJdbc.java:58,benchmark/cases/vuln/level5/GadgetChainJdbc.java:59,benchmark/cases/vuln/level5/GadgetChainJdbc.java:60]
             return connect(url); // 不可信片段拼出的 URL 触发连接
         };
     }
