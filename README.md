@@ -121,10 +121,9 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 1. 启动 JSEF：`mvn clean package -DskipTests && java -jar target/*.jar`
 2. 选定被测对象：SAST 工具（CodeQL/SonarQube/Snyk）+ 大模型（在 Claude Code 中切换模型，使用相同提示词 `benchmark/prompts/vuln_hunt.md`）
 3. 各对象对 `benchmark/cases/` 跑一遍，产出 SARIF 或 `id -> {hit,file,line}` 结果，记录耗时
-4. 跑评分脚本得到交叉对比指标：
+4. 跑评分脚本得到交叉对比指标（在仓库根目录执行）：
    ```bash
-   cd benchmark/scripts
-   python3 scorecard.py --expected ../expectedresults.csv --result <结果文件.json|.sarif> --name <被测对象名>
+   python3 benchmark/scripts/scorecard.py --expected benchmark/expectedresults.csv --result <结果文件.json|.sarif> --name <被测对象名>
    ```
    输出 Recall / Precision / **Youden Score (TPR - FPR)** / 平均耗时 / 超时数 / 报告简洁度 / 能力完备度，并按 CWE 与 level 分组。
 

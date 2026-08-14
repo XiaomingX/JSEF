@@ -118,3 +118,24 @@ benchmark/
 ## 7. 安全底线
 
 所有样本 Payload 仅限 `localhost` 演示（遵循仓库 `agent.md` 安全底线）。本 benchmark 只做**静态**分析与对比，不执行任何攻击代码。
+
+---
+
+## 8. 新增样本 Checklist（贡献者必读）
+
+新增或修改任何漏洞样本（无论 `src/main/.../vuln` 还是 `benchmark/cases/`）必须完成以下步骤，缺一不可：
+
+1. **写样本**：漏洞代码放 `vuln/`（或 `src/main` 对应目录），配套安全对照放 `sec/`。语义正确、可读，仅 localhost 演示语义。
+2. **加 checkpoint**：在漏洞精确行上方加机器可读注解：
+   ```java
+   // [CHECKPOINT id=JSEF-<类别>-<序号> cwe=<CWE编号> level=<L1-L5> source=<不可信源> sink=<危险终点> expect=VULN]
+   ```
+   安全对照（混淆样本）加 `expect=SAFE`（用于算 TN/FP）。
+3. **同步 CSV**：把该 checkpoint 追加到 `benchmark/expectedresults.csv`（表头 `id,cwe,level,type,file,line,source,sink,category`），`type` 为 `vuln`/`safe`，`line` 为注解实际行号。
+4. **自测一致性**：确认 CSV 与源码两源 id 完全一致（无孤儿行、无重复 id）：
+   ```bash
+   python3 benchmark/scripts/scorecard.py --expected benchmark/expectedresults.csv --result <你的结果> --name self-check
+   ```
+5. **提交**：遵循仓库 `CLAUDE.md` / `AGENTS.md` 的 checkpoint 门禁要求。
+
+> id 全局唯一：`benchmark/cases` 与 `src/main` 下的同类样本可用不同序号（如 cases 用 `001`、src 用 `002`），但每个 `id` 必须在 CSV 与源码中同时存在且一一对应。

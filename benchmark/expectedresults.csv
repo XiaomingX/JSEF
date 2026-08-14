@@ -51,3 +51,84 @@ JSEF-VEND-RND-001,330,L1,vuln,benchmark/cases/vendor/OwaspStyle_WeakRandom.java,
 JSEF-VEND-RND-001S,330,L1,safe,benchmark/cases/vendor/OwaspStyle_WeakRandom.java,33,SecureRandom.nextInt,String(concat),weak-random
 JSEF-VEND-XSS-001,79,L1,vuln,benchmark/cases/vendor/JulietStyle_XSS_Reflect.java,28,request.getParameter("name"),response.getWriter().print,xss-reflected
 JSEF-VEND-XSS-001S,79,L1,safe,benchmark/cases/vendor/JulietStyle_XSS_Reflect.java,37,request.getParameter("name"),response.getWriter().print,xss-reflected
+JSEF-SSRF-001,918,L1,vuln,benchmark/cases/vuln/SsrfSingleHop.java,15,request.getParameter("url"),URL.openConnection,ssrf
+JSEF-SSRF-001S,918,L3,safe,benchmark/cases/sec/SsrfWhitelistSafe.java,32,request.getParameter("url"),URL.openConnection,ssrf
+JSEF-XXE-001,611,L1,vuln,benchmark/cases/vuln/XxeUnsafe.java,19,untrusted xml,DocumentBuilder.parse,xxe
+JSEF-XXE-001S,611,L3,safe,benchmark/cases/sec/XxeSafeConfig.java,26,untrusted xml,DocumentBuilder.parse,xxe
+JSEF-NOSQL-001,943,L3,vuln,benchmark/cases/vuln/NosqlInjectionMongo.java,23,query param,MongoCollection.find,nosql-injection
+JSEF-NOSQL-001S,943,L3,safe,benchmark/cases/sec/NosqlInjectionSafe.java,27,query param,MongoCollection.find,nosql-injection
+JSEF-JWT-001,345,L3,vuln,benchmark/cases/vuln/JwtAuthBypass.java,19,Authorization token,Jwts.parser().parseClaimsJwt,jwt-auth-bypass
+JSEF-JWT-001S,345,L3,safe,benchmark/cases/sec/JwtAuthSafe.java,24,Authorization token,Jwts.parser().parseClaimsJws,jwt-auth-bypass
+JSEF-IDOR-001,639,L4,vuln,benchmark/cases/vuln/IdorObjectOwnership.java,29,"user-controlled id","repo.findById(id) (no owner check)",idor-broken-access-control
+JSEF-IDOR-001S,639,L4,safe,benchmark/cases/sec/IdorSafe.java,23,"user-controlled id","if(!owner.equals) throw 403",idor-broken-access-control
+JSEF-JACKSON-001,502,L3,vuln,benchmark/cases/vuln/JacksonPolymorphic.java,27,untrusted JSON,"ObjectMapper.readValue (polymorphic, no allowlist)",jackson-poly-deserialization
+JSEF-JACKSON-001S,502,L3,safe,benchmark/cases/sec/JacksonPolymorphicSafe.java,34,untrusted JSON,"ObjectMapper.readValue (allowlist + NAME)",jackson-poly-deserialization
+JSEF-TEMPLATE-001,1336,L3,vuln,benchmark/cases/vuln/TemplateInjection.java,25,"user-controlled template name/content",TemplateEngine.process,template-injection
+JSEF-TEMPLATE-001S,1336,L3,safe,benchmark/cases/sec/TemplateInjectionSafe.java,24,"user-controlled input (data only)","TemplateEngine.process (fixed template)",template-injection
+JSEF-CRYPTO-001,327,L1,vuln,benchmark/cases/vuln/CryptoWeakHash.java,19,plaintext password,"MessageDigest.getInstance(""MD5"")",weak-hash
+JSEF-CRYPTO-002,798,L2,vuln,benchmark/cases/vuln/CryptoHardcodedKey.java,27,plaintext,"Cipher(AES/ECB, hardcoded key)",hardcoded-key-ecb
+JSEF-CRYPTO-001S,327,L1,safe,benchmark/cases/sec/CryptoSafe.java,31,plaintext password,"PBKDF2WithHmacSHA256 (random salt)",weak-hash
+JSEF-CRYPTO-002S,798,L2,safe,benchmark/cases/sec/CryptoSafe.java,46,plaintext,"Cipher(AES/GCM, SecureRandom key)",hardcoded-key-ecb
+JSEF-GROOVY-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/groovyInjection/GroovyInjectionVulnerabilityController.java,57,@RequestParam groovyScript,GroovyScriptEvaluator.evaluate,groovy-injection
+JSEF-GROOVY-002,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/groovyInjection/GroovyInjectionVulnerabilityController.java,101,@RequestParam groovyScript,GroovyShell.evaluate,groovy-injection
+JSEF-MVEL-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/mvelInjection/MvelInjectionVulnerabilityController.java,45,@RequestParam userInputExpression,MVEL.eval,mvel-injection
+JSEF-MVEL-002,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/mvelInjection/MvelInjectionVulnerabilityController.java,60,@RequestParam userInputExpression,MVEL.executeExpression,mvel-injection
+JSEF-BEANSHELL-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/beanShellInjection/ScriptInjectionVulnerabilityController.java,46,@RequestParam userProvidedScript,BshScriptEvaluator.evaluate,beanshell-injection
+JSEF-BEANSHELL-002,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/beanShellInjection/ScriptInjectionVulnerabilityController.java,80,@RequestParam userCommand,Runtime.getRuntime().exec,beanshell-injection
+JSEF-OGNL-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/onglInjection/OgnlInjectionVulnerabilityController.java,27,@RequestParam userControlledOgnlExpression,Ognl.getValue/parseExpression,ognl-injection
+JSEF-OGNL-002,917,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/onglInjection/OgnlInjectionVulnerabilityController.java,43,@RequestParam userInputCommand,Ognl.getValue(Runtime.exec),ognl-injection
+JSEF-SCRIPT-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/scriptEngineInjection/ScriptEngineInjectionVulnerabilityController.java,34,@RequestParam userControlledScript,ScriptEngine.eval,script-engine-injection
+JSEF-SCRIPT-002,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/scriptEngineInjection/ScriptEngineInjectionVulnerabilityController.java,100,@RequestParam userControlledScript,CompiledScript.eval,script-engine-injection
+JSEF-TEMPLATE-002,1336,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/templateInjection/TemplateInjectionVulnerabilityController.java,55,@RequestParam userInput,Template.process,template-injection
+JSEF-TEMPLATE-003,1336,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/templateInjection/TemplateInjectionVulnerabilityController.java,91,@RequestParam userInput,TemplateEngine.process,template-injection
+JSEF-JNDI-001,917,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/jndiInjection/JndiInjectionVulnerabilityController.java,51,@RequestParam jndiResourceName,InitialContext.lookup,jndi-injection
+JSEF-JNDI-002,917,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/jndiInjection/JndiInjectionVulnerabilityController.java,91,@RequestBody userInput,Context.lookup(rmi),jndi-injection
+JSEF-YAML-001,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/yamlDeserialization/YamlController.java,22,@RequestParam yamlPayload,Yaml.loadAs,yaml-deserialization
+JSEF-YAML-002,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/yamlDeserialization/YamlController.java,31,@RequestParam yamlPayload,Yaml.load,yaml-deserialization
+JSEF-AUTHBYPASS-001,287,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/authBypass/vuln/AuthenticationBypassUnsafeController.java,37,@RequestParam role,admin-info access (no auth),auth-bypass
+JSEF-AUTHBYPASS-002,287,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/authBypass/vuln/AuthenticationBypassUnsafeController.java,58,@RequestParam userId,user-profile access (no auth),auth-bypass
+JSEF-AUTHBYPASS-001S,287,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/authBypass/sec/AuthenticationBypassSafeController.java,34,@RequestParam role,admin-info access (role from session),auth-bypass
+JSEF-AUTHZBYPSS-001,285,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/authorizationBypass/AuthorizationBypassVulnerabilityController.java,38,@PathVariable userId,user-info return (no authz),authorization-bypass
+JSEF-BROKENAC-001,285,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/brokenAccessControl/BrokenAccessControlVulnerabilityController.java,38,@PathVariable userId,user-info return (no access control),broken-access-control
+JSEF-IDOR-002,639,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/insecureDirectObjectReference/InsecureDirectObjectReferenceController.java,41,@RequestParam userId,user-profile return (no owner check),idor
+JSEF-REDIRECT-001,601,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/vuln/OpenRedirectUnsafeController.java,42,@RequestParam redirectUrl,response.sendRedirect,open-redirect
+JSEF-REDIRECT-001S,601,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/sec/OpenRedirectSafeController.java,47,@RequestParam redirectUrl,response.sendRedirect (whitelist),open-redirect
+JSEF-REDIRECT-002,601,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/OpenRedirectVulnerabilityController.java,31,@RequestParam userProvidedUrl,redirect: prefix,open-redirect
+JSEF-CORS-001,942,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/corsConfig/CorsVulnerabilityController.java,39,response header Access-Control-Allow-Origin:*,any origin cross-domain access,cors-misconfig
+JSEF-CLICKJACK-001,1021,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/vuln/ClickjackingUnsafeController.java,43,response (no X-Frame-Options),page frameable by iframe,clickjacking
+JSEF-CLICKJACK-001S,1021,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/sec/ClickjackingSafeController.java,33,response setHeader X-Frame-Options,frame denied,clickjacking
+JSEF-CLICKJACK-002,1021,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/ClickjackingVulnerabilityController.java,41,response (no X-Frame-Options),page frameable by iframe,clickjacking
+JSEF-SECHEAD-001,1021,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/securityHeaderMissing/SecurityHeaderMissingController.java,35,response (missing security headers),sensitive data without X-Frame-Options/CSP,security-header-missing
+JSEF-SSRF-002,918,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/serverSideRequestForgery/ServerSideRequestForgeryController.java,38,@RequestParam remoteResourceUrl,URL.openConnection,ssrf
+JSEF-XXE-002,611,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java,71,@RequestParam xmlContent,DocumentBuilder.parse,xxe
+JSEF-CRYPTOSRC-001,327,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/CryptoVulnerabilityUnsafeController.java,47,userPassword,MessageDigest.getInstance("MD5"),weak-hash
+JSEF-CRYPTOSRC-002,798,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/CryptoVulnerabilityUnsafeController.java,59,hardcoded string,SecretKeySpec(hardcoded key),hardcoded-key
+JSEF-CRYPTOSRC-003,798,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/EncryptUnsafeController.java,61,staticSalt("12345678"),PBEKeySpec(hardcoded salt),hardcoded-key
+JSEF-CRYPTOSRC-003S,798,L2,safe,src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/sec/EncryptSafeController.java,70,randomSalt(SECURE_RANDOM),PBEKeySpec,hardcoded-key
+JSEF-HARDCODED-001,798,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/hardcodedCredentials/HardcodedCredentialsVulnerabilityController.java,68,hardcoded string,DriverManager.getConnection,hardcoded-credentials
+JSEF-WEAKPWD-001,521,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/weakPassword/WeakPasswordVulnerabilityController.java,43,@RequestParam password,plaintext equals comparison,weak-password
+JSEF-DEFAULTCRED-001,798,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/defaultCredentials/DefaultCredentialsVulnerabilityController.java,49,HARDCODED_USERNAME/PASSWORD,auth check,default-credentials
+JSEF-SENSITIVE-001,532,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/sensitiveDataExposure/SensitiveDataExposureController.java,34,@RequestParam userId,response body (plaintext password/idCard/creditCard),sensitive-data-exposure
+JSEF-BIZLOGIC-001,840,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/AccountManipulationUnsafeController.java,46,@RequestParam amount,account.updateBalance (no sign check),business-logic
+JSEF-BIZLOGIC-002,840,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/PriceTamperingUnsafeController.java,54,@RequestBody product.price,total calculation,business-logic
+JSEF-BIZLOGIC-003,840,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/CouponAbuseUnsafeController.java,52,@RequestParam couponCode,coupon.markAsUsed (no used/expiry check),business-logic
+JSEF-BIZLOGIC-004,840,L2,vuln,src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/InventoryOversellUnsafeController.java,57,@RequestParam quantity,Inventory.updateStock (non-atomic check-decrement),business-logic
+JSEF-BIZLOGIC-003S,840,L2,safe,src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/sec/CouponAbuseSafeController.java,88,couponCode,Coupon.markAsUsed (used/expiry/lock verified),business-logic
+JSEF-MASSASSIGN-001,915,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/massassignment/vuln/MassAssignmentUnsafeController.java,55,@RequestBody UserProfile,UserProfile.save (binds isAdmin),mass-assignment
+JSEF-MASSASSIGN-001S,915,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/massassignment/sec/MassAssignmentSafeController.java,38,@RequestBody UserProfileDTO,UserProfile.save (DTO-scoped),mass-assignment
+JSEF-RACE-001,362,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/raceCondition/vuln/RaceConditionUnsafeController.java,77,sharedCounter++,sharedCounter (non-atomic read-modify-write),race-condition
+JSEF-RACE-001S,362,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/raceCondition/sec/RaceConditionSafeController.java,75,sharedCounter++,sharedCounter (synchronized),race-condition
+JSEF-CVE334050-001,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/cve202334050/vuln/Cve202334050UnsafeController.java,62,@RequestBody base64Payload,SimpleMessageConverter.fromMessage,unsafe-deserialization
+JSEF-CVE334050-001S,502,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/cve202334050/sec/Cve202334050SafeController.java,71,jsonPayload,Jackson2JsonMessageConverter.fromMessage (allowlist),unsafe-deserialization
+JSEF-CVE342809-001,502,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/cve202342809/vuln/Cve202342809UnsafeController.java,54,@RequestBody base64Payload,RBucket.get (no allowlist),unsafe-deserialization
+JSEF-CVE342809-001S,502,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/cve202342809/sec/Cve202342809SafeController.java,76,base64Payload,RBucket.get (allowlist enforced),unsafe-deserialization
+JSEF-NUMERIC-001,20,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/numericAndDateInput/vuln/NumericAndDateInputUnsafeController.java,36,@RequestParam numericInput,new BigDecimal (no length/format check),numeric-date-input
+JSEF-NUMERIC-001S,20,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/numericAndDateInput/sec/NumericAndDateInputSafeController.java,52,numericInput,new BigDecimal (length-validated),numeric-date-input
+JSEF-RATELIMIT-001,307,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/ratelimiting/vuln/RateLimitingUnsafeController.java,45,@RequestParam phoneNumber,sendOtp (no rate limiting),missing-rate-limiting
+JSEF-RATELIMIT-001S,307,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/ratelimiting/sec/RateLimitingSafeController.java,45,clientIp,sendOtp (rate-limited),missing-rate-limiting
+JSEF-REGEXDOS-001,1333,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/regularExpressionDOS/RegexDosVulnerabilityController.java,42,@RequestParam inputString,Pattern.matches("(a+)+b"),regex-dos
+JSEF-HASHCOLL-001,694,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/hashCollision/vuln/HashCollisionUnsafeController.java,42,@RequestParam input,HashMap.put (user-controlled key),hash-collision-dos
+JSEF-HASHCOLL-001S,694,L1,safe,src/main/java/com/freedom/securitysamples/vulnerability/hashCollision/sec/HashCollisionSafeController.java,56,input,safeMap.put (SHA-256 key + length limit),hash-collision-dos
+JSEF-JSONP-001,352,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/jsonpCallback/JsonpCallbackInjectionController.java,41,callback,response body (script callback concat),jsonp-callback-injection
+JSEF-HEADERINJ-001,113,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/headerInjection/HeaderInjectionVulnerabilityController.java,41,@RequestParam untrustedHeaderValue,HttpHeaders.add (header injection),header-injection
+JSEF-RISKY-001,111,L1,vuln,src/main/java/com/freedom/securitysamples/vulnerability/RiskyOperations/UnsafeOperationsVulnerabilityController.java,50,@RequestParam memoryAddressInput,Unsafe.getInt (arbitrary memory read),risky-operations
