@@ -38,7 +38,7 @@ public class ClassloaderEscape {
         ClassLoader restricted = Thread.currentThread().getContextClassLoader();
 
         // 危险 sink：自定义加载器从不可信 URL 直接加载任意类，突破受限白名单
-        // [CHECKPOINT id=JSEF-V2-003 cwe=284 level=L5 source=untrustedUrl sink=URLClassLoader.loadClass(escape restricted context) expect=VULN]
+        // [CHECKPOINT id=JSEF-V2-003 cwe=284 level=L5 source=untrustedUrl sink=URLClassLoader.loadClass(escape restricted context) expect=VULN trace=benchmark/cases/vuln/sandbox/ClassloaderEscape.java:38,benchmark/cases/vuln/sandbox/ClassloaderEscape.java:43]
         URLClassLoader escapeLoader = new URLClassLoader(new URL[]{ new URL(untrustedUrl) }, restricted);
         return escapeLoader.loadClass("java.lang.Runtime"); // 危险类被逃逸加载
     }
@@ -50,7 +50,7 @@ public class ClassloaderEscape {
         ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
             // 危险 sink：替换 TCCL 为自定义加载器，脱离受限父委派
-            // [CHECKPOINT id=JSEF-V2-003B cwe=284 level=L5 source=untrustedUrl sink=Thread.currentThread().setContextClassLoader(escape) expect=VULN]
+            // [CHECKPOINT id=JSEF-V2-003B cwe=284 level=L5 source=untrustedUrl sink=Thread.currentThread().setContextClassLoader(escape) expect=VULN trace=benchmark/cases/vuln/sandbox/ClassloaderEscape.java:54,benchmark/cases/vuln/sandbox/ClassloaderEscape.java:56]
             URLClassLoader custom = new URLClassLoader(new URL[]{ new URL(untrustedUrl) }, null);
             Thread.currentThread().setContextClassLoader(custom);
             return custom.loadClass("java.lang.Runtime");

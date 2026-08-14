@@ -31,7 +31,7 @@ public class ChainSqlController {
 
     @GetMapping("/benchmark/chainsql/unsafe")
     public String handle(@RequestParam String input) {
-        // [CHECKPOINT id=JSEF-L4-SQL-001 cwe=89 level=L4 source=@RequestParam input sink=Statement.executeQuery expect=VULN]
+        // [CHECKPOINT id=JSEF-L4-SQL-001 cwe=89 level=L4 source=@RequestParam input sink=Statement.executeQuery expect=VULN trace=benchmark/cases/vuln/level4/ChainSqlService.java:23,benchmark/cases/vuln/level4/ChainSqlMapper.java:29]
         return service.process(input); // 污点 input 跨编译单元流向 ChainSqlService -> ChainSqlMapper
     }
 }

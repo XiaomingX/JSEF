@@ -69,6 +69,56 @@
 - [x] F2. 新建 `AGENTS.md`：面向通用 Agent 的同样规范（与现有 `agent.md` 架构说明互补，不冲突）
 - [x] F3. 在 `benchmark/README.md` 补充"新增样本 checklist"（写样本 → 加 checkpoint → 追加 CSV → 跑 scorecard 自测）
 
+### Phase G — 2026-08 补全落地（分层 · 分类 · 分级扩展 + 行业标准报告 + 门禁固化）
+
+> 设计依据与样本目标见 `plans/00-benchmark-gap-completion.md`（原 Phase 1–8 计划，本次为 Phase 1–7 落地 + 文档固化）。本小节仅固化"已完成"的能力项，所有样本均遵循 A4 checkpoint 双源门禁（AGENTS.md / CLAUDE.md）。
+
+- [x] **G1. scorecard 升级**：新增真实时延（avg/p50/p95/max/timeout_rate，取 `--timeout-ms`）、定位精度（exact_hit_rate / near_hit_rate，取 `--line-tolerance`）、综合指标 F1 / MCC、多对象交叉矩阵（`--results-dir` → `cross_matrix.json`）、双源校验脚本 `validate_checkpoints.py`。
+- [x] **G2. L0 + L4 + L5 梯度补全**：新增 18 个 L0 基线样本（9 类 × vuln+sec 配对，CAP-01/02 校准能力下限），加厚 L4（跨文件/框架语义/状态机）与 L5（gadget chain），拉开强/弱 SAST 与不同档次 LLM 差距。
+- [x] **G3. OWASP A01 / A02 / A04 / A05 覆盖**：失效访问控制（IDOR/越权/工作流绕过）、加密缺陷（弱 TLS/重用 IV/PBKDF 弱参/ECB）、不安全设计（价格篡改/批量赋值/业务逻辑绕过/配额竞态）、安全配置错误（CORS/错误泄露/安全头/调试端点/不安全 Cookie）。
+- [x] **G4. OWASP A06 / A08 / A09 覆盖**：易受攻击组件（已知 CVE 版本依赖/传递依赖/过期 Spring）、软件与数据完整性（未签名 jar/信任边界反序列化/CI 脚本注入）、安全日志与监控失败（缺登录失败日志/日志缺上下文/无审计/吞安全异常）——A06/A08/A09 从零补齐。
+- [x] **G5. 多后端 SQL 注入变体**：MyBatis `${}`/注解、JPA 原生查询、PostgreSQL COPY、存储过程、NamedParameterJdbcTemplate 误用、HQL、批量更新等，统一 `sql-injection-<variant>` 归类。
+- [x] **G6. 高难度混淆 / 边境样本**：partial fix（看似已修未修完）、命名混淆（vendor 风格 Safe 类名实际危险）、blind SSRF / 错误泄露 / 时序侧信道、CRLF 日志注入 / Header 注入等 FP 陷阱加厚。
+- [x] **G7. 报告生成器 + 运行 harness**：`benchmark/reports/generate_report.py`（消费 `cross_matrix.json` + `expectedresults.csv`，产出 `report.md` / `report.json` / 排名数据，OWASP Top 10 映射 + Youden 排名 + 逐类对比 + L0–L5 档位）；`benchmark/run_benchmark.sh <results-root> <expected-csv> <timeout-ms>` 端到端封装（公平性约束：同提示词、同样本、只换对象）。
+- [x] **G8. 文档与门禁固化**：更新 `benchmark/README.md`（L0 更正、新参数/指标、双源校验 §、行业标准报告 §）、本文件 Phase G 现状统计、AGENTS.md / CLAUDE.md 门禁自测改为必跑 `validate_checkpoints.py`（退出码 0）。
+
+#### G.x 现状统计（已核实，数字即事实）
+
+来源：`benchmark/expectedresults.csv`（**260 行，含表头，即 259 个 checkpoint**）+ 源码 `// [CHECKPOINT]` 双向一致（`validate_checkpoints.py` 退出码 0）。
+
+| 维度 | 现状 |
+|------|------|
+| **checkpoint 总数** | **259**（含表头 CSV 共 260 行） |
+| **Level 分布** | L0=18（9 类 × vuln+sec 配对）＋ L1–L5 梯度加厚；L3–L5 占比较旧版（20%）显著提升（详见 CSV） |
+| **Type** | vuln / safe 配对覆盖，safe 混淆样本含白名单/常量 sink/状态机前置不成立/partial fix/命名混淆等多套路 |
+| **OWASP Top 10 2021 覆盖** | A01–A10 十类均有样本；其中 **A06 / A08 / A09 从零补齐**（原缺失），A01/A02/A04/A05 加厚 |
+| **Category** | 由旧版 52 类扩展到约 70 类（多后端 SQL 变体 `sql-injection-<variant>`、A06/A08/A09 新类） |
+| **指标能力** | scorecard 现支持 Recall/Precision/F1/MCC/Youden、真实时延(p50/p95/timeout_rate)、定位精度(exact/near hit)、多对象交叉矩阵 |
+| **报告能力** | `run_benchmark.sh` 端到端产出 `cross_matrix.json` + `report.md`/`report.json`（OWASP 式 Youden 排名、逐类对比、L0–L5 档位） |
+
+> 注：精确 Level 计数与逐类样本数请以 `expectedresults.csv` 实际内容为准；本统计只固化"已落地能力"的定性结论与总数。
+
+---
+
+### Phase H — VulnGym 差距补全（2026-08）
+
+> 设计依据与缺口分析见 `plans/01-vulngym-gap-completion.md`（借鉴腾讯 VulnGym v0.1.4 的业务逻辑深度与路径证据链维度）。本小节固化"已完成"的能力项，所有样本均遵循 A4 checkpoint 双源门禁（AGENTS.md / CLAUDE.md）。
+
+- [x] **H1（V1 业务逻辑子类）**：补齐 VulnGym 独有的业务逻辑子类——`agent-capability-bypass`(G1) / `origin-integrity`(G2) / `multi-tenant`(G3) / `trust-boundary`(G4) / `insecure-default`(G6) / `priv-esc`(G7) / `missing-authorization`(G8)，每类配 vuln+sec 配对，均带 `// [CHECKPOINT]` 且 CSV 双源一致。
+- [x] **H2（V2 沙箱逃逸）**：补齐 `sandbox-escape`(G5)，复用 script/groovy 引擎基础，覆盖 L4–L5 逃逸维度，配 safe 对照。
+- [x] **H3（V3 trace 标注）**：扩展 `// [CHECKPOINT]` 注解新增可选 `trace=` 字段（entry_point→critical_operation 中间节点）；`validate_checkpoints.py` 支持 trace 节点有效性告警（仅告警不阻断）；`scorecard.py` 新增 `--check-trace` 产出 `trace_recall`/`trace_precision`。跨节点样本回填 `trace=`。
+- [x] **H4（V4 文档）**：在 `benchmark/README.md` 新增 §10「JSEF ↔ VulnGym 分类映射」（映射表覆盖全部 21 个 VulnGym `vuln_category_l2`，8 类补齐项标注"本项目已补齐"）；在 AGENTS.md 补充 `trace=` 字段说明；本 MY_PLAN.md 新增 Phase H；所有数字与 category 均实查自 `expectedresults.csv`（299 checkpoint）。
+
+#### H.x 缺口分析结论
+
+| 维度 | 结论 |
+|------|------|
+| **JSEF 强于 VulnGym** | L0–L5 完整区分度梯度；F1 / MCC / Precision 综合评测口径（VulnGym 仅 recall-only，行容差 ≤5，无 precision 惩罚）；gadget chain；混淆/safe 配对；SARIF 协议；多后端 SQL 变体；路径评测在保留 precision 优势下对标 trace 理念 |
+| **借鉴 VulnGym 补齐** | 业务语义深度（AI/Agent 能力边界、来源完整性、多租户隔离、信任边界、不安全默认、权限提升精分、授权缺失）；路径证据链（`entry_point → critical_operation → trace` 多节点，升级为"路径正确性"评测） |
+| **总样本规模** | `expectedresults.csv` 共 **299 个 checkpoint**（含表头 300 行），业务逻辑导向占比显著提升，对标 VulnGym 71.2% 业务逻辑分布取向 |
+
+> 原则：只借鉴补齐，不替换 JSEF 优势维度（L0–L5 梯度、F1/MCC/precision、gadget chain、SARIF）。参见 `plans/01-vulngym-gap-completion.md` §1 差距分析与 §7 完成判定。
+
 ---
 
 ## 2. Phase A：SAST 能力模型（第一性原理）
@@ -103,9 +153,9 @@
 
 ### A3. 区分度分级标准（L0–L5）
 
-> 注：**L0 仅作能力基准参考（对应 CAP-01/02）**，当前 `benchmark/expectedresults.csv` 中无样本标记为 L0，实际样本均为 **L1–L5**。
+> 注：**L0 为能力基准参考（对应 CAP-01/02）**。早期本计划曾标注"CSV 中无样本标记为 L0"，该表述已过时——Phase G（G2）已落地 18 个 L0 样本（9 类 × vuln+sec 配对），详见下方 Phase G 与 `plans/00-benchmark-gap-completion.md`。
 
-- **L0 显式（能力基准）**：`source` 直接传入 `sink`（一眼可见）。所有工具/模型都应命中。
+- **L0 显式（能力基准）**：`source` 直接传入 `sink`（一眼可见）。所有工具/模型都应命中（已新增 18 个 L0 配对样本）。
 - **L1 单跳**：1 个中间变量。`// [VULN]` 直连。
 - **L2 多跳（无断点）**：≥2 中间变量/函数，弱工具在中间断点丢失污点。
 - **L3 间接/跨方法**：污点经 Map/字段/方法返回值传递；或跨方法。

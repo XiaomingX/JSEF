@@ -40,7 +40,7 @@ public class SpringBindingTaint {
      */
     public String handle(@ModelAttribute AccountForm form) {
         // 框架语义：form.role 已被攻击者表单值污染
-        // [CHECKPOINT id=JSEF-L4-BIND-001 cwe=915 level=L4 source=@ModelAttribute(form.role) sink=authorization check on role expect=VULN]
+        // [CHECKPOINT id=JSEF-L4-BIND-001 cwe=915 level=L4 source=@ModelAttribute(form.role) sink=authorization check on role expect=VULN trace=benchmark/cases/vuln/level4/SpringBindingTaint.java:32,benchmark/cases/vuln/level4/SpringBindingTaint.java:44]
         if ("ADMIN".equals(form.getRole())) {
             return "granted-admin"; // 不可信 role 驱动越权授权
         }

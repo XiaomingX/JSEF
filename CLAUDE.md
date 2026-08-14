@@ -75,6 +75,17 @@ python benchmark/scripts/scorecard.py \
   --result <你的结果文件或目录>
 ```
 
+跑**双源校验（门禁必跑项）**，确认 CSV 与源码 `// [CHECKPOINT]` 注解一致、无孤儿/重复/行号漂移，要求退出码为 0：
+
+```bash
+python3 benchmark/scripts/validate_checkpoints.py \
+  --expected benchmark/expectedresults.csv \
+  --cases-dir benchmark/cases \
+  --src-dir src/main/java/com/freedom/securitysamples/vulnerability
+```
+
+> 退出码非 0 即门禁未过，新增/修改样本任务不得视为完成（与 AGENTS.md 门禁一致）。
+
 ## 编译与可读性要求
 
 - **不要求**编译 `benchmark/cases/` 下的样本——这些文件用于静态分析 / LLM 阅读。
