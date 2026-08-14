@@ -37,3 +37,17 @@ JSEF-CONF-SPEL-001,917,L1,vuln,benchmark/cases/vuln/ConfusionSpelConstantSink.ja
 JSEF-CONF-SPEL-001S,917,L1,safe,benchmark/cases/sec/ConfusionSpelConstantSafe.java,17,user input,spelParser.parseExpression,spel-injection
 JSEF-CONF-CMD-001,78,L1,vuln,benchmark/cases/vuln/ConfusionCmdSanitized.java,17,user input,Runtime.getRuntime().exec,command-injection
 JSEF-CONF-CMD-001S,78,L1,safe,benchmark/cases/sec/ConfusionCmdSanitizedSafe.java,17,user input,Runtime.getRuntime().exec,command-injection
+JSEF-CHAIN-001,78,L4,vuln,benchmark/cases/vuln/ChainController.java,34,@RequestParam input,Runtime.getRuntime().exec,command-injection
+JSEF-CHAIN-001S,78,L4,safe,benchmark/cases/sec/ChainControllerSafe.java,31,@RequestParam input,Runtime.getRuntime().exec,command-injection
+JSEF-GADGET-001,502,L5,vuln,benchmark/cases/vuln/GadgetChainDeserialization.java,99,untrusted bytes,Method.invoke(exec),unsafe-deserialization
+JSEF-GADGET-001S,502,L5,safe,benchmark/cases/sec/GadgetChainDeserializationSafe.java,51,untrusted bytes,Method.invoke(exec),unsafe-deserialization
+JSEF-VEND-SQL-001,89,L1,vuln,benchmark/cases/vendor/OwaspStyle_SQLi_Confusion.java,29,userInput,Statement.executeQuery,sql-injection
+JSEF-VEND-SQL-001S,89,L1,safe,benchmark/cases/vendor/OwaspStyle_SQLi_Confusion.java,39,userInput,PreparedStatement.executeQuery,sql-injection
+JSEF-VEND-CMD-001,78,L4,vuln,benchmark/cases/vendor/JulietStyle_CommandInjection_CrossFile.java,23,userData,Runtime.getRuntime().exec,command-injection
+JSEF-VEND-CMD-001S,78,L4,safe,benchmark/cases/vendor/JulietStyle_CommandInjection_CrossFile_Good.java,25,userData,Runtime.getRuntime().exec,command-injection
+JSEF-VEND-PT-001,22,L2,vuln,benchmark/cases/vendor/PrimeVulStyle_PathTraversal.java,34,request.getParameter("file"),new FileInputStream,path-traversal
+JSEF-VEND-PT-001S,22,L2,safe,benchmark/cases/vendor/PrimeVulStyle_PathTraversalSafe.java,30,request.getParameter("file"),Files.newInputStream,path-traversal
+JSEF-VEND-RND-001,330,L1,vuln,benchmark/cases/vendor/OwaspStyle_WeakRandom.java,24,Random.nextInt,String(concat),weak-random
+JSEF-VEND-RND-001S,330,L1,safe,benchmark/cases/vendor/OwaspStyle_WeakRandom.java,33,SecureRandom.nextInt,String(concat),weak-random
+JSEF-VEND-XSS-001,79,L1,vuln,benchmark/cases/vendor/JulietStyle_XSS_Reflect.java,28,request.getParameter("name"),response.getWriter().print,xss-reflected
+JSEF-VEND-XSS-001S,79,L1,safe,benchmark/cases/vendor/JulietStyle_XSS_Reflect.java,37,request.getParameter("name"),response.getWriter().print,xss-reflected

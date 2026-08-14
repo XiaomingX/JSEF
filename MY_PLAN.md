@@ -32,11 +32,11 @@
 
 ### Phase B — 漏洞样本设计与落地（有区分度，落入项目）
 - [x] B1. 污点传播能力样本（含"变量无断点"专项）：单跳 / 多跳 / 间接（Map/字段）梯度 → `benchmark/cases/vuln/Taint*.java`（L1–L3）
-- [ ] B2. 状态机 / 调用链追踪样本：跨方法 / 跨文件 / gadget chain → 跨方法已实现（TaintCrossMethod L3），跨文件/CC链待扩展
+- [x] B2. 状态机 / 调用链追踪样本：跨方法 / 跨文件 / gadget chain → 跨方法已实现（TaintCrossMethod L3）；新增跨文件调用链（ChainController/A/B L4）+ gadget chain（GadgetChainDeserialization L5）
 - [x] B3. 框架语义理解样本：Spring 参数绑定、SpEL、@RequestParam 驱动的 sink → `benchmark/cases/vuln/SpelFrameworkSemantics.java`（L4）
 - [x] B4. 历史高危漏洞抽象样本：fastjson 反序列化、Spring4Shell SpEL、Log4j JNDI、CC 反序列化链、Struts2 OGNL → fastjson/SpEL 复用 src/main，Log4j 新增 `benchmark/cases/vuln/Log4jJndiInjection.java`（L3）；CC链复用 DeserializeController.bad04
 - [x] B5. 真假混淆样本（OWASP 式 TP/FN/FP/TN）：每类 CWE 配套"看似危险但安全"样本 → `benchmark/cases/{vuln,sec}/Confusion*.java`（SQL/SpEL/CMD）
-- [ ] B6. 竞品质优样本留存：从 OWASP Benchmark / Juliet / CVEfixes / PrimeVul 抽取高质量 pattern 落库 → 待扩展 `benchmark/cases/vendor/`
+- [x] B6. 竞品质优样本留存：从 OWASP Benchmark / Juliet / CVEfixes / PrimeVul 抽取高质量 pattern 落库 → `benchmark/cases/vendor/`（SQLi混淆/命令注入跨文件/路径穿越/弱随机/XSS 共 7 文件 10 checkpoint）
 
 ### Phase C — 验收基础设施
 - [x] C1. `expectedresults.csv`：全样本真/假标注 + CWE + 难度级 → 38 行，与源码双向一致
