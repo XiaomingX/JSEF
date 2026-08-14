@@ -44,6 +44,31 @@
 - [x] C3. scorecard 计算脚本骨架（Java/Python）：Recall / Precision / Youden Score / 时延 / 超时率 / 报告冗余度 → `benchmark/scripts/scorecard.py`（SARIF + JSON 双输入）
 - [x] C4. `MY_PLAN.md` 持续维护：本文件待办随实现更新 `[x]/[ ]`
 
+### Phase D — 补充高区分度样本（缺口补齐，OWASP Top 10 视角）
+> 当前 benchmark 偏重注入类（SQLi/CMD/SpEL/LDAP/XPath 占 35/52），L3+ 仅 15 个，且 A01 失效访问控制 / A02 加密 / A05 配置 / A07 认证 / A10 SSRF 几乎缺失。本轮补齐"有区分度"的代表类。
+- [x] D1. SSRF（CWE-918）：单跳 + 内网IP白名单混淆（SAFE）→ `benchmark/cases/vuln/Ssrf*.java`（L1/L3）
+- [x] D2. XXE（CWE-611）：未禁用 DTD + 安全配置混淆（SAFE）→ `benchmark/cases/vuln/Xxe*.java`（L1/L3）
+- [x] D3. NoSQL 注入（CWE-943）：Spring Data Mongo 间接污点 → `benchmark/cases/vuln/NosqlInjection*.java`（L2/L3）
+- [x] D4. JWT/认证失效（CWE-287/345）：alg=none/弱密钥/硬编码 + 校验存在但宽松混淆 → `benchmark/cases/vuln/JwtAuth*.java`（L2/L3）
+- [x] D5. IDOR/越权（CWE-639/285）：对象归属语义 + 已做归属校验混淆 → `benchmark/cases/vuln/Idor*.java`（L3/L4）
+- [x] D6. Jackson 多态反序列化（CWE-502）：`@JsonTypeInfo` 缺白名单 + 安全配置混淆 → `benchmark/cases/vuln/JacksonPolymorphic*.java`（L2/L3）
+- [x] D7. 模板注入（CWE-1336）：FreeMarker/Thymeleaf 视图名拼接 → `benchmark/cases/vuln/TemplateInjection*.java`（L2/L3）
+- [x] D8. 加密缺陷（CWE-327/798）：弱哈希/硬编码密钥 + 看似随机实则固定密钥混淆 → `benchmark/cases/vuln/Crypto*.java`（L1/L2）
+- [x] D9. vendor 补充：SSRF/XXE/NoSQL/JWT/开放重定向-CORS 竞品风格样本 → `benchmark/cases/vendor/`（仿现有 3 种风格，带来源 URL）
+
+### Phase E — src/main 漏洞目录批量补 checkpoint
+> 现状：仅 7 个 src 漏洞目录有 checkpoint，其余 35+ 目录零标注。本轮为 OWASP Top 10 代表类补机器可读 checkpoint，扩大 SAST/LLM 可直接验收的教学样本面。
+- [x] E1. 注入/表达式类补标：xpathInjection 已标；补 groovy/mvel/beanShell/ognl/scriptEngineInjection、templateInjection、jndiInjection、yamlDeserialization
+- [x] E2. 访问控制/配置类补标：authBypass、authorizationBypass、brokenAccessControl、insecureDirectObjectReference、openRedirect、corsConfig、clickjacking、securityHeaderMissing、serverSideRequestForgery、xmlExternalEntity
+- [x] E3. 加密/认证类补标：cryptoVuln、hardcodedCredentials、weakPassword、defaultCredentials、sensitiveDataExposure
+- [x] E4. 业务逻辑/CVE 类补标：businessLogic、massassignment、raceCondition、cve202334050、cve202342809、numericAndDateInput、ratelimiting、regularExpressionDOS、hashCollision、jsonpCallback、headerInjection、RiskyOperations
+- [x] E5. 同步 E1–E4 所有新增 checkpoint 到 `expectedresults.csv`，保持双向一致
+
+### Phase F — 协作文档规范化（新样本强制 checkpoint）
+- [x] F1. 新建 `CLAUDE.md`：面向 Claude Code 的贡献者规范，明确"新增漏洞样本必须带 `// [CHECKPOINT]` 标注"，引用 A4 规范与 `benchmark/expectedresults.csv` 同步要求
+- [x] F2. 新建 `AGENTS.md`：面向通用 Agent 的同样规范（与现有 `agent.md` 架构说明互补，不冲突）
+- [x] F3. 在 `benchmark/README.md` 补充"新增样本 checklist"（写样本 → 加 checkpoint → 追加 CSV → 跑 scorecard 自测）
+
 ---
 
 ## 2. Phase A：SAST 能力模型（第一性原理）
