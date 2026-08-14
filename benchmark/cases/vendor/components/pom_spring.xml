@@ -1,0 +1,10 @@
+<!-- JSEF-A06-003 — Spring Framework VULN/Safe 依赖片段（pom.xml） -->
+<!-- ===== VULN：锁定易受攻击的 5.2.x 基线（含已知 CVE 敞口） ===== -->
+<properties>
+    <spring.version>5.2.20.RELEASE</spring.version>   <!-- [CHECKPOINT id=JSEF-A06-003 危险版本] -->
+</properties>
+
+<!-- ===== SAFE：升级到已修复的 5.3.x+ 基线 ===== -->
+<properties>
+    <spring.version>5.3.39.RELEASE</spring.version>   <!-- [CHECKPOINT id=JSEF-A06-003S 安全版本] -->
+</properties>

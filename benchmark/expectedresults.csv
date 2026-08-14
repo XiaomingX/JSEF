@@ -166,3 +166,95 @@ JSEF-L5-S4S-001,917,L5,vuln,benchmark/cases/vuln/level5/Spring4ShellChain.java,4
 JSEF-L5-S4S-001S,917,L5,safe,benchmark/cases/sec/level5/Spring4ShellChainSafe.java,23,class.module.classLoader path,SpelExpressionParser.parseExpression,spel-injection
 JSEF-L5-LOG4J-001,917,L5,vuln,benchmark/cases/vuln/level5/Log4jToJndiChain.java,57,multi-hop concatenated jndi key,JndiLookup.lookup,log4j-jndi
 JSEF-L5-LOG4J-001S,917,L5,safe,benchmark/cases/sec/level5/Log4jToJndiChainSafe.java,30,multi-hop concatenated jndi key,JndiLookup.lookup,log4j-jndi
+JSEF-A01-001,639,L3,vuln,benchmark/cases/vuln/accesscontrol/IdorByQueryParam.java,27,@RequestParam id,repo.findById(id) (no owner check),idor-broken-access-control
+JSEF-A01-001S,639,L3,safe,benchmark/cases/sec/accesscontrol/IdorByQueryParamSafe.java,23,@RequestParam id,if(!owner.equals) throw 403,idor-broken-access-control
+JSEF-A01-002,639,L3,vuln,benchmark/cases/vuln/accesscontrol/IdorByHeader.java,25,HTTP Header X-Resource-Id,repo.findById(resourceId) (no owner check),idor-broken-access-control
+JSEF-A01-002S,639,L3,safe,benchmark/cases/sec/accesscontrol/IdorByHeaderSafe.java,23,HTTP Header X-Resource-Id,if(!owner.equals) throw 403,idor-broken-access-control
+JSEF-A01-003,285,L4,vuln,benchmark/cases/vuln/accesscontrol/VerticalPrivEsc.java,20,request-bound role field,authorization decision on role,authorization-bypass
+JSEF-A01-003S,285,L4,safe,benchmark/cases/sec/accesscontrol/VerticalPrivEscSafe.java,17,session role (trusted),authorization decision (role from session),authorization-bypass
+JSEF-A01-004,840,L4,vuln,benchmark/cases/vuln/accesscontrol/WorkflowBypass.java,21,request orderId,return order (no PAID-state check),business-logic
+JSEF-A01-004S,840,L4,safe,benchmark/cases/sec/accesscontrol/WorkflowBypassSafe.java,17,request orderId,status==PAID check before return,business-logic
+JSEF-A01-005,285,L4,vuln,benchmark/cases/vuln/accesscontrol/ForceBrowseAdmin.java,20,direct request to /admin,return admin config (no isAdmin check),authorization-bypass
+JSEF-A01-005S,285,L4,safe,benchmark/cases/sec/accesscontrol/ForceBrowseAdminSafe.java,16,direct request to /admin,if(!isAdmin) throw 403,authorization-bypass
+JSEF-A02-001,327,L2,vuln,benchmark/cases/vuln/crypto/WeakTlsProtocol.java,18,protocol config,SSLContext.getInstance(TLSv1.0),hardcoded-key-ecb
+JSEF-A02-001S,327,L2,safe,benchmark/cases/sec/crypto/WeakTlsProtocolSafe.java,15,protocol config,SSLContext.getInstance(TLSv1.2),hardcoded-key-ecb
+JSEF-A02-002,329,L3,vuln,benchmark/cases/vuln/crypto/ReusedIv.java,25,fixed IV (reused),Cipher(AES/GCM, reused IV),reused-iv
+JSEF-A02-002S,329,L3,safe,benchmark/cases/sec/crypto/ReusedIvSafe.java,25,SecureRandom IV (unique per encrypt),Cipher(AES/GCM, random IV),reused-iv
+JSEF-A02-003,916,L3,vuln,benchmark/cases/vuln/crypto/PbkdfWeakParam.java,22,password,PBEKeySpec(iterationCount=1000),weak-hash
+JSEF-A02-003S,916,L3,safe,benchmark/cases/sec/crypto/PbkdfWeakParamSafe.java,22,password,PBEKeySpec(iterationCount>=100000, random salt),weak-hash
+JSEF-A02-004,327,L2,vuln,benchmark/cases/vuln/crypto/EcbMode.java,23,plaintext,Cipher(AES/ECB),hardcoded-key-ecb
+JSEF-A02-004S,327,L2,safe,benchmark/cases/sec/crypto/EcbModeSafe.java,25,plaintext,Cipher(AES/GCM, random IV),hardcoded-key-ecb
+JSEF-A02-005,330,L2,vuln,benchmark/cases/vuln/crypto/InsecureRandomStream.java,19,Random instance,token string (predictable),weak-random
+JSEF-A02-005S,330,L2,safe,benchmark/cases/sec/crypto/InsecureRandomStreamSafe.java,16,SecureRandom instance,token string (unpredictable),weak-random
+JSEF-A04-001,840,L3,vuln,benchmark/cases/vuln/insecureDesign/PriceTampering.java,20,request-bound price,price * qty (total),business-logic
+JSEF-A04-001S,840,L3,safe,benchmark/cases/sec/insecureDesign/PriceTamperingSafe.java,19,server price (authoritative),serverPrice * qty (total),business-logic
+JSEF-A04-002,915,L3,vuln,benchmark/cases/vuln/insecureDesign/MassAssignPrivEsc.java,20,@RequestBody JSON,UserProfile.isAdmin bind,mass-assignment
+JSEF-A04-002S,915,L3,safe,benchmark/cases/sec/insecureDesign/MassAssignPrivEscSafe.java,20,@RequestBody DTO (whitelist),UserProfile.isAdmin (server-set, not bound),mass-assignment
+JSEF-A04-003,840,L4,vuln,benchmark/cases/vuln/insecureDesign/BusinessRuleBypass.java,20,request amount,balance check before withdraw (bypassable),business-logic
+JSEF-A04-003S,840,L4,safe,benchmark/cases/sec/insecureDesign/BusinessRuleBypassSafe.java,17,authoritative balance,atomic balance check-and-decrement,business-logic
+JSEF-A04-004,362,L4,vuln,benchmark/cases/vuln/insecureDesign/QuotaBypassRace.java,19,request used,quotaRemaining check-then-decrement (non-atomic),race-condition
+JSEF-A04-004S,362,L4,safe,benchmark/cases/sec/insecureDesign/QuotaBypassRaceSafe.java,16,request used,synchronized quotaRemaining check-and-decrement,race-condition
+JSEF-A05-001,942,L3,vuln,benchmark/cases/vuln/misconfig/CorsWildcardCreds.java,18,cors config,Access-Control-Allow-Origin:* + Credentials:true,cors-misconfig
+JSEF-A05-001S,942,L3,safe,benchmark/cases/sec/misconfig/CorsWildcardCredsSafe.java,17,cors config,Access-Control-Allow-Origin: whitelist (no *),cors-misconfig
+JSEF-A05-002,209,L2,vuln,benchmark/cases/vuln/misconfig/VerboseErrorLeak.java,15,exception,response body (stack trace to client),error-info-leak
+JSEF-A05-002S,209,L2,safe,benchmark/cases/sec/misconfig/VerboseErrorLeakSafe.java,14,exception,generic error message to client,error-info-leak
+JSEF-A05-003,693,L2,vuln,benchmark/cases/vuln/misconfig/MissingSecurityHeader.java,18,response headers,missing X-Content-Type-Options/X-Frame-Options/CSP,security-header-missing
+JSEF-A05-003S,693,L2,safe,benchmark/cases/sec/misconfig/MissingSecurityHeaderSafe.java,15,response headers,set X-Content-Type-Options/X-Frame-Options/CSP,security-header-missing
+JSEF-A05-004,489,L3,vuln,benchmark/cases/vuln/misconfig/DebugEndpointExposed.java,20,prod profile,/actuator exposed (no auth),debug-endpoint-exposed
+JSEF-A05-004S,489,L3,safe,benchmark/cases/sec/misconfig/DebugEndpointExposedSafe.java,18,prod profile,/actuator restricted (auth required),debug-endpoint-exposed
+JSEF-A05-005,614,L2,vuln,benchmark/cases/vuln/misconfig/InsecureCookie.java,15,session id,Set-Cookie (no HttpOnly/Secure),insecure-cookie
+JSEF-A05-005S,614,L2,safe,benchmark/cases/sec/misconfig/InsecureCookieSafe.java,13,session id,Set-Cookie (HttpOnly; Secure),insecure-cookie
+JSEF-A06-001,1104,L2,vuln,benchmark/cases/vendor/components/VulnerableDepLog4j.java,23,pom.xml / build config,dependency:org.apache.logging.log4j:log4j-core:2.14.1 (CVE-2021-44228),vulnerable-components
+JSEF-A06-001S,1104,L2,safe,benchmark/cases/vendor/components/VulnerableDepLog4j.java,29,pom.xml / build config,dependency:org.apache.logging.log4j:log4j-core:2.17.1 (CVE-2021-44228 fixed),vulnerable-components
+JSEF-A06-002,1104,L2,vuln,benchmark/cases/vendor/components/VulnerableDepCommonsCollections.java,23,pom.xml / build config,dependency:commons-collections:commons-collections:3.2.1 (CVE-2015-7501),vulnerable-components
+JSEF-A06-002S,1104,L2,safe,benchmark/cases/vendor/components/VulnerableDepCommonsCollections.java,29,pom.xml / build config,dependency:commons-collections:commons-collections:3.2.2 (CVE-2015-7501 fixed),vulnerable-components
+JSEF-A06-003,937,L2,vuln,benchmark/cases/vendor/components/OutdatedSpringVersion.java,23,pom.xml / build config,dependency:org.springframework:spring-core:5.2.x (known CVEs),vulnerable-components
+JSEF-A06-003S,937,L2,safe,benchmark/cases/vendor/components/OutdatedSpringVersion.java,29,pom.xml / build config,dependency:org.springframework:spring-core:5.3.x+ (CVEs fixed),vulnerable-components
+JSEF-A08-001,494,L3,vuln,benchmark/cases/vuln/integrity/UnsignedJarLoad.java,23,untrusted http URL,URLClassLoader.loadClass (unsigned jar),insecure-integrity
+JSEF-A08-001S,494,L3,safe,benchmark/cases/sec/integrity/UnsignedJarLoadSafe.java,22,trusted signed jar,URLClassLoader.loadClass (signature/hash verified),insecure-integrity
+JSEF-A08-002,502,L4,vuln,benchmark/cases/vuln/integrity/UnsafeDeserOfTrust.java,23,untrusted bytes,ObjectInputStream.readObject (no allowlist),insecure-integrity
+JSEF-A08-002S,502,L4,safe,benchmark/cases/sec/integrity/UnsafeDeserOfTrustSafe.java,25,untrusted bytes,ObjectInputStream.readObject (allowlist enforced),insecure-integrity
+JSEF-A08-003,506,L4,vuln,benchmark/cases/vuln/integrity/BuildScriptInjection.java,21,untrusted branch/pr param,Runtime.exec (command concat),insecure-integrity
+JSEF-A08-003S,506,L4,safe,benchmark/cases/sec/integrity/BuildScriptInjectionSafe.java,23,untrusted branch/pr param,ProcessBuilder (whitelist + no concat),insecure-integrity
+JSEF-A09-001,778,L2,vuln,benchmark/cases/vuln/logging/MissingLoginFailLog.java,23,login failure event,no audit log (return silently),security-logging
+JSEF-A09-001S,778,L2,safe,benchmark/cases/sec/logging/MissingLoginFailLogSafe.java,19,login failure event,audit log (who/where/when),security-logging
+JSEF-A09-002,532,L2,vuln,benchmark/cases/vuln/logging/InadequateLogContent.java,21,security action event,log (no user/ip context),security-logging
+JSEF-A09-002S,532,L2,safe,benchmark/cases/sec/logging/InadequateLogContentSafe.java,17,security action event,log (with user/ip/action/time),security-logging
+JSEF-A09-003,778,L3,vuln,benchmark/cases/vuln/logging/NoAuditTrail.java,20,sensitive operation (password change),no audit trail,security-logging
+JSEF-A09-003S,778,L3,safe,benchmark/cases/sec/logging/NoAuditTrailSafe.java,17,sensitive operation (password change),audit trail logged,security-logging
+JSEF-A09-004,390,L2,vuln,benchmark/cases/vuln/logging/SwallowSecurityException.java,24,security exception (catch),swallowed (no log/handle),security-logging
+JSEF-A09-004S,390,L2,safe,benchmark/cases/sec/logging/SwallowSecurityExceptionSafe.java,20,security exception (catch),log + handle/alert,security-logging
+JSEF-SQL-001,89,L2,vuln,benchmark/cases/vuln/sql/mybatis/MybatisMapperInjection.java,33,orderBy,UserMapper.findByOrder(${}),sql-injection-mybatis
+JSEF-SQL-001S,89,L2,safe,benchmark/cases/sec/sql/mybatis/MybatisMapperInjectionSafe.java,29,orderBy,UserMapper.findByOrderSafe(#{}),sql-injection-mybatis
+JSEF-SQL-002,89,L3,vuln,benchmark/cases/vuln/sql/mybatis/MybatisAnnotationInjection.java,30,tableName,@Select(${}),sql-injection-mybatis
+JSEF-SQL-002S,89,L3,safe,benchmark/cases/sec/sql/mybatis/MybatisAnnotationInjectionSafe.java,28,tableName,@Select(#{} whitelist),sql-injection-mybatis
+JSEF-SQL-003,89,L3,vuln,benchmark/cases/vuln/sql/jpa/JpaNativeQueryInjection.java,31,role,EntityManager.createNativeQuery,sql-injection-jpa
+JSEF-SQL-003S,89,L3,safe,benchmark/cases/sec/sql/jpa/JpaNativeQueryInjectionSafe.java,24,role,EntityManager.createNativeQuery(?),sql-injection-jpa
+JSEF-SQL-004,89,L3,vuln,benchmark/cases/vuln/sql/postgres/PgCopyInjection.java,26,tableName,Statement.execute(COPY ... FROM),sql-injection-postgres
+JSEF-SQL-004S,89,L3,safe,benchmark/cases/sec/sql/postgres/PgCopyInjectionSafe.java,21,(none),Statement.execute(COPY users FROM STDIN),sql-injection-postgres
+JSEF-SQL-005,89,L3,vuln,benchmark/cases/vuln/sql/jdbc/StoredProcedureInjection.java,26,"procName,id",CallableStatement.execute,sql-injection-jdbc
+JSEF-SQL-005S,89,L3,safe,benchmark/cases/sec/sql/jdbc/StoredProcedureInjectionSafe.java,22,id,CallableStatement.execute(setString),sql-injection-jdbc
+JSEF-SQL-006,89,L2,vuln,benchmark/cases/vuln/sql/jdbc/JdbcNamedParamAbuse.java,26,sortColumn,NamedParameterJdbcTemplate.query(${}),sql-injection-jdbc
+JSEF-SQL-006S,89,L2,safe,benchmark/cases/sec/sql/jdbc/JdbcNamedParamAbuseSafe.java,23,sortColumn,NamedParameterJdbcTemplate.query(whitelist),sql-injection-jdbc
+JSEF-SQL-007,89,L3,vuln,benchmark/cases/vuln/sql/jpa/HqlInjection.java,32,user,Query.getResultList(HQL concat),sql-injection-jpa
+JSEF-SQL-007S,89,L3,safe,benchmark/cases/sec/sql/jpa/HqlInjectionSafe.java,25,user,Query.getResultList(:name),sql-injection-jpa
+JSEF-SQL-008,89,L2,vuln,benchmark/cases/vuln/sql/jdbc/BatchUpdateInjection.java,24,tableName,JdbcTemplate.batchUpdate(concat),sql-injection-jdbc
+JSEF-SQL-008S,89,L2,safe,benchmark/cases/sec/sql/jdbc/BatchUpdateInjectionSafe.java,18,(none),JdbcTemplate.batchUpdate(fixed),sql-injection-jdbc
+JSEF-PF-001,89,L3,vuln,benchmark/cases/vuln/confusion/SqlPartialParam.java,31,sortColumn (user-controlled),Connection.prepareStatement(exec),sql-injection
+JSEF-PF-001S,89,L3,safe,benchmark/cases/sec/confusion/SqlPartialParamSafe.java,33,sortColumn (whitelist-checked),Connection.prepareStatement(exec),sql-injection
+JSEF-PF-002,78,L3,vuln,benchmark/cases/vuln/confusion/CmdPartialAllowlist.java,33,arg (user-controlled),Runtime.getRuntime().exec,command-injection
+JSEF-PF-002S,78,L3,safe,benchmark/cases/sec/confusion/CmdPartialAllowlistSafe.java,30,arg (whitelist-checked),Runtime.getRuntime().exec,command-injection
+JSEF-NC-001,502,L3,vuln,benchmark/cases/vuln/confusion/ConfusionDeserWhitelistType.java,35,methodName (user-controlled),Method.invoke(exec),unsafe-deserialization
+JSEF-NC-001S,502,L3,safe,benchmark/cases/vuln/confusion/ConfusionDeserWhitelistType.java,48,className (allowlist-checked),no reflection / fixed method,unsafe-deserialization
+JSEF-NC-002,918,L3,vuln,benchmark/cases/vuln/confusion/ConfusionSsrfPrivateIpCheck.java,33,request parameter url,URL.openConnection,ssrf
+JSEF-NC-002S,918,L3,safe,benchmark/cases/vuln/confusion/ConfusionSsrfPrivateIpCheck.java,44,request parameter url,URL.openConnection,ssrf
+JSEF-BL-001,918,L3,vuln,benchmark/cases/vuln/blind/BlindSsrfNoResponse.java,23,request parameter url,URL.openConnection,ssrf
+JSEF-BL-001S,918,L3,safe,benchmark/cases/sec/blind/BlindSsrfNoResponseSafe.java,19,request parameter url,URL.openConnection,ssrf
+JSEF-BL-002,209,L2,vuln,benchmark/cases/vuln/blind/ErrorBasedInfoLeak.java,22,exception.getMessage(),HTTP response body,security-header-missing
+JSEF-BL-002S,209,L2,safe,benchmark/cases/sec/blind/ErrorBasedInfoLeakSafe.java,16,exception,generic message to client,security-header-missing
+JSEF-BL-003,208,L4,vuln,benchmark/cases/vuln/blind/TimingSideChannel.java,22,user input,String.equals (non-constant-time),timing-attack
+JSEF-BL-003S,208,L4,safe,benchmark/cases/sec/blind/TimingSideChannelSafe.java,24,user input,MessageDigest.isEqual (constant-time),timing-attack
+JSEF-CX-001,93,L2,vuln,benchmark/cases/vuln/context/LogInjectionCrlf.java,19,user-controlled message,logger.info (log line),log-injection
+JSEF-CX-001S,93,L2,safe,benchmark/cases/sec/context/LogInjectionCrlfSafe.java,16,user-controlled message,logger.info (sanitized),log-injection
+JSEF-CX-002,113,L2,vuln,benchmark/cases/vuln/context/HeaderInjectionFromParam.java,21,request parameter,response.setHeader,header-injection
+JSEF-CX-002S,113,L2,safe,benchmark/cases/sec/context/HeaderInjectionFromParamSafe.java,18,request parameter,response.setHeader,header-injection
