@@ -1,0 +1,14 @@
+<!-- JSEF-A06-002 — commons-collections VULN/Safe 依赖片段（pom.xml） -->
+<!-- ===== VULN：引入存在 CVE-2015-7501 的 3.2.1 ===== -->
+<dependency>
+    <groupId>commons-collections</groupId>
+    <artifactId>commons-collections</artifactId>
+    <version>3.2.1</version>   <!-- [CHECKPOINT id=JSEF-A06-002 危险版本] -->
+</dependency>
+
+<!-- ===== SAFE：升级到修复版 3.2.2（或迁移到 4.x） ===== -->
+<dependency>
+    <groupId>commons-collections</groupId>
+    <artifactId>commons-collections</artifactId>
+    <version>3.2.2</version>   <!-- [CHECKPOINT id=JSEF-A06-002S 安全版本] -->
+</dependency>

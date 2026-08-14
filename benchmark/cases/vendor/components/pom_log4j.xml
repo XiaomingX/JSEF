@@ -1,0 +1,14 @@
+<!-- JSEF-A06-001 — log4j-core VULN/Safe 依赖片段（pom.xml） -->
+<!-- ===== VULN：引入存在 CVE-2021-44228 (Log4Shell) 的 2.14.1 ===== -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.14.1</version>   <!-- [CHECKPOINT id=JSEF-A06-001 危险版本] -->
+</dependency>
+
+<!-- ===== SAFE：升级到已修复的 2.17.1 ===== -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.17.1</version>   <!-- [CHECKPOINT id=JSEF-A06-001S 安全版本] -->
+</dependency>
