@@ -258,3 +258,43 @@ JSEF-CX-001,93,L2,vuln,benchmark/cases/vuln/context/LogInjectionCrlf.java,19,use
 JSEF-CX-001S,93,L2,safe,benchmark/cases/sec/context/LogInjectionCrlfSafe.java,16,user-controlled message,logger.info (sanitized),log-injection
 JSEF-CX-002,113,L2,vuln,benchmark/cases/vuln/context/HeaderInjectionFromParam.java,21,request parameter,response.setHeader,header-injection
 JSEF-CX-002S,113,L2,safe,benchmark/cases/sec/context/HeaderInjectionFromParamSafe.java,18,request parameter,response.setHeader,header-injection
+JSEF-V1-AGT-001,285,L3,vuln,benchmark/cases/vuln/agent-capability-bypass/AgentToolNoAuthz.java,21,caller-requested tool name,tool.execute() (no caller permission check),agent-capability-bypass
+JSEF-V1-AGT-001S,285,L3,safe,benchmark/cases/sec/agent-capability-bypass/AgentToolNoAuthzSafe.java,15,caller-requested tool name,tool.execute() (caller permission checked),agent-capability-bypass
+JSEF-V1-AGT-002,285,L4,vuln,benchmark/cases/vuln/agent-capability-bypass/AgentIntentBypass.java,19,user intent (prompt),allowlist bypass (no guard),agent-capability-bypass
+JSEF-V1-AGT-002S,285,L4,safe,benchmark/cases/sec/agent-capability-bypass/AgentIntentBypassSafe.java,13,user intent (prompt),allowlist (enforced, no override),agent-capability-bypass
+JSEF-V1-AGT-003,285,L4,vuln,benchmark/cases/vuln/agent-capability-bypass/AgentPrivilegeEscalate.java,20,req.requestedLevel,ctx.level = requestedLevel (self-escalation),agent-capability-bypass
+JSEF-V1-AGT-003S,285,L4,safe,benchmark/cases/sec/agent-capability-bypass/AgentPrivilegeEscalateSafe.java,14,req.requestedLevel,ctx.level (server-set, no escalation),agent-capability-bypass
+JSEF-V1-ORG-001,345,L3,vuln,benchmark/cases/vuln/origin-integrity/WebhookNoSigVerify.java,15,webhook payload + X-Signature header,process(payload) (no HMAC verify),origin-integrity
+JSEF-V1-ORG-001S,345,L3,safe,benchmark/cases/sec/origin-integrity/WebhookNoSigVerifySafe.java,13,webhook payload + X-Signature header,process(payload) (HMAC verified),origin-integrity
+JSEF-V1-ORG-002,347,L3,vuln,benchmark/cases/vuln/origin-integrity/SignedTokenNoVerify.java,18,signed token,claims.get(role) (signature not verified),origin-integrity
+JSEF-V1-ORG-002S,347,L3,safe,benchmark/cases/sec/origin-integrity/SignedTokenNoVerifySafe.java,14,signed token,claims.get(role) (signature verified),origin-integrity
+JSEF-V1-ORG-003,345,L4,vuln,benchmark/cases/vuln/origin-integrity/IntegrityCheckBypass.java,15,uploaded data + mac,verify (mac bypassable, null accepted),origin-integrity
+JSEF-V1-ORG-003S,345,L4,safe,benchmark/cases/sec/origin-integrity/IntegrityCheckBypassSafe.java,11,uploaded data + mac,verify (mac required, constant-time),origin-integrity
+JSEF-V1-TNT-001,639,L3,vuln,benchmark/cases/vuln/multi-tenant/TenantDataLeak.java,20,user-controlled id,repo.findById(id) (no tenant filter),multi-tenant
+JSEF-V1-TNT-001S,639,L3,safe,benchmark/cases/sec/multi-tenant/TenantDataLeakSafe.java,14,user-controlled id,repo.findByIdAndTenant(id, serverTenant),multi-tenant
+JSEF-V1-TNT-002,285,L4,vuln,benchmark/cases/vuln/multi-tenant/TenantIdSpoof.java,20,req.tenantId (client-supplied),repo.findByTenant(tenantId),multi-tenant
+JSEF-V1-TNT-002S,285,L4,safe,benchmark/cases/sec/multi-tenant/TenantIdSpoofSafe.java,15,req.tenantId (ignored),repo.findByTenant(serverTenant),multi-tenant
+JSEF-V1-TRU-001,94,L3,vuln,benchmark/cases/vuln/trust-boundary/TrustInternalInput.java,19,internal-service response payload,ScriptEngine.eval(payload) (no boundary check),trust-boundary
+JSEF-V1-TRU-001S,94,L3,safe,benchmark/cases/sec/trust-boundary/TrustInternalInputSafe.java,13,internal-service response payload,process(validated) (boundary check),trust-boundary
+JSEF-V1-DEF-001,1188,L2,vuln,benchmark/cases/vuln/insecure-default/InsecureDefaultCreds.java,15,hardcoded default admin/password,store.createUser(admin, "admin"),insecure-default
+JSEF-V1-DEF-001S,1188,L2,safe,benchmark/cases/sec/insecure-default/InsecureDefaultCredsSafe.java,11,hardcoded default (none),store.createUser (disabled by default),insecure-default
+JSEF-V1-DEF-002,16,L3,vuln,benchmark/cases/vuln/insecure-default/DebugDefaultOn.java,18,exception via DEBUG=true,response (verbose stack trace),insecure-default
+JSEF-V1-DEF-002S,16,L3,safe,benchmark/cases/sec/insecure-default/DebugDefaultOnSafe.java,13,exception via DEBUG=false,response (generic message),insecure-default
+JSEF-V1-PRV-001,269,L3,vuln,benchmark/cases/vuln/priv-esc/RoleManipulationEsc.java,19,profile.role (client-bound),repo.save(p) (role persisted),priv-esc
+JSEF-V1-PRV-001S,269,L3,safe,benchmark/cases/sec/priv-esc/RoleManipulationEscSafe.java,13,profile.role (ignored),repo.save(p with serverRole),priv-esc
+JSEF-V1-PRV-002,285,L4,vuln,benchmark/cases/vuln/priv-esc/VerticalPrivEscToken.java,18,token.role (unverified claim),authorization decision,priv-esc
+JSEF-V1-PRV-002S,285,L4,safe,benchmark/cases/sec/priv-esc/VerticalPrivEscTokenSafe.java,13,token.role (ignored),authorization (serverRole),priv-esc
+JSEF-V1-AUT-001,862,L3,vuln,benchmark/cases/vuln/missing-authorization/NewEndpointNoAuthz.java,13,HTTP request to /api/admin/reset,resetConfig() (no @PreAuthorize),missing-authorization
+JSEF-V1-AUT-001S,862,L3,safe,benchmark/cases/sec/missing-authorization/NewEndpointNoAuthzSafe.java,10,HTTP request to /api/admin/reset,resetConfig() (guarded by @PreAuthorize),missing-authorization
+JSEF-V1-AUT-002,862,L4,vuln,benchmark/cases/vuln/missing-authorization/AnonymousAdminEndpoint.java,13,anonymous request to /admin/export,exportSecrets() (no authn/authz),missing-authorization
+JSEF-V1-AUT-002S,862,L4,safe,benchmark/cases/sec/missing-authorization/AnonymousAdminEndpointSafe.java,10,authenticated+authorized request,exportSecrets() (authn+authz enforced),missing-authorization
+JSEF-V2-001,284,L4,vuln,benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java,36,untrustedScript,Runtime.getRuntime().exec(exec via reflection),sandbox-escape
+JSEF-V2-001B,284,L4,vuln,benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java,55,sandboxBoundValue(reflection pivot),Runtime.getRuntime().exec,sandbox-escape
+JSEF-V2-001S,284,L4,safe,benchmark/cases/sec/sandbox/ScriptEngineSandboxEscapeSafe.java,36,untrustedScript,Runtime.getRuntime().exec(exec via reflection),sandbox-escape
+JSEF-V2-001SB,284,L4,safe,benchmark/cases/sec/sandbox/ScriptEngineSandboxEscapeSafe.java,50,sandboxBoundValue(reflection pivot),Runtime.getRuntime().exec,sandbox-escape
+JSEF-V2-002,265,L5,vuln,benchmark/cases/vuln/sandbox/GroovySandboxEscape.java,71,untrustedScript,Runtime.getRuntime().exec(meta-programming),sandbox-escape
+JSEF-V2-002S,265,L5,safe,benchmark/cases/sec/sandbox/GroovySandboxEscapeSafe.java,50,untrustedScript,Runtime.getRuntime().exec(meta-programming),sandbox-escape
+JSEF-V2-003,284,L5,vuln,benchmark/cases/vuln/sandbox/ClassloaderEscape.java,41,untrustedUrl,URLClassLoader.loadClass(escape restricted context),sandbox-escape
+JSEF-V2-003B,284,L5,vuln,benchmark/cases/vuln/sandbox/ClassloaderEscape.java,53,untrustedUrl,Thread.currentThread().setContextClassLoader(escape),sandbox-escape
+JSEF-V2-003S,284,L5,safe,benchmark/cases/sec/sandbox/ClassloaderEscapeSafe.java,36,untrustedUrl,URLClassLoader.loadClass(escape restricted context),sandbox-escape
+JSEF-V2-003SB,284,L5,safe,benchmark/cases/sec/sandbox/ClassloaderEscapeSafe.java,47,untrustedUrl,Thread.currentThread().setContextClassLoader(escape),sandbox-escape
