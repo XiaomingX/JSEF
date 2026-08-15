@@ -45,7 +45,7 @@ cd JSEF
 mvn clean package -DskipTests
 
 # 3. Start the service
-java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
+java -jar target/java-sec-code-plus-1.2.0.jar
 ```
 
 ### Method 2: One-Click Docker Deployment

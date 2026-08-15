@@ -31,7 +31,7 @@ WORKDIR /app
 
 # 1. 从构建阶段复制编译好的JAR包到运行阶段（仅复制最终产物，剔除构建依赖）
 # 注意：JAR包名称需与项目实际生成的一致（参考你之前的启动命令：springboot-security-sample-0.0.1-SNAPSHOT.jar）
-COPY --from=build-stage /app/target/java-sec-code-plus-0.0.1-SNAPSHOT.jar ./jsef-app.jar
+COPY --from=build-stage /app/target/java-sec-code-plus-1.2.0.jar ./jsef-app.jar
 
 # 2. 暴露容器端口（需与项目启动端口一致，默认8080）
 # 此步骤仅为"声明"端口，实际端口映射通过 docker run -p 实现
