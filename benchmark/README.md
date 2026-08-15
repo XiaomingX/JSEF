@@ -117,6 +117,21 @@ benchmark/
 
 > 设计原则：宁缺毋滥——只补有真实业务语义、可机器标注、高区分度的逻辑漏洞；每类做 vuln+sec 配对，L3/L4 带 `trace=` 路径节点。
 
+#### 原子范式样本族（TCM / SBM / DBG / STR，去库化原理还原）
+
+为验收**被测对象对"同类原理"漏洞的泛化检测能力**（而非仅识别某具体库的已知 CVE），新增 `benchmark/cases/{vuln,sec}/{tcm,sbm,dbg,str}/` 样本族。这些样本从近年高危框架（Fastjson / Spring Boot / Dubbo / Struts2）的真实 0day/1day 中抽象出**与具体库无关**的底层危险组合，用纯 Java 标准库语义自包含复现，**不出现原框架类名**，且刻意避开仓库已有的 `JSEF-OGNL-*` / `JSEF-SPEL-*` / `JSEF-DESER-*` 等单层场景，只覆盖各框架**独有且未被建模**的原子维度。
+
+| 命名空间 | 抽象自 | 原子范式维度（MECE） | 样本数 |
+|---------|--------|---------------------|--------|
+| `JSEF-TCM-` | Fastjson 反序列化 | TCM-1 直接类型选择 · TCM-2 继承绕过白名单 · TCM-3 缓存/二次解析绕过 · TCM-4 私有字段可控 · TCM-5 属性即代码 | 20 |
+| `JSEF-SBM-` | Spring Boot | SBM-1 属性绑定穿越 · SBM-2 声明式配置被求值 · SBM-3 高权限端点暴露 · SBM-4 授权短路绕过 | 16 |
+| `JSEF-DBG-` | Dubbo RPC | DBG-1 解析器/格式协商切换 · DBG-2 跨信任域隐式信任 · DBG-3 类名黑名单编码变形绕过 | 16 |
+| `JSEF-STR-` | Struts2/OGNL | STR-1 双层求值 · STR-2 协议层字段注入 · STR-3 表达式排除列表/沙箱绕过 | 12 |
+
+- 抽象原则：剥离"JSON 库 autotype""Web 框架 SpEL"等具体机制，只保留跨框架不变危险组合——攻击者控制类型/数据 + 系统自动调用隐式方法 + 隐式方法链抵达危险 sink。
+- 高区分度：含 L4 跨文件、L5 gadget chain、跨方法链等难例；全部带 `// [CHECKPOINT]`，vuln+sec 配对算 FP/TN。
+- 设计文档：`plans/02-type-confusion-mechanism-samples.md` / `03-spring-boot-atomic-mechanism-samples.md` / `04-dubbo-atomic-mechanism-samples.md` / `05-struts2-atomic-mechanism-samples.md`。
+
 > 历史说明：早期 `MY_PLAN.md` A3 与本文档旧版曾标注"当前 `expectedresults.csv` 中无样本标记为 L0"，该表述已于 Phase 1（L0 基线补全）落地后**更正**——详见 `MY_PLAN.md` Phase G 与 `plans/00-benchmark-gap-completion.md`。
 
 每条样本在源码精确行标注 `// [CHECKPOINT id=... cwe=... level=... expect=VULN|SAFE]`，元数据同步写入 `expectedresults.csv`。
@@ -352,4 +367,4 @@ python3 benchmark/scripts/validate_checkpoints.py \
 - VulnGym 独有且 JSEF 原缺失、现经补齐已对齐的子类：`agent-capability-bypass` / `origin-integrity` / `multi-tenant` / `trust-boundary` / `insecure-default` / `priv-esc` / `missing-authorization` / `sandbox-escape`（共 8 类，对应 G1–G8 / G5）。
 - 路径评测维度：JSEF 通过可选 `trace=` 字段（§3）与 scorecard `--check-trace`（§5.1）对标 VulnGym 的 `entry_point → critical_operation → trace` 多节点理念，同时保留 JSEF 在 precision/F1/MCC 上的相对优势。
 
-> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 438 checkpoint，含表头 439 行；其中 LT 系列长程任务样本 16 条、代码质量/性能 DoS + LGTM 缺口样本 28 条、逻辑漏洞样本 12 条，详见 §3）。
+> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 503 checkpoint，含表头 504 行；其中 LT 系列长程任务样本 16 条、代码质量/性能 DoS + LGTM 缺口样本 28 条、逻辑漏洞样本 12 条、原子范式样本族 TCM/SBM/DBG/STR 共 64 条，详见 §3）。

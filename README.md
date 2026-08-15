@@ -112,12 +112,32 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 > 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致，经 `validate_checkpoints.py` 校验退出码 0）
 
-- **438 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞样本）
-- **230 个 VULN**（应报）+ **197 个 SAFE**（不应报，用于算 TN/FP）
-- 难度分布：L0 x 18、L1 x 135、L2 x 92、L3 x 89、L4 x 62、L5 x 31（完整 L0-L5 梯度）
-- CWE 覆盖：**68 类**（仅计 VULN）。高频：表达式注入(917) x 25、反序列化(502) x 21、SQLi(89) x 17、命令注入(78) x 12、授权失效(285) x 10、硬编码凭证/密钥(798) x 7、业务逻辑(840) x 7、SSRF(918) x 6、IDOR(639) x 6、路径穿越(22) x 5、ReDoS(1333) x 5、性能 DoS(400) x 5
-- 覆盖 **99 个 category**（slug），含 OWASP Top 10 2021 全类；**33 条**样本带 `trace=` 路径节点（支持 `--check-trace` 路径正确性评测）
+- **503 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞样本 + **原子范式样本族 TCM/SBM/DBG/STR**）
+- **268 个 VULN**（应报）+ **235 个 SAFE**（不应报，用于算 TN/FP）
+- 难度分布：L0 x 18、L1 x 139、L2 x 106、L3 x 115、L4 x 86、L5 x 39（完整 L0-L5 梯度）
+- CWE 覆盖：**69 类**（仅计 VULN）。高频：表达式注入(917) x 25、反序列化(502) x 21、SQLi(89) x 17、命令注入(78) x 12、授权失效(285) x 10、硬编码凭证/密钥(798) x 7、业务逻辑(840) x 7、SSRF(918) x 6、IDOR(639) x 6、路径穿越(22) x 5、ReDoS(1333) x 5、性能 DoS(400) x 5
+- 覆盖 **121 个 category**（slug），含 OWASP Top 10 2021 全类；**65 条**样本带 `trace=` 路径节点（支持 `--check-trace` 路径正确性评测）
 - 专项样本族：长程任务(LT) x 16、代码质量/性能 DoS(PERF) x 15、信任边界(TB)/反射(REFLECT)/格式串(FMT)/hostname(HOST)/XSLT(XSLT)/forward(FWD)/种子(SEED) 各 x 2
+- **原子范式样本族（TCM/SBM/DBG/STR）** x 64：从 Fastjson、Spring Boot、Dubbo、Struts2 的真实 0day/1day 中抽象出**与具体库无关**的底层危险组合，用纯 Java 标准库自包含复现。详见下方「原子范式样本族」章节。
+
+### 原子范式样本族（TCM / SBM / DBG / STR）
+
+为满足「评估大模型 / harness 对**同类原理**漏洞的检测能力」这一需求，JSEF 从近年高危框架（Fastjson、Spring Boot、Dubbo、Struts2）的 0day/1day 中抽象出**去库化**的原子级危险范式，构造了一批与具体框架解耦、但原理同源的复杂样本。每个范式族含 `vuln` + `sec` 对照（算 FP/TN），按 L1–L5 分级，全部带 `// [CHECKPOINT]` 标注且不出现原框架类名（纯标准库语义）。
+
+| 命名空间 | 抽象自 | 原子范式维度（MECE，互不重叠） | 样本数 |
+|---------|--------|-------------------------------|--------|
+| **TCM** | Fastjson 反序列化 | TCM-1 直接类型选择 · TCM-2 继承绕过白名单 · TCM-3 缓存/二次解析绕过 · TCM-4 私有字段可控 · TCM-5 属性即代码（getter/setter 危险） | 20 |
+| **SBM** | Spring Boot | SBM-1 属性绑定穿越（Binder Traversal）· SBM-2 声明式配置被求值 · SBM-3 高权限端点暴露 · SBM-4 授权短路绕过 | 16 |
+| **DBG** | Dubbo RPC | DBG-1 解析器/格式协商切换 · DBG-2 跨信任域隐式信任（attachment）· DBG-3 类名黑名单编码变形绕过 | 16 |
+| **STR** | Struts2/OGNL | STR-1 双层求值（Double Evaluation）· STR-2 协议层字段注入 · STR-3 表达式排除列表/沙箱绕过 | 12 |
+
+**设计要点**：
+- 抽象原则：剥离「某 JSON 库 autotype」「某 Web 框架 SpEL」等具体机制，只保留「攻击者控制类型/数据 + 系统自动调用隐式方法 + 隐式方法链抵达危险 sink」等跨框架不变危险组合。
+- 与既有样本不重叠：刻意避开仓库已有的 `JSEF-OGNL-*`/`JSEF-SPEL-*` 单层表达式注入、`JSEF-DESER-*` 直接反序列化等场景，只覆盖上述框架**独有**且未被建模的原子维度（如 OGNL 双层求值、Spring4Shell 绑定穿越、Dubbo 解析器协商）。
+- 高区分度：含 L4 跨文件、L5 gadget chain、跨方法链等难例，专用于拉开不同工具/模型的能力档次。
+- 安全底线：所有危险调用仅 localhost 演示语义、占位字符串，不提供真实利用脚本。
+
+样本位置：`benchmark/cases/{vuln,sec}/{tcm,sbm,dbg,str}/`；设计文档：`plans/02-~05-*.md`。
 
 样本组织：
 - `benchmark/cases/vuln/` 与 `benchmark/cases/sec/`：有区分度的梯度样本（含安全对照）

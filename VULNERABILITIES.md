@@ -2,7 +2,7 @@
 
 This document provides a comprehensive list of all vulnerability examples implemented in the Java Security Education Framework (JSEF), categorized for easier navigation and study. Each entry represents a unique security flaw, often accompanied by both insecure and secure code implementations.
 
-> 当前仓库共 **133 条**机器可读 `// [CHECKPOINT]` 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本），其中 **93 个 VULN** + **40 个 SAFE**，跨 **34 类 CWE**。下方按漏洞家族列出已实现的代表性案例（非逐条穷举，完整清单见 `benchmark/expectedresults.csv`）。
+> 当前仓库共 **503 条**机器可读 `// [CHECKPOINT]` 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞 + **原子范式样本族 TCM/SBM/DBG/STR**），其中 **268 个 VULN** + **235 个 SAFE**，跨 **69 类 CWE**、**121 个 category**（slug）。下方按漏洞家族列出已实现的代表性案例（非逐条穷举，完整清单见 `benchmark/expectedresults.csv`）。
 
 ---
 
@@ -67,5 +67,16 @@ This document provides a comprehensive list of all vulnerability examples implem
 - 头注入：HttpHeaders.add 注入（CWE-113）
 - 危险操作：sun.misc.Unsafe 任意内存读（CWE-111）
 - 业务逻辑缺陷：余额篡改无符号校验、价格篡改、优惠券滥用、库存超卖（CWE-840，含优惠券 SAFE）
+
+### 6. 原子范式样本族（TCM / SBM / DBG / STR，去库化原理还原）
+
+为评估大模型 / harness 对**同类原理**漏洞的检测能力，从近年高危框架（Fastjson、Spring Boot、Dubbo、Struts2）的真实 0day/1day 中抽象出**与具体库无关**的原子级危险范式，用纯 Java 标准库自包含复现。每个范式族含 `vuln` + `sec` 对照，按 L1–L5 分级，全部带 `// [CHECKPOINT]` 标注且不出现原框架类名。详见 `README.md`「原子范式样本族」章节。
+
+| 命名空间 | 抽象自 | 原子范式维度（MECE，互不重叠） | 样本数 |
+|---------|--------|-------------------------------|--------|
+| **TCM** | Fastjson 反序列化 | TCM-1 直接类型选择 · TCM-2 继承绕过白名单 · TCM-3 缓存/二次解析绕过 · TCM-4 私有字段可控 · TCM-5 属性即代码（getter/setter 危险） | 20 |
+| **SBM** | Spring Boot | SBM-1 属性绑定穿越（Binder Traversal）· SBM-2 声明式配置被求值 · SBM-3 高权限端点暴露 · SBM-4 授权短路绕过 | 16 |
+| **DBG** | Dubbo RPC | DBG-1 解析器/格式协商切换 · DBG-2 跨信任域隐式信任（attachment）· DBG-3 类名黑名单编码变形绕过 | 16 |
+| **STR** | Struts2/OGNL | STR-1 双层求值（Double Evaluation）· STR-2 协议层字段注入 · STR-3 表达式排除列表/沙箱绕过 | 12 |
 
 **注意：** 某些 CVE，如 CVE-2023-34034 (Spring WebFlux 授权绕过) 和 CVE-2023-44487 (HTTP/2 快速重置攻击)，由于其依赖于 Spring WebFlux 框架或属于低级别网络协议问题，与本项目 Spring MVC 的应用场景不符，或难以在简单控制器中演示，因此仅作记录，未实现具体的教程案例。
