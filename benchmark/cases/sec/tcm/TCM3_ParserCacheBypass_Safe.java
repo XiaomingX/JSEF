@@ -61,25 +61,19 @@ public class TCM3_ParserCacheBypass_Safe {
             throw new IllegalArgumentException("type rejected, no cache bypass: " + type);
         }
 
-        Function<String, Object> invoker = (t) -> {
-            try {
-                // 即便到达链末端，也只针对已校验类型；Runtime.exec 不再被任意类型驱动
-                Class<?> rt = Class.forName("java.lang.Runtime");
-                java.lang.reflect.Method getRuntime = rt.getMethod("getRuntime");
-                Object runtime = getRuntime.invoke(null);
-                java.lang.reflect.Method exec = rt.getMethod("exec", String.class);
-                // 此处的 exec 仅对白名单内 DemoBean 触发，且为本省占位，不再受缓存绕过影响
-                return exec.invoke(runtime, "localhost-demo"); // 仅占位，不连真实远端
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
-
+        // 修复：链末端不再驱动任意危险调用；仅对已校验白名单类型执行无害业务动作。
+        // 危险调用（Runtime.exec 等）完全移出代码路径，缓存绕过不再能触达 sink。
+        Function<String, Object> invoker = (t) -> new DemoBean().benign();
         invoker.apply(type);
     }
 
     // 无害演示 Bean（仅用于白名单命中分支）
     public static class DemoBean {
+        // 白名单内允许执行的业务动作——无任何危险调用
+        public String benign() {
+            return "DemoBean.benign() executed (no dangerous sink reachable)";
+        }
+
         @Override
         public String toString() {
             return "DemoBean(benign)";

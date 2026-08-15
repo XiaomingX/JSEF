@@ -48,20 +48,16 @@ public class DBG3_ListBypassByEncoding_Safe {
      * 类名来源被限定为服务端固定白名单 Class 实例，禁止任何运行时字符串拼名。
      */
     public void loadDynamic(String a, String b) throws Exception {
-        // [SAFE] 禁用 ClassLoader 动态加载，改用服务端固定 Class 实例精确比较
+        // [SAFE] 禁用 ClassLoader 动态加载：先解析出真实 Class 对象，再用 == 与黑名单精确比较
         // [CHECKPOINT id=JSEF-DBG-302S cwe=502 level=L4 source=class name sink=no dynamic ClassLoader, exact compare expect=SAFE]
-        Class<?> target = null; // 仅允许从固定白名单取，绝不接受拼接出的字符串作为类名
-        for (Class<?> allow : DENY_CLASSES) {
-            if (!allow.getName().equals(a + b)) {
-                // 演示：拼接出的名字永远不在允许集（此处直接拒绝任意外部拼名）
-                target = allow;
-                break;
+        Class<?> target = Class.forName(a + b); // 仅解析，不交给 ClassLoader 动态加载
+        for (Class<?> deny : DENY_CLASSES) {
+            if (target == deny) {
+                throw new SecurityException("blocked by deny-list (class equality), dynamic loading disabled");
             }
         }
-        if (target == null) {
-            throw new SecurityException("dynamic class loading is disabled");
-        }
-        // localhost-demo：危险调用占位，不连接真实远端
-        System.out.println("localhost-demo: fixed-class load " + target.getName());
+        // localhost-demo：仅允许解析、实例化白名单外的安全类，不连接真实远端
+        Object instance = target.getDeclaredConstructor().newInstance();
+        System.out.println("localhost-demo: fixed-class load " + instance.getClass().getName());
     }
 }

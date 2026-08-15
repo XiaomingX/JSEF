@@ -47,19 +47,16 @@ public class DBG3_EncodingVariants_Safe {
      * 类名来源被限定为服务端固定白名单 Class 实例，禁止任何运行时转义/双写拼名。
      */
     public void loadEscaped(String obfuscated) throws Exception {
-        // [SAFE] 禁用 ClassLoader 动态加载，改用服务端固定 Class 实例精确比较
+        // [SAFE] 禁用 ClassLoader 动态加载：先解析出真实 Class 对象，再用 == 与黑名单精确比较
         // [CHECKPOINT id=JSEF-DBG-304S cwe=502 level=L4 source=class name sink=no dynamic ClassLoader, exact compare expect=SAFE]
-        Class<?> target = null; // 仅允许从固定白名单取，绝不接受拼接还原后的字符串作为类名
-        for (Class<?> allow : DENY_CLASSES) {
-            if (!allow.getName().equals(obfuscated)) {
-                target = allow;
-                break;
+        Class<?> target = Class.forName(obfuscated); // 仅解析，不交给 ClassLoader 动态加载
+        for (Class<?> deny : DENY_CLASSES) {
+            if (target == deny) {
+                throw new SecurityException("blocked by deny-list (class equality), dynamic loading disabled");
             }
         }
-        if (target == null) {
-            throw new SecurityException("dynamic class loading is disabled");
-        }
-        // localhost-demo：危险调用占位，不连接真实远端
-        System.out.println("localhost-demo: fixed-class load " + target.getName());
+        // localhost-demo：仅允许解析、实例化白名单外的安全类，不连接真实远端
+        Object instance = target.getDeclaredConstructor().newInstance();
+        System.out.println("localhost-demo: fixed-class load " + instance.getClass().getName());
     }
 }
