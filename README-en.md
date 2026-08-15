@@ -92,27 +92,35 @@ JSEF is not only a teaching platform, but also ships a benchmark for **validatin
 
 ### Samples & Difficulty Grading
 
-Samples are graded **L1-L5** (each level increases reasoning distance and semantic dependency to separate tools/models by tier; L0 is only a capability baseline reference, see `MY_PLAN.md` A3 — no sample is currently tagged L0):
+Samples are graded **L0-L5** (each level increases reasoning distance and semantic dependency to separate tools/models by tier; L0 is the capability baseline that all tools/models should hit):
 
 | Level | Meaning | Example |
 |-------|---------|---------|
+| L0 | Capability baseline (explicit direct) | source passed straight to sink, no intermediate |
 | L1 | Single-hop direct | `Runtime.exec(userInput)` |
 | L2 | Multi-hop (no break) | source -> intermediate var -> builder -> sink |
 | L3 | Indirect / cross-method | taint via Map/field; via method return value across functions |
 | L4 | Cross-file / framework semantics | Controller -> ServiceA -> ServiceB -> sink; Spring4Shell SpEL semantics |
 | L5 | gadget chain | multiple safe classes combined into dangerous reachability (CC deserialization chain abstraction) |
 
+Beyond the base grading, two "long-horizon / complex task" sample families specifically validate LLM **planning** and **consistency**:
+- **Long-horizon tasks (LT series)**: cross-file tracing / framework state machine / gadget chain reconstruction / multi-hop concatenation / version gating — see [`benchmark/README.md`](benchmark/README.md) §3.
+- **Code quality / performance DoS + LGTM gaps (PERF/TB/REFLECT/FMT/HOST/XSLT/FWD/SEED series)**: slow SQL, resource leaks, reflection injection, trust boundary, format-string injection, etc., aligned with the LGTM/CodeQL Java rule pack.
+
 ### Current Sample Scale
 
-> Data source: `benchmark/expectedresults.csv` (source of truth, kept in two-way sync with `// [CHECKPOINT]` annotations in source, 133 entries total)
+> Data source: `benchmark/expectedresults.csv` (source of truth, kept in two-way sync with `// [CHECKPOINT]` annotations in source; `validate_checkpoints.py` exits 0)
 
-- **133** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples)
-- **93 VULN** (should be reported) + **40 SAFE** (should not be reported, used to compute TN/FP)
-- Difficulty distribution: L1 x 89, L2 x 17, L3 x 16, L4 x 8, L5 x 3
-- CWE coverage (34 categories, VULN only): Expression Injection (917) x 18, Deserialization (502) x 12, Command Injection (78) x 9, Hardcoded Credentials/Key (798) x 5, SQLi (89) x 4, Business Logic (840) x 4, Template Injection (1336) x 3, Clickjacking/Missing Security Header (1021) x 3, XPath (643) x 2, LDAP (90) x 2, SSRF (918) x 2, XXE (611) x 2, IDOR (639) x 2, Weak Hash (327) x 2, Auth Bypass (287) x 2, Authorization Bypass (285) x 2, Open Redirect (601) x 2, plus Path Traversal (22)/Weak Random (330)/XSS (79)/NoSQL (943)/JWT (345)/CORS (942)/Weak Password (521)/Sensitive Data Exposure (532)/Mass Assignment (915)/Race Condition (362)/Numeric Input (20)/Missing Rate Limiting (307)/ReDoS (1333)/Hash Collision (694)/JSONP (352)/Header Injection (113)/Risky Operations (111) x 1 each
+- **438** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples + long-horizon tasks + code-quality/perf-DoS + LGTM-gap + logic-flaw samples)
+- **230 VULN** (should be reported) + **197 SAFE** (should not be reported, used to compute TN/FP)
+- Difficulty distribution: L0 x 18, L1 x 135, L2 x 92, L3 x 89, L4 x 62, L5 x 31 (full L0-L5 gradient)
+- CWE coverage: **68 categories** (VULN only). Top: Expression Injection (917) x 25, Deserialization (502) x 21, SQLi (89) x 17, Command Injection (78) x 12, Authorization Bypass (285) x 10, Hardcoded Credentials/Key (798) x 7, Business Logic (840) x 7, SSRF (918) x 6, IDOR (639) x 6, Path Traversal (22) x 5, ReDoS (1333) x 5, Performance DoS (400) x 5
+- Covers **99 categories** (slug), including all OWASP Top 10 2021 classes; **33** samples carry `trace=` path nodes (enables `--check-trace` path-correctness scoring)
+- Special families: Long-horizon (LT) x 16, Code-quality/Perf-DoS (PERF) x 15, Trust-boundary (TB)/Reflection (REFLECT)/Format-string (FMT)/Hostname (HOST)/XSLT (XSLT)/Forward (FWD)/Seed (SEED) x 2 each
 
 Sample organization:
 - `benchmark/cases/vuln/` and `benchmark/cases/sec/`: discriminating-difficulty gradient samples (with safe counterparts)
+- `benchmark/cases/vuln/longtask/` and `benchmark/cases/vuln/perf/`: long-horizon and code-quality/perf-DoS dedicated samples
 - `benchmark/cases/vendor/`: high-quality competitor samples abstracted from OWASP Benchmark / Juliet / PrimeVul / CVEfixes, with source-URL provenance
 
 ### How to Run & Cross-Compare

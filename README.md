@@ -93,27 +93,35 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 ### 样本与区分度分级
 
-样本按 **L1-L5** 分级（逐级加大推理距离与语义依赖，以拉开不同工具/模型的能力档次；L0 仅作能力基准参考，见 `MY_PLAN.md` A3，当前无样本标记为 L0）：
+样本按 **L0-L5** 分级（逐级加大推理距离与语义依赖，以拉开不同工具/模型的能力档次；L0 为能力基准，所有工具/模型都应命中）：
 
 | 级别 | 含义 | 示例 |
 |------|------|------|
+| L0 | 能力基准（显式直连） | source 直接传入 sink，无中间变量 |
 | L1 | 单跳直连 | `Runtime.exec(userInput)` |
 | L2 | 多跳（变量无断点） | source -> 中间变量 -> builder -> sink |
 | L3 | 间接 / 跨方法 | 污点经 Map/字段传递；经方法返回值跨函数 |
 | L4 | 跨文件 / 框架语义 | Controller -> ServiceA -> ServiceB -> sink；Spring4Shell SpEL 语义 |
 | L5 | gadget chain | 多个安全类组合成危险可达性（CC 反序列化链抽象） |
 
+除基础分级外，另有两类"长程/复杂任务"样本族，专用于验收大模型的**规划能力**与**一致性**：
+- **长程任务（LT 系列）**：跨文件追踪 / 框架状态机 / gadget chain 还原 / 多跳拼接 / 版本门控，详见 [`benchmark/README.md`](benchmark/README.md) §3。
+- **代码质量 / 性能 DoS + LGTM 缺口（PERF/TB/REFLECT/FMT/HOST/XSLT/FWD/SEED 系列）**：慢 SQL、资源泄漏、反射注入、信任边界、格式串注入等，对标 LGTM/CodeQL Java 规则库。
+
 ### 当前样本规模
 
-> 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致，共 133 条）
+> 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致，经 `validate_checkpoints.py` 校验退出码 0）
 
-- **133 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本）
-- **93 个 VULN**（应报）+ **40 个 SAFE**（不应报，用于算 TN/FP）
-- 难度分布：L1 x 89、L2 x 17、L3 x 16、L4 x 8、L5 x 3
-- CWE 覆盖（共 34 类，仅计 VULN）：表达式注入(917) x 18、反序列化(502) x 12、命令注入(78) x 9、硬编码凭证/密钥(798) x 5、SQLi(89) x 4、业务逻辑(840) x 4、模板注入(1336) x 3、点击劫持/缺安全头(1021) x 3、XPath(643) x 2、LDAP(90) x 2、SSRF(918) x 2、XXE(611) x 2、IDOR(639) x 2、弱哈希(327) x 2、认证失效(287) x 2、授权失效(285) x 2、开放重定向(601) x 2，以及路径穿越(22)/弱随机(330)/XSS(79)/NoSQL(943)/JWT(345)/CORS(942)/弱口令(521)/敏感信息泄露(532)/批量赋值(915)/竞态(362)/数值输入(20)/限流缺失(307)/ReDoS(1333)/哈希碰撞(694)/JSONP(352)/头注入(113)/危险操作(111) 各 x 1
+- **438 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞样本）
+- **230 个 VULN**（应报）+ **197 个 SAFE**（不应报，用于算 TN/FP）
+- 难度分布：L0 x 18、L1 x 135、L2 x 92、L3 x 89、L4 x 62、L5 x 31（完整 L0-L5 梯度）
+- CWE 覆盖：**68 类**（仅计 VULN）。高频：表达式注入(917) x 25、反序列化(502) x 21、SQLi(89) x 17、命令注入(78) x 12、授权失效(285) x 10、硬编码凭证/密钥(798) x 7、业务逻辑(840) x 7、SSRF(918) x 6、IDOR(639) x 6、路径穿越(22) x 5、ReDoS(1333) x 5、性能 DoS(400) x 5
+- 覆盖 **99 个 category**（slug），含 OWASP Top 10 2021 全类；**33 条**样本带 `trace=` 路径节点（支持 `--check-trace` 路径正确性评测）
+- 专项样本族：长程任务(LT) x 16、代码质量/性能 DoS(PERF) x 15、信任边界(TB)/反射(REFLECT)/格式串(FMT)/hostname(HOST)/XSLT(XSLT)/forward(FWD)/种子(SEED) 各 x 2
 
 样本组织：
 - `benchmark/cases/vuln/` 与 `benchmark/cases/sec/`：有区分度的梯度样本（含安全对照）
+- `benchmark/cases/vuln/longtask/` 与 `benchmark/cases/vuln/perf/` 等：长程任务与代码质量/性能 DoS 专项样本
 - `benchmark/cases/vendor/`：从 OWASP Benchmark / Juliet / PrimeVul / CVEfixes 抽象留存的高质量竞品样本，含来源 URL 溯源
 
 ### 如何运行与交叉对比
