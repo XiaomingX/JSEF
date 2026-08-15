@@ -179,7 +179,7 @@ mvn clean compile -DskipTests
 ```bash
 mvn clean package -DskipTests
 # 结果：✅ 成功
-# 输出：java-sec-code-plus-0.0.1-SNAPSHOT.jar (107MB)
+# 输出：java-sec-code-plus-1.2.0.jar (107MB)
 ```
 
 ### 安装测试
@@ -313,7 +313,7 @@ mvn install -DskipTests
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 # 生产环境启动
-java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+java -jar target/java-sec-code-plus-1.2.0.jar --spring.profiles.active=prod
 
 # 访问 Swagger UI
 open http://localhost:8080/swagger-ui.html

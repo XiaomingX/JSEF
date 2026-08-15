@@ -27,7 +27,7 @@ You can build and run the project using the following Maven commands:
 
 2.  **Run the application**:
     ```bash
-    java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
+    java -jar target/java-sec-code-plus-1.2.0.jar
     ```
     Alternatively, the project can be run via Docker.
 

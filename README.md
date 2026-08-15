@@ -45,7 +45,7 @@ cd JSEF
 mvn clean package -DskipTests
 
 # 3. 启动服务
-java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
+java -jar target/java-sec-code-plus-1.2.0.jar
 ```
 
 ### 方式2：Docker一键部署

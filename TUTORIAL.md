@@ -23,7 +23,7 @@ cd JSEF
 
 # 构建并启动（内置 H2 内存数据库，无需额外配置）
 mvn clean package -DskipTests
-java -jar target/java-sec-code-plus-0.0.1-SNAPSHOT.jar
+java -jar target/java-sec-code-plus-1.2.0.jar
 ```
 
 启动后访问：
