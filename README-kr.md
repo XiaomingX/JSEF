@@ -111,12 +111,32 @@ JSEF는 교육 플랫폼일 뿐만 아니라, **SAST 기본 역량 검증**과 *
 
 > 데이터 출처：`benchmark/expectedresults.csv`（진실 원천, 소스의 `// [CHECKPOINT]` 주석과 양방향 일치；`validate_checkpoints.py` 종료 코드 0）
 
-- **438건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 + 장기 태스크 + 코드 품질/성능 DoS + LGTM 누락 + 논리 취약점 샘플 포괄）
-- **230건의 VULN**（보고되어야 함） + **197건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
-- 난이도 분포：L0 x 18、L1 x 135、L2 x 92、L3 x 89、L4 x 62、L5 x 31（완전한 L0-L5 구배）
-- CWE 커버：**68종**（VULN만）. 상위：표현식 주입(917) x 25、역직렬화(502) x 21、SQLi(89) x 17、명령어 주입(78) x 12、인가 우회(285) x 10、하드코딩 자격증명/키(798) x 7、비즈니스 로직(840) x 7、SSRF(918) x 6、IDOR(639) x 6、경로 조작(22) x 5、ReDoS(1333) x 5、성능 DoS(400) x 5
-- **99 카테고리**（slug） 커버（OWASP Top 10 2021 전 클래스 포함）；**33건**의 샘플이 `trace=` 경로 노드 보유（`--check-trace` 경로 정확성 평가 지원）
+- **503건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 + 장기 태스크 + 코드 품질/성능 DoS + LGTM 누락 + 논리 취약점 샘플 + **원자 패러다임군 TCM/SBM/DBG/STR** 포괄）
+- **268건의 VULN**（보고되어야 함） + **235건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
+- 난이도 분포：L0 x 18、L1 x 139、L2 x 106、L3 x 115、L4 x 86、L5 x 39（완전한 L0-L5 구배）
+- CWE 커버：**69종**（VULN만）. 상위：표현식 주입(917) x 25、역직렬화(502) x 21、SQLi(89) x 17、명령어 주입(78) x 12、인가 우회(285) x 10、하드코딩 자격증명/키(798) x 7、비즈니스 로직(840) x 7、SSRF(918) x 6、IDOR(639) x 6、경로 조작(22) x 5、ReDoS(1333) x 5、성능 DoS(400) x 5
+- **121 카테고리**（slug） 커버（OWASP Top 10 2021 전 클래스 포함）；**65건**의 샘플이 `trace=` 경로 노드 보유（`--check-trace` 경로 정확성 평가 지원）
 - 전용 샘플군：장기 태스크(LT) x 16、코드 품질/성능 DoS(PERF) x 15、신뢰 경계(TB)/리플렉션(REFLECT)/형식 문자열(FMT)/호스트명(HOST)/XSLT(XSLT)/포워드(FWD)/시드(SEED) 각 x 2
+- **원자 패러다임군（TCM/SBM/DBG/STR）** x 64：Fastjson / Spring Boot / Dubbo / Struts2 의 실제 0day/1day 에서 **라이브러리 비종속** 원자 위험 패러다임을 추출해 순수 Java 표준 라이브러리만으로 자체 재현. 아래 "원자 패러다임군" 절 참조.
+
+### 원자 패러다임군（TCM / SBM / DBG / STR）
+
+LLM / harness 가 **동일 원리** 취약점을 탐지할 수 있는지 평가하기 위해, JSEF 는 최근 고영향 프레임워크(Fastjson / Spring Boot / Dubbo / Struts2)의 0day/1day 에서 **라이브러리 비종속** 원자 위험 패러다임을 추출하고, 원본 프레임워크와 분리된 동일 근인 복합 샘플을 구축합니다. 각 패밀리는 `vuln` + `sec` 대조(FP/TN 산출용)를 갖추고 L1–L5 로 등급되며, 모두 `// [CHECKPOINT]` 주석을 지니고 **원본 프레임워크 클래스명을 포함하지 않습니다**(순수 표준 라이브러리 의미론).
+
+| 네임스페이스 | 추출원 | 원자 패러다임 차원（MECE, 비중복） | 샘플수 |
+|---------|--------|-------------------------------|--------|
+| **TCM** | Fastjson 역직렬화 | TCM-1 직접 형 선택・TCM-2 상속 허용목록 우회・TCM-3 캐시/재파싱 우회・TCM-4 비공개 필드 바인딩・TCM-5 프로퍼티即코드(위험 getter/setter) | 20 |
+| **SBM** | Spring Boot | SBM-1 바인더 순회・SBM-2 선언적 구성 식 평가・SBM-3 고권한 엔드포인트 노출・SBM-4 인가 숏서킷 우회 | 16 |
+| **DBG** | Dubbo RPC | DBG-1 파서/포맷 협상 전환・DBG-2 신뢰 경계 횡단 암묵적 신뢰(attachment)・DBG-3 클래스명 거부목록 인코딩 우회 | 16 |
+| **STR** | Struts2/OGNL | STR-1 이중 평가(Double Evaluation)・STR-2 프로토콜 계층 필드 주입・STR-3 식 제외목록/샌드박스 우회 | 12 |
+
+**설계 요점**：
+- 추상화 원칙：프레임워크 특정 메커니즘(예 "JSON 라이브러리 autotype", "Web 프레임워크 SpEL")을 벗기고, 프레임워크를 넘나드는 불변 위험 결합——공격자가 형/데이터를 제어＋시스템이 암묵적 메서드를 자동 호출＋암묵적 메서드 체인이 위험한 sink 에 도달——만 남긴다.
+- 기존 샘플과 중복 없음：기존 `JSEF-OGNL-*`/`JSEF-SPEL-*` 단층 식 주입, `JSEF-DESER-*` 직접 역직렬화 등은 의도적으로 회피하고, 위 프레임워크**고유且 미모델링** 원자 차원(OGNL 이중 평가, Spring4Shell 바인더 순회, Dubbo 파서 협상 등)만 커버.
+- 높은 변별력：L4 파일 간, L5 gadget chain, 메서드 간 체인 등 난예를 포함해 도구/모델 능력 계층을 분리.
+- 안전 기준：모든 위험 호출은 localhost 데모 의미론・플레이스홀더 문자열이며 실 exploit 스크립트는 제공하지 않음.
+
+샘플 위치：`benchmark/cases/{vuln,sec}/{tcm,sbm,dbg,str}/`；설계 문서：`plans/02-~05-*.md`.
 
 샘플 구성：
 - `benchmark/cases/vuln/` 및 `benchmark/cases/sec/`：변별력 있는 구배 샘플（안전 대조 포함）

@@ -111,12 +111,32 @@ Beyond the base grading, two "long-horizon / complex task" sample families speci
 
 > Data source: `benchmark/expectedresults.csv` (source of truth, kept in two-way sync with `// [CHECKPOINT]` annotations in source; `validate_checkpoints.py` exits 0)
 
-- **438** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples + long-horizon tasks + code-quality/perf-DoS + LGTM-gap + logic-flaw samples)
-- **230 VULN** (should be reported) + **197 SAFE** (should not be reported, used to compute TN/FP)
-- Difficulty distribution: L0 x 18, L1 x 135, L2 x 92, L3 x 89, L4 x 62, L5 x 31 (full L0-L5 gradient)
-- CWE coverage: **68 categories** (VULN only). Top: Expression Injection (917) x 25, Deserialization (502) x 21, SQLi (89) x 17, Command Injection (78) x 12, Authorization Bypass (285) x 10, Hardcoded Credentials/Key (798) x 7, Business Logic (840) x 7, SSRF (918) x 6, IDOR (639) x 6, Path Traversal (22) x 5, ReDoS (1333) x 5, Performance DoS (400) x 5
-- Covers **99 categories** (slug), including all OWASP Top 10 2021 classes; **33** samples carry `trace=` path nodes (enables `--check-trace` path-correctness scoring)
+- **503** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples + long-horizon tasks + code-quality/perf-DoS + LGTM-gap + logic-flaw samples + **atomic-paradigm families TCM/SBM/DBG/STR**)
+- **268 VULN** (should be reported) + **235 SAFE** (should not be reported, used to compute TN/FP)
+- Difficulty distribution: L0 x 18, L1 x 139, L2 x 106, L3 x 115, L4 x 86, L5 x 39 (full L0-L5 gradient)
+- CWE coverage: **69 categories** (VULN only). Top: Expression Injection (917) x 25, Deserialization (502) x 21, SQLi (89) x 17, Command Injection (78) x 12, Authorization Bypass (285) x 10, Hardcoded Credentials/Key (798) x 7, Business Logic (840) x 7, SSRF (918) x 6, IDOR (639) x 6, Path Traversal (22) x 5, ReDoS (1333) x 5, Performance DoS (400) x 5
+- Covers **121 categories** (slug), including all OWASP Top 10 2021 classes; **65** samples carry `trace=` path nodes (enables `--check-trace` path-correctness scoring)
 - Special families: Long-horizon (LT) x 16, Code-quality/Perf-DoS (PERF) x 15, Trust-boundary (TB)/Reflection (REFLECT)/Format-string (FMT)/Hostname (HOST)/XSLT (XSLT)/Forward (FWD)/Seed (SEED) x 2 each
+- **Atomic-paradigm families (TCM/SBM/DBG/STR)** x 64: distilled from real Fastjson / Spring Boot / Dubbo / Struts2 0day/1day into **library-agnostic** atomic danger patterns, reproduced self-contained with pure Java standard library.
+
+### Atomic-Paradigm Families (TCM / SBM / DBG / STR)
+
+To assess whether LLMs / harnesses can detect **same-principle** vulnerabilities, JSEF distills real 0day/1day from recent high-impact frameworks (Fastjson, Spring Boot, Dubbo, Struts2) into **library-agnostic** atomic danger patterns, and builds complex samples that share the same root cause but are decoupled from the original framework. Each family ships `vuln` + `sec` counterparts (for FP/TN) and is graded L1–L5, all carrying `// [CHECKPOINT]` annotations and **no original-framework class names** (pure standard-library semantics).
+
+| Namespace | Distilled from | Atomic paradigm dimensions (MECE, non-overlapping) | Samples |
+|-----------|----------------|---------------------------------------------------|---------|
+| **TCM** | Fastjson deserialization | TCM-1 direct type selection · TCM-2 inheritance allowlist bypass · TCM-3 cache/second-parse bypass · TCM-4 private-field binding · TCM-5 property-as-code (dangerous getter/setter) | 20 |
+| **SBM** | Spring Boot | SBM-1 binder traversal · SBM-2 declarative-config-as-expression · SBM-3 privileged-endpoint exposure · SBM-4 authz short-circuit bypass | 16 |
+| **DBG** | Dubbo RPC | DBG-1 parser/format negotiation switch · DBG-2 cross-trust-boundary implicit trust (attachment) · DBG-3 class-name denylist bypass by encoding | 16 |
+| **STR** | Struts2/OGNL | STR-1 double evaluation · STR-2 protocol-layer field injection · STR-3 eval exclusion-list / sandbox bypass | 12 |
+
+**Design notes**:
+- Abstraction principle: strip framework-specific mechanisms (e.g. "JSON-library autotype", "Web-framework SpEL") and keep only the cross-framework invariant danger combination — attacker controls type/data + system auto-invokes implicit methods + implicit method chain reaches a dangerous sink.
+- No overlap with existing samples: deliberately avoids the repo's existing `JSEF-OGNL-*`/`JSEF-SPEL-*` single-layer expression injection, `JSEF-DESER-*` direct deserialization, etc.; covers only the **unique, unmodeled** atomic dimensions (e.g. OGNL double evaluation, Spring4Shell binder traversal, Dubbo parser negotiation).
+- High discrimination: includes L4 cross-file, L5 gadget-chain, and cross-method-chain hard cases to separate tool/model capability tiers.
+- Safety baseline: all dangerous calls are localhost-demo placeholders; no real exploit scripts.
+
+Sample location: `benchmark/cases/{vuln,sec}/{tcm,sbm,dbg,str}/`; design docs: `plans/02-~05-*.md`.
 
 Sample organization:
 - `benchmark/cases/vuln/` and `benchmark/cases/sec/`: discriminating-difficulty gradient samples (with safe counterparts)

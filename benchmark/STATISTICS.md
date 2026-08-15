@@ -2,7 +2,7 @@
 
 > 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致）
 > 生成方式：`validate_checkpoints.py` 退出码 0（无孤儿/重复/行号漂移，trace 节点 0 无效）
-> 统计时点：本文件生成时 CSV 共 **438 个 checkpoint（含表头 439 行）**
+> 统计时点：本文件生成时 CSV 共 **503 个 checkpoint（含表头 504 行）**
 
 ---
 
@@ -10,13 +10,13 @@
 
 | 指标 | 数值 |
 |------|------|
-| 机器可读 checkpoint 总数 | **438** |
-| VULN（应报） | **236** |
-| SAFE（不应报，算 TN/FP） | **203** |
+| 机器可读 checkpoint 总数 | **503** |
+| VULN（应报） | **268** |
+| SAFE（不应报，算 TN/FP） | **235** |
 | 区分度级别 | L0 / L1 / L2 / L3 / L4 / L5（全梯度） |
-| CWE 覆盖数（仅 VULN） | **68** |
-| category（slug）覆盖数 | **104** |
-| 带 `trace=` 路径节点的样本 | **40** |
+| CWE 覆盖数（仅 VULN） | **69** |
+| category（slug）覆盖数 | **121** |
+| 带 `trace=` 路径节点的样本 | **65** |
 
 ---
 
@@ -25,12 +25,12 @@
 | 级别 | 数量 | 含义 |
 |------|------|------|
 | L0 | 18 | 能力基准（显式直连，所有工具/模型应命中） |
-| L1 | 135 | 单跳直连 |
-| L2 | 92 | 多跳（变量无断点） |
-| L3 | 89 | 间接 / 跨方法 |
-| L4 | 62 | 跨文件 / 框架语义 / 状态机 |
-| L5 | 31 | gadget chain |
-| **合计** | **439** | 含表头 |
+| L1 | 139 | 单跳直连 |
+| L2 | 106 | 多跳（变量无断点） |
+| L3 | 115 | 间接 / 跨方法 |
+| L4 | 86 | 跨文件 / 框架语义 / 状态机 |
+| L5 | 39 | gadget chain |
+| **合计** | **504** | 含表头 |
 
 ---
 
@@ -43,6 +43,7 @@
 | 代码质量 / 性能 DoS（PERF 系列） | 15 | 慢 SQL / 资源泄漏 / 持锁 sleep / 循环大对象 / ReDoS 注入版 |
 | LGTM 缺口（TB/REFLECT/FMT/HOST/XSLT/FWD/SEED） | 14 | 信任边界 / 反射注入 / 格式串 / hostname / XSLT / forward / 种子 |
 | 逻辑漏洞（PAY/MEM/WF 系列） | 12 | 支付篡改 / 优惠券复用 / 会员等级篡改 / 邀请刷奖 / 重复退款 / 步骤跳过 |
+| **原子范式样本族（TCM/SBM/DBG/STR）** | **64** | 从 Fastjson/Spring Boot/Dubbo/Struts2 抽象的去库化原子危险范式，纯标准库自包含 |
 
 ---
 
@@ -63,13 +64,13 @@
 | 1333 ReDoS | 5 | redos / regex-dos |
 | 400 性能 DoS | 5 | slow-sql / perf-anti-pattern |
 
-> 全量覆盖 **68 个 CWE**，含 OWASP Top 10 2021 全部十类。
+> 全量覆盖 **69 个 CWE**，含 OWASP Top 10 2021 全部十类。
 
 ---
 
 ## 5. 路径正确性评测（`trace=`）
 
-- 共 **33** 条样本携带 `trace=` 路径节点（L3+ 跨节点样本），覆盖跨方法 / 跨文件 / gadget chain。
+- 共 **65** 条样本携带 `trace=` 路径节点（L3+ 跨节点样本），覆盖跨方法 / 跨文件 / gadget chain。
 - 可用 `scorecard.py --check-trace` 量化 `trace_recall` / `trace_precision`。
 - 节点格式：`file:line` 相对仓库根路径，全部指向真实存在的源码行（validate 仅告警不阻断，当前 0 无效）。
 
@@ -86,12 +87,13 @@
 
 | 维度 | 早期版本 | 当前版本 |
 |------|----------|----------|
-| checkpoint 总数 | 133 | **438** |
-| CWE 覆盖 | 34 | **68** |
+| checkpoint 总数 | 133 | **503** |
+| CWE 覆盖 | 34 | **69** |
 | 区分度 | L1–L5（无 L0） | **L0–L5 全梯度** |
 | 长程任务样本 | 无 | **LT 系列 16** |
 | 代码质量/性能 DoS | 少量（redos 等） | **PERF 系列 15 + LGTM 缺口 14** |
 | 逻辑漏洞样本 | 通用越权/IDOR（无支付/会员/流程） | **PAY/MEM/WF 系列 12** |
-| trace 路径评测 | 无 | **40 条带 trace** |
+| 原子范式样本族 | 无 | **TCM/SBM/DBG/STR 系列 64** |
+| trace 路径评测 | 无 | **65 条带 trace** |
 
 > 注：本报告数字与 `benchmark/README.md` §3、仓库根 `README*.md`「当前样本规模」段保持一致，均由 `expectedresults.csv` 实查生成。
