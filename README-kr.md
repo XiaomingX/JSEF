@@ -92,27 +92,35 @@ JSEF는 교육 플랫폼일 뿐만 아니라, **SAST 기본 역량 검증**과 *
 
 ### 샘플과 난이도 등급
 
-샘플은 **L1-L5**로 등급화됩니다（각 단계마다 추론 거리와 의미 의존을 늘려 도구/모델 격차를 벌림；L0은 역량 기준 참고용만, `MY_PLAN.md` A3 참조 — 현재 L0로 표시된 샘플은 없음）：
+샘플은 **L0-L5**로 등급화됩니다（각 단계마다 추론 거리와 의미 의존을 늘려 도구/모델 격차를 벌림；L0은 모든 도구/모델이命中해야 할 역량 기준）：
 
 | 등급 | 의미 | 예 |
 |------|------|------|
+| L0 | 역량 기준（명시적 직결） | source가 중간 변수 없이 sink에 직결 |
 | L1 | 단홉 직결 | `Runtime.exec(userInput)` |
 | L2 | 다홉（변수 단절 없음） | source -> 중간 변수 -> builder -> sink |
 | L3 | 간접 / 메서드 간 | 오염이 Map/필드 경유；메서드 반환값으로 함수 간 이동 |
 | L4 | 파일 간 / 프레임워크 의미 / 상태 머신 | Controller -> ServiceA -> ServiceB -> sink；Spring4Shell SpEL 의미 |
 | L5 | gadget chain | 여러 안전 클래스가 조합되어 위험한 도달 가능성 형성（CC 역직렬화 체인 추상） |
 
+기본 등급 외에, LLM의 **계획 능력**과 **일관성**을 검증하는「장기/복잡 태스크」샘플군이 2개 있습니다：
+- **장기 태스크（LT 계열）**：파일 간 추적 / 프레임워크 상태 머신 / gadget chain 재구성 / 다중 홉 연결 / 버전 게이팅 — 자세한 것은 [`benchmark/README.md`](benchmark/README.md) §3 참조.
+- **코드 품질 / 성능 DoS + LGTM 누락（PERF/TB/REFLECT/FMT/HOST/XSLT/FWD/SEED 계열）**：슬로우 SQL, 리소스 누수, 리플렉션 주입, 신뢰 경계, 형식 문자열 주입 등. LGTM/CodeQL Java 규칙팩에 정렬.
+
 ### 현재 샘플 규모
 
-> 데이터 출처：`benchmark/expectedresults.csv`（진실 원천, 소스의 `// [CHECKPOINT]` 주석과 양방향 일치, 총 133건）
+> 데이터 출처：`benchmark/expectedresults.csv`（진실 원천, 소스의 `// [CHECKPOINT]` 주석과 양방향 일치；`validate_checkpoints.py` 종료 코드 0）
 
-- **133건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 포괄）
-- **93건의 VULN**（보고되어야 함） + **40건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
-- 난이도 분포：L1 x 89、L2 x 17、L3 x 16、L4 x 8、L5 x 3
-- CWE 커버（총 34종, VULN만）：표현식 주입(917) x 18、역직렬화(502) x 12、명령어 주입(78) x 9、하드코딩 자격증명/키(798) x 5、SQLi(89) x 4、비즈니스 로직(840) x 4、템플릿 주입(1336) x 3、클릭재킹/보안 헤더 누락(1021) x 3、XPath(643) x 2、LDAP(90) x 2、SSRF(918) x 2、XXE(611) x 2、IDOR(639) x 2、약한 해시(327) x 2、인증 우회(287) x 2、인가 우회(285) x 2、오픈 리다이렉트(601) x 2、그리고 경로 조작(22)/약한 난수(330)/XSS(79)/NoSQL(943)/JWT(345)/CORS(942)/약한 비밀번호(521)/민감정보 노출(532)/대량 할당(915)/경쟁 조건(362)/수치 입력(20)/속도 제한 누락(307)/ReDoS(1333)/해시 충돌(694)/JSONP(352)/헤더 주입(113)/위험 연산(111) 각 x 1
+- **438건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 + 장기 태스크 + 코드 품질/성능 DoS + LGTM 누락 + 논리 취약점 샘플 포괄）
+- **230건의 VULN**（보고되어야 함） + **197건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
+- 난이도 분포：L0 x 18、L1 x 135、L2 x 92、L3 x 89、L4 x 62、L5 x 31（완전한 L0-L5 구배）
+- CWE 커버：**68종**（VULN만）. 상위：표현식 주입(917) x 25、역직렬화(502) x 21、SQLi(89) x 17、명령어 주입(78) x 12、인가 우회(285) x 10、하드코딩 자격증명/키(798) x 7、비즈니스 로직(840) x 7、SSRF(918) x 6、IDOR(639) x 6、경로 조작(22) x 5、ReDoS(1333) x 5、성능 DoS(400) x 5
+- **99 카테고리**（slug） 커버（OWASP Top 10 2021 전 클래스 포함）；**33건**의 샘플이 `trace=` 경로 노드 보유（`--check-trace` 경로 정확성 평가 지원）
+- 전용 샘플군：장기 태스크(LT) x 16、코드 품질/성능 DoS(PERF) x 15、신뢰 경계(TB)/리플렉션(REFLECT)/형식 문자열(FMT)/호스트명(HOST)/XSLT(XSLT)/포워드(FWD)/시드(SEED) 각 x 2
 
 샘플 구성：
 - `benchmark/cases/vuln/` 및 `benchmark/cases/sec/`：변별력 있는 구배 샘플（안전 대조 포함）
+- `benchmark/cases/vuln/longtask/` 및 `benchmark/cases/vuln/perf/`：장기 태스크와 코드 품질/성능 DoS 전용 샘플
 - `benchmark/cases/vendor/`：OWASP Benchmark / Juliet / PrimeVul / CVEfixes에서 추상한 고품질 경쟁 샘플（출처 URL 포함）
 
 ### 실행 및 교차 비교 방법

@@ -37,7 +37,7 @@ benchmark/
     └── claude-<model>/
 ```
 
-> 注：`expectedresults.csv` 已落地并持续维护，**当前共 299 个 checkpoint（含表头 300 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
+> 注：`expectedresults.csv` 已落地并持续维护，**当前共 426 个 checkpoint（含表头 427 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
 
 ---
 
@@ -51,6 +51,71 @@ benchmark/
 - **L3 间接/跨方法**：污点经 Map/字段/方法返回值，或跨方法。
 - **L4 跨文件/框架语义/状态机**：跨编译单元、Spring 绑定语义、配置开关。
 - **L5 gadget chain**：多个安全类组合成危险可达性（CC 链级别）。
+
+#### 长程任务样本（LT 系列，验收多步规划与一致性）
+
+为验收**大模型在漏洞挖掘中的长程任务能力（多步 tool 调用、规划、一致性）**，新增 `benchmark/cases/{vuln,sec}/longtask/` 样本族（id 前缀 `JSEF-LT-`）。这些样本刻意设计为**需跨文件/跨方法/跨状态机推理**才能定位 sink，每个文件头含「长程任务子目标清单（step-by-step）」与「预期可达性证明中间产物」(gadget 链节点序列)，驱动被测对象做规划而非单点判断。
+
+按推理行为类型做 MECE 切分：
+
+| 维度 | 验收的复杂能力 | 代表链 | 级别 |
+|------|----------------|--------|------|
+| A. 跨文件全局追踪 | 跨编译单元污点传播（源在 A 文件、sink 在 C 文件） | fastjson AutoType 跨类触发 | L4 |
+| B. 框架状态机/绑定语义 | 理解 Spring 绑定/配置开关才危险的链路 | Spring4Shell `class.module` 路径 + 开关 | L5 |
+| C. gadget chain 可达性还原 | 多个无害类组合成危险可达性 + 还原链 | CommonsCollections / Shiro 反序列化链 | L5 |
+| D. 多跳字符串拼接 | 跨片段拼接后才危险 | Log4j `${jndi:}` 拼装 | L5 |
+| E. 版本/配置依赖可达性 | 需结合依赖版本或开关判断 | fastjson 1.2.24 vs 1.2.47 黑名单 | L4 |
+| F. 成对扰动一致性 | 结构扰动后结论一致 | 上述每类配 `*-Perturbed` 镜像对 | — |
+
+**一致性验收（MECE 维度 F）**：为 A/C 两组构造语义等价但变量名/包名扰动的镜像对（`JSEF-LT-001P`/`003P` 等），要求被测对象对「原始 vs 扰动」给出一致结论（同 VULN 或同 SAFE）；同时复用既有 vuln+sec 配对间接验证不漂移。一致性在结果层统计（同一语义对结论一致率），不改动 scorecard 协议。
+
+> 注：`expectresults.csv` 第 10 列 `trace` 已为所有 L4/L5 长程样本写入路径节点，可用 `scorecard.py --check-trace` 量化路径正确性（`trace_recall`/`trace_precision`）。
+
+#### 代码质量 / 性能 DoS 类（高危/严重质量样本）
+
+为验收**高危/严重的代码质量问题（可致 DoS 的性能缺陷）**，新增 `benchmark/cases/{vuln,sec}/perf/` 与若干质量类目录（id 前缀 `JSEF-PERF-*`）。这些样本区分"安全漏洞"与"质量/性能缺陷"——后者虽非传统注入类，但可导致服务不可用（DoS），是 SAST/LLM 质量评测的重要维度。
+
+| 类 | CWE | sink 签名 | level | category |
+|----|-----|-----------|-------|----------|
+| 慢 SQL（无 LIMIT/无分页全表查询） | 89 / 400 | `jdbcTemplate.queryForList(sql)` 拼接无 LIMIT | L1/L2/L3 | `slow-sql` |
+| DB 资源泄漏（Connection/Statement/ResultSet 未关） | 772 / 404 | `conn.createStatement()` 未 try-with-resources | L2 | `resource-leak` |
+| 流资源泄漏（InputStream/OutputStream 未关） | 772 / 404 | `new FileInputStream(path)` 未关 | L1 | `resource-leak` |
+| 持锁 sleep（吞吐骤降） | 410 / 400 | `synchronized{... Thread.sleep()}` | L2 | `perf-anti-pattern` |
+| 循环内大对象分配（内存压力） | 400 | `for(...){ new byte[N] }` | L2 | `perf-anti-pattern` |
+| ReDoS 注入版（外部输入直接 compile） | 1333 | `Pattern.compile(userInput)` | L2 | `redos` |
+
+> 设计原则：宁缺毋滥——仅补有真实 sink 签名、可机器标注、有区分度的样本；慢 SQL 做 L1/L2/L3 梯度展开，其余做 vuln+sec 配对。
+
+#### LGTM / CodeQL 安全缺口补充
+
+对照 LGTM/CodeQL Java 规则库（Security + CodeQuality 套件），补齐本项目原缺失的漏洞类型与 sink 点（id 前缀 `JSEF-TB-*` / `JSEF-REFLECT-*` / `JSEF-FMT-*` / `JSEF-HOST-*` / `JSEF-XSLT-*` / `JSEF-FWD-*` / `JSEF-SEED-*`）：
+
+| 类 | CWE | sink 签名 | level | category |
+|----|-----|-----------|-------|----------|
+| 信任边界违反 | 501 | `HttpSession.setAttribute(name, tainted)` | L3 | `trust-boundary` |
+| 反射注入 | 470 | `Class.forName(userClass)` / `Method.invoke` | L4 | `reflection-injection` |
+| 格式串注入 | 134 | `String.format(userFmt, ...)` | L3 | `format-string` |
+| hostname 校验绕过 | 295 | `HostnameVerifier.verify()` 恒 true | L2 | `hostname-verifier` |
+| XSLT 注入 | 91 | `TransformerFactory.newTransformer(Source)` | L3 | `xslt-injection` |
+| forward 未校验 | 98 | `RequestDispatcher.forward(req,resp)` 不可信路径 | L2 | `unvalidated-forward` |
+| 可预测种子 | 338 | `new SecureRandom(fixedSeed)` | L2 | `predictable-seed` |
+
+> 已覆盖、未重复的类型：open-redirect(CWE-601)、http-response-splitting(CWE-113) 由既有 `open-redirect`/`header-injection`/`crlf-injection` 覆盖；TLS 证书信任绕过由既有 `tls-verification-bypass` 覆盖（本次仅补 hostname 维度）。
+
+#### 逻辑漏洞样本（支付/会员/业务流程绕过）
+
+为验收**典型逻辑漏洞**（权限漏洞、支付逻辑、会员逻辑、业务流程状态机绕过），新增 `benchmark/cases/{vuln,sec}/logic/` 样本族（id 前缀 `JSEF-PAY-*` / `JSEF-MEM-*` / `JSEF-WF-*`）。这类漏洞的核心是**客户端可篡改关键业务参数**或**服务端缺失状态/步骤校验**，区别于注入类——考验被测对象理解业务语义与状态机的能力。
+
+| 类 | CWE | 典型缺陷 | level | category |
+|----|-----|----------|-------|----------|
+| 支付价格/数量篡改 | 840 / 20 | 订单 `amount`/`quantity` 取 `@RequestParam` 服务端未重算 → 负值/改数量绕过总额 | L3 | `payment-logic` |
+| 优惠券/邀请码复用 | 840 | 同一 `couponCode` 可重复核销（无一次性去重） | L3 | `payment-logic` |
+| 会员等级篡改 | 285 / 639 | `@RequestParam membershipLevel` 直接授权益，未校验真实等级 | L3 | `membership-logic` |
+| 邀请奖励刷取 | 840 | 邀请码可自邀/无限刷奖励（缺防自邀/频率限制） | L3 | `membership-logic` |
+| 重复退款（状态机绕过） | 840 | 已退款订单可再次退款（未校验订单状态机） | L4 | `workflow-bypass` |
+| 关键步骤跳过 | 862 | 未校验支付状态直接发货/激活（缺步骤顺序校验） | L4 | `workflow-bypass` |
+
+> 设计原则：宁缺毋滥——只补有真实业务语义、可机器标注、高区分度的逻辑漏洞；每类做 vuln+sec 配对，L3/L4 带 `trace=` 路径节点。
 
 > 历史说明：早期 `MY_PLAN.md` A3 与本文档旧版曾标注"当前 `expectedresults.csv` 中无样本标记为 L0"，该表述已于 Phase 1（L0 基线补全）落地后**更正**——详见 `MY_PLAN.md` Phase G 与 `plans/00-benchmark-gap-completion.md`。
 
@@ -277,10 +342,14 @@ python3 benchmark/scripts/validate_checkpoints.py \
 | 模板注入（传统） | `template-injection` | 1336 | 已有覆盖 |
 | 供应链（传统） | `vulnerable-components` | 1104 | 已有覆盖 |
 | 其余注入族（SQL/LDAP/NoSQL/XPath/XXE 等） | `sql-injection*` / `ldap-injection` / `nosql-injection` / `xpath-injection` / `xxe` / `header-injection` / `log-injection` / `jsonp-callback-injection` | 89 / 90 / 943 / 643 / 611 / 93 | 已有覆盖 |
+| 长程任务（跨文件/gadget/状态机/拼接/版本门控） | `deserialization` / `unsafe-deserialization` / `spel-injection` / `fastjson-deserialization` / `log4j-jndi` | 502 / 917 | **本项目已补齐（LT 系列，§3 长程任务段）** |
+| 代码质量/性能 DoS | `slow-sql` / `resource-leak` / `perf-anti-pattern` / `redos` | 400 / 772 / 410 / 1333 / 89 | **本项目已补齐（§3 代码质量/性能 DoS 段）** |
+| 信任边界/反射/格式串/hostname/XSLT/forward/种子 | `trust-boundary` / `reflection-injection` / `format-string` / `hostname-verifier` / `xslt-injection` / `unvalidated-forward` / `predictable-seed` | 501 / 470 / 134 / 295 / 91 / 98 / 338 | **本项目已补齐（§3 LGTM/CodeQL 缺口段，对标 LGTM java/* 查询）** |
+| 逻辑漏洞（支付/会员/业务流程） | `payment-logic` / `membership-logic` / `workflow-bypass` | 840 / 285 / 639 / 862 / 20 | **本项目已补齐（§3 逻辑漏洞段）** |
 
 **映射结论**：
 - JSEF 在 VulnGym 全部 21 个 `vuln_category_l2` 维度上均有对应 `category`：业务逻辑 12+1 子类中，8 个由 V1/V2 补齐（标"本项目已补齐"），其余由既有样本覆盖；传统类全部已有覆盖。
 - VulnGym 独有且 JSEF 原缺失、现经补齐已对齐的子类：`agent-capability-bypass` / `origin-integrity` / `multi-tenant` / `trust-boundary` / `insecure-default` / `priv-esc` / `missing-authorization` / `sandbox-escape`（共 8 类，对应 G1–G8 / G5）。
 - 路径评测维度：JSEF 通过可选 `trace=` 字段（§3）与 scorecard `--check-trace`（§5.1）对标 VulnGym 的 `entry_point → critical_operation → trace` 多节点理念，同时保留 JSEF 在 precision/F1/MCC 上的相对优势。
 
-> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 299 checkpoint，含表头 300 行）。
+> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 438 checkpoint，含表头 439 行；其中 LT 系列长程任务样本 16 条、代码质量/性能 DoS + LGTM 缺口样本 28 条、逻辑漏洞样本 12 条，详见 §3）。
