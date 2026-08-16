@@ -27,10 +27,12 @@
 -------------------
 - **真实时延/超时**：``timing_and_quality`` 输出 avg / p50 / p95 / max /
   count / timeout_count / timeout_rate，超时阈值由 ``--timeout-ms`` 控制。
-- **定位精度 CAP-12**：``--line-tolerance``（默认 0）控制命中行的容差。
+- **定位精度 CAP-12**：``--line-tolerance``（默认 1）控制命中行的容差。
   ``exact_hit``（行号完全相等）→ 计入 TP 且定位精确；``near_hit``
   （|result_line - expected_line| <= tolerance 且 >0）→ 仍算 TP 但
   ``exact_location=false``。容差只影响定位精度统计，不改变 TP/FN。
+  **默认值设为 1**：CHECKPOINT 注释行在 sink 行上方，工具通常按 sink 行报告，
+  差值恒为 1，容差 1 消除该系统性偏移，避免 ``exact_hit_rate`` 恒为 0。
   新增指标 ``exact_hit_rate``、``near_hit_rate``。
 - **综合指标**：``compute_metrics`` 新增 ``F1`` 与 ``MCC``（行业标准的
   调和平均与马修斯相关系数）。
@@ -310,7 +312,9 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         list[dict]: 在样本字段基础上追加 ``outcome`` ∈ {TP, FN, FP, TN}、
         ``reported``(bool)、``elapsed_ms``(int|None)、``result_line``(int|None，
         被测结果标注的行号)、``exact_location``(bool，定位是否精确)、
-        ``result_trace``(list[str]，被测对象声明的推理路径节点)。
+        ``result_trace``(list[str]，被测对象声明的推理路径节点)、
+        ``result_cwe``(str|None，被测结果声明的 CWE 编号)、
+        ``cwe_correct``(bool|None，TP 样本中 CWE 是否与 expected 一致；非 TP 为 None)。
 
         定位精度判定（仅对 vuln 且 reported 的样本）：
         - ``exact_hit``：result_line 与 expected line 完全相等。
@@ -332,10 +336,13 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         exact_location = False
         near_hit = False
         result_trace = []
+        result_cwe = None
+        cwe_correct = None
         if rep is not None:
             elapsed = rep.get("elapsed_ms")
             result_line = rep.get("line")
             result_trace = list(rep.get("trace") or [])
+            result_cwe = str(rep.get("cwe") or "").strip().lstrip("CWE-").lstrip("cwe-") or None
             if reported and s["type"] == "vuln" and isinstance(result_line, int) and result_line >= 0:
                 diff = abs(result_line - s["line"])
                 if diff == 0:
@@ -350,6 +357,11 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         else:  # safe
             outcome = "FP" if reported else "TN"
 
+        # CWE 精确度：仅对 TP 样本计算（FP/TN/FN 无意义）
+        if outcome == "TP" and result_cwe is not None:
+            expected_cwe = str(s.get("cwe") or "").strip().lstrip("CWE-").lstrip("cwe-")
+            cwe_correct = (result_cwe == expected_cwe)
+
         entry = dict(s)
         entry["reported"] = reported
         entry["outcome"] = outcome
@@ -358,8 +370,11 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         entry["exact_location"] = exact_location
         entry["near_hit"] = near_hit
         entry["result_trace"] = result_trace
+        entry["result_cwe"] = result_cwe
+        entry["cwe_correct"] = cwe_correct
         aligned.append(entry)
     return aligned
+
 
 
 # --------------------------------------------------------------------------- #
@@ -402,11 +417,23 @@ def compute_metrics(aligned):
     exact_hit_rate = safe_div(exact_hit, len(reported_hit)) if reported_hit else 0.0
     near_hit_rate = safe_div(near_hit, len(reported_hit)) if reported_hit else 0.0
 
+    # CWE 精确度：TP 中被测对象 CWE 与 expected CWE 精确匹配率。
+    # 仅统计被测对象明确上报了 CWE（result_cwe 非 None）的 TP 样本；
+    # 向后兼容：旧结果无 cwe 字段时 cwe_accuracy=None，不破坏既有流程。
+    tp_with_cwe = [a for a in reported_hit if a.get("cwe_correct") is not None]
+    cwe_correct_count = sum(1 for a in tp_with_cwe if a["cwe_correct"])
+    cwe_accuracy = (
+        (cwe_correct_count / len(tp_with_cwe)) if tp_with_cwe else None
+    )
+
     return {
         "TP": tp, "FN": fn, "FP": fp, "TN": tn,
         "Recall": recall, "Precision": precision, "FPR": fpr,
         "Youden": youden, "F1": f1, "MCC": mcc,
         "exact_hit_rate": exact_hit_rate, "near_hit_rate": near_hit_rate,
+        # CWE 精确度（null = 结果文件未提供 CWE 字段，不计入评分）
+        "cwe_accuracy": cwe_accuracy,
+        "cwe_reported_count": len(tp_with_cwe),
     }
 
 
@@ -624,12 +651,15 @@ def render_markdown(name, metrics, timing, simplicity, completeness):
     lines = []
     lines.append("# JSEF Benchmark Scorecard — %s" % name)
     lines.append("")
-    lines.append("| 被测对象 | Recall | Precision | F1 | MCC | FPR | Youden | 定位精度 | 平均耗时(ms) | 超时数 | 报告简洁度 | 能力完备度 |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
-    lines.append("| %s | %.3f | %.3f | %.3f | %.3f | %.3f | %.1f | %.3f | %.1f | %d | %.3f | %.3f |" % (
+    lines.append("| 被测对象 | Recall | Precision | F1 | MCC | FPR | Youden | 定位精度 | CWE精确度 | 平均耗时(ms) | 超时数 | 报告简洁度 | 能力完备度 |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    cwe_acc = metrics.get("cwe_accuracy")
+    cwe_str = ("%.3f(%d)" % (cwe_acc, metrics.get("cwe_reported_count", 0))) if cwe_acc is not None else "N/A"
+    lines.append("| %s | %.3f | %.3f | %.3f | %.3f | %.3f | %.1f | %.3f | %s | %.1f | %d | %.3f | %.3f |" % (
         name,
         metrics["Recall"], metrics["Precision"], metrics["F1"], metrics["MCC"],
         metrics["FPR"], metrics["Youden"], metrics["exact_hit_rate"],
+        cwe_str,
         timing["avg_elapsed_ms"], timing["timeout_count"],
         simplicity, completeness,
     ))
@@ -637,6 +667,7 @@ def render_markdown(name, metrics, timing, simplicity, completeness):
     lines.append("混淆矩阵：TP=%d FN=%d FP=%d TN=%d" % (
         metrics["TP"], metrics["FN"], metrics["FP"], metrics["TN"]))
     return "\n".join(lines)
+
 
 
 # --------------------------------------------------------------------------- #
@@ -787,9 +818,11 @@ def main(argv=None):
     parser.add_argument("--name", default=None, help="被测对象名（单对象模式；不填则用文件名）")
     parser.add_argument("--timeout-ms", type=int, default=120000,
                         help="单次样本超时阈值（ms），默认 120000")
-    parser.add_argument("--line-tolerance", type=int, default=0,
-                        help="命中行号容差（int，默认 0）：|result_line-expected_line|<=容差视为容差内命中，"
-                             "仅用于定位精度统计，不改 TP/FN 判定")
+    parser.add_argument("--line-tolerance", type=int, default=1,
+                        help="命中行号容差（int，默认 1）：|result_line-expected_line|<=容差视为容差内命中，"
+                             "仅用于定位精度统计，不改 TP/FN 判定。"
+                             "默认为 1：CHECKPOINT 注释行在 sink 行上方一行，工具通常报 sink 行（N+1），"
+                             "容差 1 消除该系统性偏移，使 exact_hit_rate 有意义。")
     parser.add_argument("--check-trace", action="store_true",
                         help="开启路径证据链评测：对支持 trace 的 expected 样本（CSV trace 列非空）"
                              "与被测结果 trace 计算 trace_recall/trace_precision；否则为 null。向后兼容。")

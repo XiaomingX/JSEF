@@ -48,13 +48,13 @@ Process p = Runtime.getRuntime().exec(userInput);
 `benchmark/expectedresults.csv` 表头（事实源，列顺序勿改）：
 
 ```
-id,cwe,level,type,file,line,source,sink,category
+id,cwe,level,type,file,line,source,sink,category,trace
 ```
 
 对应示例行：
 
 ```
-JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Runtime.getRuntime().exec,command-injection
+JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Runtime.getRuntime().exec,command-injection,
 ```
 
 - `line` = checkpoint 注解所在源码行号（污点到达 sink 的精确行）。
@@ -64,7 +64,7 @@ JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Run
 
 1. **写样本**：在 `src/main/.../vuln` 或 `benchmark/cases/vuln` 落地漏洞代码，污染数据流（source→sink）清晰可读。
 2. **加 checkpoint**：在污点到达 sink 的精确行上方加 `// [CHECKPOINT ...]`。
-3. **补 CSV**：把同一 `id` 的 9 列元数据追加到 `benchmark/expectedresults.csv`，`type`/`expect` 一致、`line` 为真实行号。
+3. **补 CSV**：把同一 `id` 的 **10 列**元数据追加到 `benchmark/expectedresults.csv`，`type`/`expect` 一致、`line` 为真实行号；L3+ 跨节点样本填写 `trace` 列，L0–L2 留空即可。
 4. **（可选）安全对照**：配套 `sec` 安全样本并加 `expect=SAFE` 的 checkpoint + CSV 行，用于计算 FP/TN。
 5. **自测**：运行 `python benchmark/scripts/scorecard.py --expected benchmark/expectedresults.csv --result <你的结果>` 验证两源可被同一 id 关联。
 6. **核对门禁（必跑双源校验）**：在新增/修改样本前与收尾前，**必须**运行双源校验脚本，要求退出码为 0：
@@ -86,6 +86,16 @@ JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Run
 
 - 保留 `// [VULN]` 行内教学注释；`[CHECKPOINT]` 是其机器可读补充，二者共存不冲突。
 - 漏洞代码放 `vuln` 包，修复代码放 `sec` 包；URL 形如 `/api/v1/{type}/unsafe/{scenario}` 与 `/api/v1/{type}/safe/{scenario}`。
+
+## 抽象桩（stub）语义约定
+
+部分样本（尤其 L4/L5）使用**语义桩**代替真实 API 调用（如 `System.out.println("[cmd-exec] " + cmd)` 代替 `Runtime.getRuntime().exec(cmd)`），原因是 benchmark 样本不要求编译运行，只需静态分析可读。
+
+**评分约定（对被测工具及模型的提示）：**
+- **VULN 侧**：桩方法的**方法名/注释**声明了真实语义（如 `// 语义等价：Runtime.exec(cmd)`），被测工具应信任该声明、按语义报告漏洞，而非逐字执行桩体（桩体通常只 println）。
+- **SAFE 侧**：桩方法的方法体**真实实现了防护逻辑**（如 CAS 循环、原子集合 add、IP 重解析），被测工具应按实现判定为安全。
+- **两侧使用相同规则**：VULN 侧信名字/注释、SAFE 侧信实现——这是因为教学框架中安全代码必须真实可信，而漏洞代码的危险 sink 可用桩替代（避免生成真实攻击载荷）。
+- 若桩未带语义声明注释（`// 语义等价: ...`），则按桩体字面评分（即当作无 sink 处理）。
 
 ## 区分度分级 L1–L5（引自 MY_PLAN A3）
 

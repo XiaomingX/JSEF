@@ -1,0 +1,32 @@
+Failed to register segfault signal handler! exit_code: 1130753
+Failed to register unwind handler for some critical signals, such as SIGSEGV. If we segfault you are on your own and you will receive no backtraces
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 456 files tracked by git with 2930 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  java            296     456          Pro rules    1856                                                                
+  <multilang>      47     456          Community    1074                                                                
+                                                                                                                        
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 278 (278 blocking)
+ • Rules run: 343
+ • Targets scanned: 456
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Files matching .semgrepignore patterns: 13
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 343 rules on 456 files: 278 findings.
+
+📢 Too many findings? Try Semgrep Pro for more powerful queries and less noise.
+   See https://sg.run/false-positives.

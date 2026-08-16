@@ -1,0 +1,426 @@
+[
+  {
+    "id": "JSEF-PF-001S",
+    "hit": true,
+    "file": "benchmark/cases/sec/confusion/SqlPartialParamSafe.java",
+    "line": 34,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-L0-LDAP-001S",
+    "hit": true,
+    "file": "benchmark/cases/sec/level0/L0LdapDirectSafe.java",
+    "line": 22,
+    "cwe": "CWE-90",
+    "message": "Detected non-constant data passed into an LDAP query. If this data can be controlled by an external user, this is an LDAP injection. Ensure data passed to an LDAP query is not controllable; or properl"
+  },
+  {
+    "id": "JSEF-REFLECT-001S",
+    "hit": true,
+    "file": "benchmark/cases/sec/reflection-injection/ReflectionInjection_Safe.java",
+    "line": 32,
+    "cwe": "CWE-470",
+    "message": "If an attacker can supply values that the application then uses to determine which class to instantiate or which method to invoke, the potential exists for the attacker to create control flow paths th"
+  },
+  {
+    "id": "JSEF-CRYPTO-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/CryptoHardcodedKey.java",
+    "line": 26,
+    "cwe": "CWE-798",
+    "message": "A secret is hard-coded in the application. Secrets stored in source code, such as credentials, identifiers, and other types of sensitive data, can be leaked and used by internal or external malicious "
+  },
+  {
+    "id": "JSEF-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/XxeUnsafe.java",
+    "line": 18,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/XxeUnsafe.java",
+    "line": 18,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/XxeUnsafe.java",
+    "line": 18,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/XxeUnsafe.java",
+    "line": 20,
+    "cwe": "CWE-611",
+    "message": "DOCTYPE declarations are enabled for this DocumentBuilderFactory. This is vulnerable to XML external entity attacks. Disable this by setting the feature \"http://apache.org/xml/features/disallow-doctyp"
+  },
+  {
+    "id": "JSEF-PF-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/confusion/SqlPartialParam.java",
+    "line": 32,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-A02-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/crypto/EcbMode.java",
+    "line": 24,
+    "cwe": "CWE-327",
+    "message": "Cipher in ECB mode is detected. ECB mode produces the same output for the same input each time which allows an attacker to intercept and replay the data. Further, ECB mode does not provide any integri"
+  },
+  {
+    "id": "JSEF-A02-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/crypto/EcbMode.java",
+    "line": 24,
+    "cwe": "CWE-327",
+    "message": "Use of AES with ECB mode detected. ECB doesn't provide message confidentiality and  is not semantically secure so should not be used. Instead, use a strong, secure cipher: Cipher.getInstance(\"AES/CBC/"
+  },
+  {
+    "id": "JSEF-DBG-101",
+    "hit": true,
+    "file": "benchmark/cases/vuln/dbg/DBG1_ParserNegotiation.java",
+    "line": 35,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-DBG-102",
+    "hit": true,
+    "file": "benchmark/cases/vuln/dbg/DBG1_ParserNegotiation.java",
+    "line": 73,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-A08-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/integrity/UnsafeDeserOfTrust.java",
+    "line": 24,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-L0-DESER-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0DeserDirect.java",
+    "line": 25,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-L0-LDAP-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0LdapDirect.java",
+    "line": 23,
+    "cwe": "CWE-90",
+    "message": "Detected non-constant data passed into an LDAP query. If this data can be controlled by an external user, this is an LDAP injection. Ensure data passed to an LDAP query is not controllable; or properl"
+  },
+  {
+    "id": "JSEF-L0-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0SqlDirect.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-L0-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0SqlDirect.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-L4-SQL-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/ChainSqlMapper.java",
+    "line": 30,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-LT-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/longtask/ShiroRememberMeGadget.java",
+    "line": 59,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-REFLECT-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/reflection-injection/ReflectionInjection.java",
+    "line": 24,
+    "cwe": "CWE-470",
+    "message": "If an attacker can supply values that the application then uses to determine which class to instantiate or which method to invoke, the potential exists for the attacker to create control flow paths th"
+  },
+  {
+    "id": "JSEF-SQL-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/sql/postgres/PgCopyInjection.java",
+    "line": 27,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-SQL-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/sql/postgres/PgCopyInjection.java",
+    "line": 27,
+    "cwe": "CWE-89",
+    "message": "Detected a formatted string in a SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statements (java.sql.PreparedStatement) in"
+  },
+  {
+    "id": "JSEF-HOST-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/tls/HostnameVerifierBypass.java",
+    "line": 36,
+    "cwe": "CWE-295",
+    "message": "Insecure HostnameVerifier implementation detected. This will accept any SSL certificate with any hostname, which creates the possibility for man-in-the-middle attacks."
+  },
+  {
+    "id": "JSEF-TLS-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/tls/TlsVerificationBypass.java",
+    "line": 23,
+    "cwe": "CWE-295",
+    "message": "Detected empty trust manager implementations. This is dangerous because it accepts any certificate, enabling man-in-the-middle attacks. Consider using a KeyStore and TrustManagerFactory instead. See h"
+  },
+  {
+    "id": "JSEF-CMDi-001S",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/sec/CommandInjectionSafeController.java",
+    "line": 49,
+    "cwe": "CWE-78",
+    "message": "Detected user input entering a method which executes a system command. This could result in a command injection vulnerability, which allows an attacker to inject an arbitrary system command onto the s"
+  },
+  {
+    "id": "JSEF-CMDi-001S",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/sec/CommandInjectionSafeController.java",
+    "line": 49,
+    "cwe": "CWE-78",
+    "message": "Untrusted input might be injected into a command executed by the application, which can lead to a command injection vulnerability. An attacker can execute arbitrary commands, potentially gaining compl"
+  },
+  {
+    "id": "JSEF-CMDi-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 33,
+    "cwe": "CWE-78",
+    "message": "Untrusted input might be injected into a command executed by the application, which can lead to a command injection vulnerability. An attacker can execute arbitrary commands, potentially gaining compl"
+  },
+  {
+    "id": "JSEF-CMDi-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 33,
+    "cwe": "CWE-78",
+    "message": "Untrusted input might be injected into a command executed by the application, which can lead to a command injection vulnerability. An attacker can execute arbitrary commands, potentially gaining compl"
+  },
+  {
+    "id": "JSEF-CMDi-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 110,
+    "cwe": "CWE-78",
+    "message": "A formatted or concatenated string was detected as input to a ProcessBuilder call. This is dangerous if a variable is controlled by user input and could result in a command injection. Ensure your vari"
+  },
+  {
+    "id": "JSEF-CMDi-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 110,
+    "cwe": "CWE-78",
+    "message": "Untrusted input might be injected into a command executed by the application, which can lead to a command injection vulnerability. An attacker can execute arbitrary commands, potentially gaining compl"
+  },
+  {
+    "id": "JSEF-HARDCODED-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/hardcodedCredentials/HardcodedCredentialsVulnerabilityController.java",
+    "line": 69,
+    "cwe": "CWE-798",
+    "message": "A secret is hard-coded in the application. Secrets stored in source code, such as credentials, identifiers, and other types of sensitive data, can be leaked and used by internal or external malicious "
+  },
+  {
+    "id": "JSEF-LDAP-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 55,
+    "cwe": "CWE-90",
+    "message": "Untrusted input might be used to build an LDAP query, which can allow attackers to run arbitrary LDAP queries. If an LDAP query must contain untrusted input then it must be escaped. Ensure data passed"
+  },
+  {
+    "id": "JSEF-LDAP-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 55,
+    "cwe": "CWE-90",
+    "message": "Untrusted input might be used to build an LDAP query, which can allow attackers to run arbitrary LDAP queries. If an LDAP query must contain untrusted input then it must be escaped. Ensure data passed"
+  },
+  {
+    "id": "JSEF-LDAP-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 100,
+    "cwe": "CWE-90",
+    "message": "Untrusted input might be used to build an LDAP query, which can allow attackers to run arbitrary LDAP queries. If an LDAP query must contain untrusted input then it must be escaped. Ensure data passed"
+  },
+  {
+    "id": "JSEF-REDIRECT-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/OpenRedirectVulnerabilityController.java",
+    "line": 28,
+    "cwe": "CWE-601",
+    "message": "Application redirects a user to a destination URL specified by a user supplied parameter that is not validated."
+  },
+  {
+    "id": "JSEF-REDIRECT-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/vuln/OpenRedirectUnsafeController.java",
+    "line": 40,
+    "cwe": "CWE-601",
+    "message": "Application redirects to a destination URL specified by a user-supplied parameter that is not validated. This could direct users to malicious locations. Consider using an allowlist to validate URLs."
+  },
+  {
+    "id": "JSEF-SSRF-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/serverSideRequestForgery/ServerSideRequestForgeryController.java",
+    "line": 39,
+    "cwe": "CWE-918",
+    "message": "User data flows into the host portion of this manually-constructed URL. This could allow an attacker to send data to their own server, potentially exposing sensitive data such as cookies or authorizat"
+  },
+  {
+    "id": "JSEF-SSRF-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/serverSideRequestForgery/ServerSideRequestForgeryController.java",
+    "line": 40,
+    "cwe": "CWE-918",
+    "message": "Untrusted input might be used to build an HTTP request, which can lead to a Server-side request forgery (SSRF) vulnerability. SSRF allows an attacker to send crafted requests from the server side to o"
+  },
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 60,
+    "cwe": "CWE-89",
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL st"
+  },
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 61,
+    "cwe": "CWE-89",
+    "message": "Detected a string argument from a public method contract in a raw SQL statement. This could lead to SQL injection if variables in the SQL statement are not properly sanitized. Use a prepared statement"
+  },
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 61,
+    "cwe": "CWE-89",
+    "message": "Untrusted input might be used to build a database query, which can lead to a SQL injection vulnerability. An attacker can execute malicious SQL statements and gain unauthorized access to sensitive dat"
+  },
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 61,
+    "cwe": "CWE-89",
+    "message": "Untrusted input might be used to build a database query, which can lead to a SQL injection vulnerability. An attacker can execute malicious SQL statements and gain unauthorized access to sensitive dat"
+  },
+  {
+    "id": "JSEF-SQLI-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 95,
+    "cwe": "CWE-89",
+    "message": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL st"
+  },
+  {
+    "id": "JSEF-DESER-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 28,
+    "cwe": "CWE-502",
+    "message": "Found object deserialization using ObjectInputStream. Deserializing entire Java objects is dangerous because malicious actors can create Java object streams with unintended consequences. Ensure that t"
+  },
+  {
+    "id": "JSEF-DESER-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 28,
+    "cwe": "CWE-502",
+    "message": "The application may convert user-controlled data into an object, which can lead to an insecure deserialization vulnerability. An attacker can create a malicious serialized object, pass it to the appli"
+  },
+  {
+    "id": "JSEF-DESER-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 54,
+    "cwe": "CWE-502",
+    "message": "When using Jackson to marshall/unmarshall JSON to Java objects, enabling default typing is dangerous and can lead to RCE. If an attacker can control `jsonData` it might be possible to provide a malici"
+  },
+  {
+    "id": "JSEF-XXE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java",
+    "line": 72,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java",
+    "line": 72,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java",
+    "line": 72,
+    "cwe": "CWE-611",
+    "message": "The application is using an XML parser that has not been safely configured. This might lead to XML External Entity (XXE) vulnerabilities when parsing user-controlled input. An attacker can include doc"
+  },
+  {
+    "id": "JSEF-XXE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java",
+    "line": 73,
+    "cwe": "CWE-611",
+    "message": "DOCTYPE declarations are enabled for this DocumentBuilderFactory. This is vulnerable to XML external entity attacks. Disable this by setting the feature \"http://apache.org/xml/features/disallow-doctyp"
+  },
+  {
+    "id": "JSEF-XPATH-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java",
+    "line": 60,
+    "cwe": "CWE-643",
+    "message": "XPath queries are constructed dynamically on user-controlled input. This could lead to XPath injection if variables passed into the evaluate or compile commands are not properly sanitized. Xpath injec"
+  },
+  {
+    "id": "JSEF-YAML-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/yamlDeserialization/YamlController.java",
+    "line": 30,
+    "cwe": "CWE-502",
+    "message": "Used SnakeYAML org.yaml.snakeyaml.Yaml() constructor with no arguments, which is vulnerable to deserialization attacks. Use the one-argument Yaml(...) constructor instead, with SafeConstructor or a cu"
+  }
+]

@@ -48,38 +48,85 @@ TRACE_NODE_RE = re.compile(r"^(?P<file>.+):(?P<line>\d+)$")
 
 
 def load_csv_ids(expected_path):
-    """读取 CSV，返回 (id->line, id_list_in_order)。
+    """读取 CSV，返回 (csv_map, csv_order, missing_line_ids, col_errors)。
 
     Returns:
-        tuple: (csv_map, csv_order, missing_line_ids)
+        tuple: (csv_map, csv_order, missing_line_ids, col_errors)
             - csv_map: {id: int(line)}（line 解析失败存 -1）。
             - csv_order: 出现顺序的 id 列表（用于重复检测）。
             - missing_line_ids: 无有效 line 列的 id 列表。
+            - col_errors: 列数异常行列表（行号, 实际列数, id）。
+
+    Raises:
+        FileNotFoundError: 文件不存在。
+        KeyError: 缺少必需列。
     """
+
     if not os.path.isfile(expected_path):
         raise FileNotFoundError("找不到 expectedresults.csv: %s" % expected_path)
     csv_map = {}
     csv_order = []
     missing_line_ids = []
+    col_errors = []  # 列数不符的行（行号，实际列数）
+
     with open(expected_path, newline="", encoding="utf-8-sig") as fh:
-        reader = csv.DictReader(fh)
-        if reader.fieldnames is None:
-            raise KeyError("CSV 为空或无法解析表头")
-        if "id" not in reader.fieldnames or "line" not in reader.fieldnames:
-            raise KeyError("expectedresults.csv 缺少 id 或 line 列")
-        for row in reader:
-            sid = (row.get("id") or "").strip()
-            if not sid:
-                continue
-            csv_order.append(sid)
-            raw_line = (row.get("line") or "").strip()
-            try:
-                line = int(raw_line)
-            except (ValueError, TypeError):
-                line = -1
+        reader = csv.reader(fh)
+        raw_rows = list(reader)
+
+    if not raw_rows:
+        raise KeyError("CSV 为空或无法解析表头")
+
+    header = raw_rows[0]
+    expected_ncols = len(header)
+    if "id" not in header or "line" not in header:
+        raise KeyError("expectedresults.csv 缺少 id 或 line 列")
+
+    id_idx = header.index("id")
+    line_idx = header.index("line")
+    cat_idx = header.index("category") if "category" in header else -1
+
+    for row_no, row in enumerate(raw_rows[1:], 2):
+        # 列数校验：sink/source 含未转义逗号会导致列数偏多
+        if len(row) != expected_ncols:
+            col_errors.append((row_no, len(row),
+                               row[id_idx] if len(row) > id_idx else "?"))
+            # 尽力取 id，避免后续全部失效
+            sid = (row[id_idx] if len(row) > id_idx else "").strip()
+            if sid:
+                csv_order.append(sid)
+                csv_map[sid] = -1
                 missing_line_ids.append(sid)
-            csv_map[sid] = line
-    return csv_map, csv_order, missing_line_ids
+            continue
+
+        sid = (row[id_idx] or "").strip()
+        if not sid:
+            continue
+        csv_order.append(sid)
+        raw_line = (row[line_idx] or "").strip()
+        try:
+            line = int(raw_line)
+        except (ValueError, TypeError):
+            line = -1
+            missing_line_ids.append(sid)
+        csv_map[sid] = line
+
+        # category 字段不应含裸括号（列错位残留的典型特征）
+        if cat_idx >= 0:
+            cat_val = row[cat_idx].strip()
+            if cat_val.startswith(")") or (cat_val.endswith(")") and "(" not in cat_val):
+                col_errors.append((row_no, len(row),
+                                   "%s [category='%s' 疑似列错位]" % (sid, cat_val)))
+
+    if col_errors:
+        import sys
+        print("\n[CSV 列数异常] 以下行列数不符（期望 %d），"
+              "sink/source 字段可能含未加引号的逗号，"
+              "请用引号包裹含逗号的字段（共 %d 条）：" % (expected_ncols, len(col_errors)),
+              file=sys.stderr)
+        for row_no, ncols, sid in col_errors:
+            print("  - 行 %d: %d 列 (id=%s)" % (row_no, ncols, sid), file=sys.stderr)
+
+    return csv_map, csv_order, missing_line_ids, col_errors
 
 
 def scan_source_ids(dirs):
@@ -152,10 +199,14 @@ def main(argv=None):
 
     rc = 0
     try:
-        csv_map, csv_order, missing_line_ids = load_csv_ids(args.expected)
+        csv_map, csv_order, missing_line_ids, col_errors = load_csv_ids(args.expected)
     except (FileNotFoundError, KeyError) as exc:
         print("[错误] %s" % exc, file=sys.stderr)
         return 2
+
+    if col_errors:
+        rc = 1  # CSV 列错位是硬问题，纳入门禁
+
 
     source_found = scan_source_ids([args.cases_dir, args.src_dir])
 

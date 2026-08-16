@@ -31,7 +31,7 @@
    CSV 表头（已是事实源，不要改列顺序）：
 
    ```
-   id,cwe,level,type,file,line,source,sink,category
+   id,cwe,level,type,file,line,source,sink,category,trace
    ```
 
    - `type` 为 `vuln`（对应 `expect=VULN`）或 `safe`（对应 `expect=SAFE`）。
@@ -39,7 +39,7 @@
    - 示例行（对应上面的 checkpoint）：
 
      ```
-     JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Runtime.getRuntime().exec,command-injection
+     JSEF-TP-001,78,L1,vuln,benchmark/cases/vuln/TaintSingleHop.java,22,userInput,Runtime.getRuntime().exec,command-injection,
      ```
 
 > 缺 checkpoint 注解，或 CSV 未同步追加，即视为该样本未提交完成。
@@ -94,7 +94,7 @@ python3 benchmark/scripts/validate_checkpoints.py \
 ## 一句话自检清单
 
 - [ ] 漏洞精确行上方有 `// [CHECKPOINT ...]` 注解
-- [ ] 该行已追加到 `benchmark/expectedresults.csv`（9 列齐全，type 与 expect 一致）
+- [ ] 该行已追加到 `benchmark/expectedresults.csv`（10 列齐全：含 `trace` 列，L3+ 跨节点样本需填写；type 与 expect 一致）
 - [ ] Payload 仅 localhost 语义，无真实利用脚本
 - [ ] `vuln`/`sec` 包分离与 `// [VULN]` 约定保留
 - [ ] 跑了 scorecard 自测
