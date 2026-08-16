@@ -1,0 +1,2972 @@
+[
+  {
+    "id": "JSEF-SQLI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 60,
+    "cwe": "CWE-89",
+    "message": "用户输入 username 通过字符串拼接直接嵌入 SQL 语句，未使用参数化查询，可构造任意 SQL 注入；修复建议：使用 JdbcTemplate 的参数化查询 queryForList(\"SELECT * FROM users WHERE username = ?\", username)。",
+    "elapsed_ms": 21570
+  },
+  {
+    "id": "JSEF-SQLI-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/vuln/SqlInjectionUnsafeController.java",
+    "line": 94,
+    "cwe": "CWE-89",
+    "message": "用户输入 username、email、role 三个参数均通过字符串拼接嵌入 SQL WHERE 子句，任一参数可被注入；修复建议：将三个参数改为占位符 ? 并通过参数数组传入 queryForList。",
+    "elapsed_ms": 21570
+  },
+  {
+    "id": "JSEF-SQLI-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sqlInjection/sec/SqlInjectionSafeController.java",
+    "line": 78,
+    "cwe": "CWE-89",
+    "message": "使用JdbcTemplate参数化查询（?占位符），用户输入username作为绑定参数传入jdbcTemplate.query()，不参与SQL字符串拼接，PreparedStatement预编译保证SQL结构与数据分离，有效防御SQL注入",
+    "elapsed_ms": 10935
+  },
+  {
+    "id": "JSEF-CMDi-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 32,
+    "cwe": "CWE-78",
+    "message": "用户输入 @RequestParam command 未经任何过滤直接传入 Runtime.getRuntime().exec()，攻击者可注入任意系统命令（如 ls; cat /etc/passwd）。修复：使用白名单校验或 ProcessBuilder 配合固定命令数组，禁止拼接用户输入。",
+    "elapsed_ms": 41881
+  },
+  {
+    "id": "JSEF-CMDi-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/vuln/CommandInjectionUnsafeController.java",
+    "line": 109,
+    "cwe": "CWE-78",
+    "message": "用户输入 @RequestParam command 经 split(\" \") 拆分后传入 ProcessBuilder 执行，用户可完全控制要执行的可执行程序名（如 rm、cat /etc/shadow 等），仍属任意命令执行。修复：将可执行程序限定为白名单中的固定值，仅将用户输入作为参数传入。",
+    "elapsed_ms": 41881
+  },
+  {
+    "id": "JSEF-CMDi-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/commandInjection/sec/CommandInjectionSafeController.java",
+    "line": 46,
+    "cwe": "CWE-78",
+    "message": "该代码已通过白名单正则 ^[a-zA-Z0-9_]+\\.txt$ 严格校验文件名，仅允许字母数字下划线和.txt后缀，阻断了所有shell元字符；同时命令'cat'硬编码不可篡改，且通过String[]数组形式传入Runtime.exec()绕过shell解释，基础路径/var/safe-docs/也硬编码限制了目录穿越，因此不存在命令注入风险。",
+    "elapsed_ms": 9717
+  },
+  {
+    "id": "JSEF-SPEL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java",
+    "line": 43,
+    "cwe": "CWE-917",
+    "message": "用户输入userControlledInput经@RequestParam直接传入spelParser.parseExpression()解析为SpEL表达式并在默认StandardEvaluationContext下求值，攻击者可注入T(java.lang.Runtime).getRuntime().exec(...)实现RCE；应使用SimpleEvaluationContext限制表达式能力或采用参数化变量传递输入。",
+    "elapsed_ms": 23288
+  },
+  {
+    "id": "JSEF-SPEL-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java",
+    "line": 59,
+    "cwe": "CWE-917",
+    "message": "用户输入userControlledInput经parseRaw()解析为原始SpEL表达式（无需#{}包裹）并直接求值，风险等同于parseExpression；应改用SimpleEvaluationContext并禁止原始表达式解析，或对输入实施严格白名单校验。",
+    "elapsed_ms": 23288
+  },
+  {
+    "id": "JSEF-SPEL-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/spelInjection/SpelInjectionVulnerabilityController.java",
+    "line": 197,
+    "cwe": "CWE-917",
+    "message": "用户输入userControlledInput被拼接进T(...)类型引用构造恶意表达式后经parseExpression解析求值，攻击者可输入java.lang.Runtime等类名配合后续代码执行任意命令；应对用户输入做严格白名单校验并避免将其拼接进表达式结构中。",
+    "elapsed_ms": 23288
+  },
+  {
+    "id": "JSEF-FASTJSON-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java",
+    "line": 27,
+    "cwe": "CWE-502",
+    "message": "直接使用JSON.parseObject()解析不可信输入，默认配置下Fastjson的AutoType可能被开启，攻击者可通过@type字段构造恶意载荷实现任意类实例化；应禁用AutoType或使用白名单机制。",
+    "elapsed_ms": 10340
+  },
+  {
+    "id": "JSEF-FASTJSON-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java",
+    "line": 39,
+    "cwe": "CWE-502",
+    "message": "显式调用ParserConfig.getGlobalInstance().setAutoTypeSupport(true)全局开启AutoType后再解析不可信JSON，攻击者可利用@type字段触发任意类加载实现RCE；应始终禁用AutoType。",
+    "elapsed_ms": 10340
+  },
+  {
+    "id": "JSEF-FASTJSON-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/vuln/FastjsonDeserializationUnsafeController.java",
+    "line": 53,
+    "cwe": "CWE-502",
+    "message": "使用JSON.parse()解析不可信输入返回Object类型，该方法同样受AutoType设置影响，攻击者可构造含@type的恶意载荷触发反序列化漏洞；应禁用AutoType或使用强类型反序列化。",
+    "elapsed_ms": 10340
+  },
+  {
+    "id": "JSEF-FASTJSON-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/thirdParty/sec/FastjsonDeserializationSafeController.java",
+    "line": 30,
+    "cwe": "CWE-502",
+    "message": "该方法在反序列化前通过ParserConfig.getGlobalInstance().setAutoTypeSupport(false)显式禁用了AutoType，并且目标类型指定为内置安全类型JSONObject.class（非用户可控的任意类），攻击者无法通过@type字段触发任意类实例化，因此不存在反序列化漏洞。",
+    "elapsed_ms": 8863
+  },
+  {
+    "id": "JSEF-DESER-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 29,
+    "cwe": "CWE-502",
+    "message": "HTTP参数serializedData经ObjectInputStream.readObject()直接反序列化，无任何类型过滤或ObjectInputFilter限制，攻击者可构造恶意序列化数据触发远程代码执行；应使用白名单ObjectInputFilter过滤允许的类，或改用JSON等安全格式。",
+    "elapsed_ms": 12765
+  },
+  {
+    "id": "JSEF-DESER-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 52,
+    "cwe": "CWE-502",
+    "message": "ObjectMapper启用enableDefaultTyping()后允许JSON中嵌入任意类型信息实现多态反序列化，攻击者可指定任意类进行实例化导致RCE；应移除enableDefaultTyping()并使用@JsonTypeInfo配合白名单BaseTypeResolver，或显式指定目标类型。",
+    "elapsed_ms": 12765
+  },
+  {
+    "id": "JSEF-DESER-004",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/unsafeDeserialization/DeserializeController.java",
+    "line": 81,
+    "cwe": "CWE-502",
+    "message": "通过InvokerTransformer+ConstantTransformer+ChainedTransformer构建Commons-Collections gadget chain并用TransformedMap.decorate包装，反序列化时checkSetValue触发transformer链最终执行Runtime.exec()；应升级commons-collections至3.2.2+或4.4+（移除InvokerTransformer等危险类），或使用反序列化过滤器阻断gadget链。",
+    "elapsed_ms": 12765
+  },
+  {
+    "id": "JSEF-XPATH-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java",
+    "line": 59,
+    "cwe": "CWE-643",
+    "message": "用户通过@RequestParam直接传入的XPath表达式未经任何过滤或参数化，直接传入XPath.compile()编译执行，攻击者可构造永真条件（如' or '1'='1）绕过查询逻辑或遍历XML文档窃取数据；应使用白名单验证合法表达式，或采用预定义XPath模板仅替换安全参数。",
+    "elapsed_ms": 12528
+  },
+  {
+    "id": "JSEF-XPATH-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xpathInjection/XPathInjectionVulnerabilityController.java",
+    "line": 91,
+    "cwe": "CWE-643",
+    "message": "用户通过@RequestParam直接传入的XPath表达式未经任何过滤或校验，直接传入Jaxen的DOMXPath构造函数并执行selectNodes()，攻击者可构造任意XPath表达式遍历整个XML文档获取敏感信息；应使用白名单机制限制合法表达式，或采用参数化查询避免用户输入直接影响查询结构。",
+    "elapsed_ms": 12528
+  },
+  {
+    "id": "JSEF-LDAP-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 55,
+    "cwe": "CWE-90",
+    "message": "用户输入未经任何过滤或编码，直接拼接至LDAP DN和搜索过滤器并传入InitialDirContext.search()，可构造恶意输入篡改查询逻辑；应对用户输入进行LDAP特殊字符转义（如对*、(、)、\\、NUL进行编码），或使用参数化查询方式构建过滤器。",
+    "elapsed_ms": 47987
+  },
+  {
+    "id": "JSEF-LDAP-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ldapInjection/LdapInjectionVulnerabilityController.java",
+    "line": 100,
+    "cwe": "CWE-90",
+    "message": "dept和title两个用户参数直接拼接至LDAP复合过滤器(&(department=...)(title=...))中，攻击者可通过注入括号和操作符篡改查询条件；应使用JNDI或Spring LDAP提供的参数化过滤器构建API（如LdapQueryBuilder），或对输入进行严格的白名单校验与LDAP元字符转义。",
+    "elapsed_ms": 47987
+  },
+  {
+    "id": "JSEF-TP-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/TaintSingleHop.java",
+    "line": 23,
+    "cwe": "CWE-78",
+    "message": "用户输入未经验证直接传递给 Runtime.exec()，导致命令注入；应使用白名单验证或 ProcessBuilder 参数数组。",
+    "elapsed_ms": 16113
+  },
+  {
+    "id": "JSEF-TP-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/TaintSingleHopSafe.java",
+    "line": 30,
+    "cwe": "CWE-78",
+    "message": "sink 处 exec 参数为硬编码常量 {\"echo\",\"localhost-demo\"}，userInput 从未传入 exec；且前置白名单校验进一步拦截非法命令，不存在命令注入路径。",
+    "elapsed_ms": 17746
+  },
+  {
+    "id": "JSEF-TP-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/TaintMultiHop.java",
+    "line": 25,
+    "cwe": "CWE-78",
+    "message": "用户输入未经净化直接传递给Runtime.getRuntime().exec()，导致命令注入。修复建议：对输入进行严格的验证和过滤，避免命令注入。",
+    "elapsed_ms": 16830
+  },
+  {
+    "id": "JSEF-TP-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/TaintMultiHopSafe.java",
+    "line": 29,
+    "cwe": "CWE-78",
+    "message": "虽然多跳污点链路存在（userInput→a→b→c），且b中拼接了恶意载荷\" ; echo localhost\"，但sink处Runtime.getRuntime().exec的参数为硬编码常量数组{\"echo\",\"localhost-demo\"}，用户输入从未流入sink；此外中间层已做白名单校验，未命中则抛异常阻断。",
+    "elapsed_ms": 20639
+  },
+  {
+    "id": "JSEF-TP-003",
+    "hit": true,
+    "file": "benchmark/cases/vuln/TaintIndirectMap.java",
+    "line": 31,
+    "cwe": "CWE-78",
+    "message": "userInput 经 HashMap 存取后未经任何清洗直接传入 Runtime.getRuntime().exec()，导致 OS 命令注入；应对 userInput 进行白名单校验或使用 ProcessBuilder 的参数化调用避免 shell 元字符解释。",
+    "elapsed_ms": 23291
+  },
+  {
+    "id": "JSEF-TP-003S",
+    "hit": false,
+    "file": "benchmark/cases/sec/TaintIndirectMapSafe.java",
+    "line": 32,
+    "cwe": "CWE-78",
+    "message": "sink 处 Runtime.getRuntime().exec 的参数为硬编码常量 {\"echo\",\"localhost-demo\"}，用户输入 resolved 从未传入 exec，污点流在白名单校验后被截断且 sink 仅接收字面值，不存在命令注入风险。",
+    "elapsed_ms": 14144
+  },
+  {
+    "id": "JSEF-TP-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/TaintCrossMethod.java",
+    "line": 28,
+    "cwe": "CWE-78",
+    "message": "runCommand 接收不可信 userInput，经 methodA 仅做拼接（无净化）后跨方法传入 methodB，最终在 line 28 以 Runtime.getRuntime().exec(cmd) 直接执行，构成 OS 命令注入。修复建议：对 userInput 做白名单校验或使用 ProcessBuilder 配合参数数组拆分命令，避免 shell 元字符被解释。",
+    "elapsed_ms": 31738
+  },
+  {
+    "id": "JSEF-TP-004S",
+    "hit": false,
+    "file": "benchmark/cases/sec/TaintCrossMethodSafe.java",
+    "line": 28,
+    "cwe": "CWE-78",
+    "message": "安全。methodB 的参数 cmd 未被使用，Runtime.getRuntime().exec 直接执行硬编码常量 {\"echo\",\"localhost-demo\"}，用户输入无任何路径到达 sink；此外 methodA 也对 input 做了白名单校验，即使参数被引用也已净化。",
+    "elapsed_ms": 20325
+  },
+  {
+    "id": "JSEF-TP-005",
+    "hit": true,
+    "file": "benchmark/cases/vuln/SpelFrameworkSemantics.java",
+    "line": 45,
+    "cwe": "CWE-917",
+    "message": "用户可控的请求参数值经 target.getClassLoader() 传入 evaluateAsSpel，导致 SpEL 表达式注入。应对绑定值做白名单校验或避免对用户输入进行 SpEL 求值。",
+    "elapsed_ms": 12252
+  },
+  {
+    "id": "JSEF-TP-005S",
+    "hit": false,
+    "file": "benchmark/cases/sec/SpelFrameworkSemanticsSafe.java",
+    "line": 38,
+    "cwe": "CWE-917",
+    "message": "使用 SimpleEvaluationContext（受限 SpEL 上下文，禁止类引用与方法调用）替代 StandardEvaluationContext，且对 disallowedFields 路径做了显式校验拦截，污点无法到达危险 sink，属于安全实现。",
+    "elapsed_ms": 7911
+  },
+  {
+    "id": "JSEF-LOG4J-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/Log4jJndiInjection.java",
+    "line": 30,
+    "cwe": "CWE-917",
+    "message": "用户可控日志输入(userAgent)经字符串拼接进入日志格式串logFormat,Log4j解析${jndi:...}子串时触发JndiLookup.lookup执行远程JNDI加载,可导致远程代码执行。修复建议:升级Log4j至2.17.1+,并对所有用户输入在拼入日志前进行JNDI模式转义或过滤${}子串。",
+    "elapsed_ms": 17430
+  },
+  {
+    "id": "JSEF-LOG4J-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/Log4jJndiInjectionSafe.java",
+    "line": 38,
+    "cwe": "CWE-917",
+    "message": "该行使用参数化日志 logger.info(\"msg {}\", userInput) 模式，格式串为常量 \"[ACCESS] client={}\"，用户输入 userAgent 仅作为 {} 占位符的数据填充，不进入日志格式串解析，因此其中的 ${jndi:...} 表达式不会被 Log4j 的 Lookups 机制求值，不存在 JNDI 注入风险。推荐的修复方式即为此参数化日志写法。",
+    "elapsed_ms": 20085
+  },
+  {
+    "id": "JSEF-CONF-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/ConfusionSqlWhitelist.java",
+    "line": 19,
+    "cwe": "CWE-89",
+    "message": "userInput 直接通过字符串拼接嵌入 SQL 语句（第17行），未经参数化或转义即传入 query() sink（第19行），导致 SQL 注入；应使用 PreparedStatement 参数化查询替代拼接。",
+    "elapsed_ms": 14845
+  },
+  {
+    "id": "JSEF-CONF-SPEL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/ConfusionSpelConstantSink.java",
+    "line": 18,
+    "cwe": "CWE-917",
+    "message": "用户输入 userInput 直接拼接到 SpEL 表达式字符串中，未经任何过滤或白名单校验，导致表达式注入；应对 userInput 做严格白名单校验或使用模板变量绑定替代字符串拼接。",
+    "elapsed_ms": 19067
+  },
+  {
+    "id": "JSEF-CONF-SPEL-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/ConfusionSpelConstantSafe.java",
+    "line": 18,
+    "cwe": "CWE-917",
+    "message": "表达式为固定常量模板\"#name\"，用户输入仅作为数据变量赋值，不参与表达式构建，在SimpleEvaluationContext下无法触发方法执行或代码注入，属于安全实现。",
+    "elapsed_ms": 9730
+  },
+  {
+    "id": "JSEF-CONF-CMD-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/ConfusionCmdSanitized.java",
+    "line": 18,
+    "cwe": "CWE-78",
+    "message": "用户输入未经任何过滤/转义直接传入命令执行函数 exec()，构成操作系统命令注入；应使用白名单校验或 ProcessBuilder 参数化调用替代字符串拼接执行。",
+    "elapsed_ms": 22110
+  },
+  {
+    "id": "JSEF-CONF-CMD-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/ConfusionCmdSanitizedSafe.java",
+    "line": 17,
+    "cwe": "CWE-78",
+    "message": "安全实现：使用白名单校验拒绝分号/管道等shell元字符，并通过数组参数化exec（String[]）避免shell解释，有效防御命令注入。",
+    "elapsed_ms": 18093
+  },
+  {
+    "id": "JSEF-CHAIN-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/ChainController.java",
+    "line": 34,
+    "cwe": "CWE-78",
+    "message": "用户可控的@RequestParam参数input未经任何过滤或转义，经ChainServiceA.process拼接后直达ChainServiceB.execute中的Runtime.getRuntime().exec，造成操作系统命令注入。建议使用参数化调用（如ProcessBuilder配合参数列表）或对输入进行严格的白名单校验。",
+    "elapsed_ms": 13932
+  },
+  {
+    "id": "JSEF-CHAIN-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/ChainControllerSafe.java",
+    "line": 31,
+    "cwe": "CWE-78",
+    "message": "该代码为安全对照样本。用户输入仅在第30-34行经白名单校验（ALLOWLIST.contains），未通过的命令直接抛出异常；而第36行execConst调用的参数是硬编码常量数组{\"echo\",\"localhost-demo\"}，与用户输入完全无关，污点不可达Runtime.exec，因此安全。",
+    "elapsed_ms": 16876
+  },
+  {
+    "id": "JSEF-GADGET-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/GadgetChainDeserialization.java",
+    "line": 99,
+    "cwe": "CWE-502",
+    "message": "InvokerTransformer通过反射链式调用Runtime.exec，untrusted输入经chained转换器驱动Method.invoke执行命令。应避免对不可信数据执行反序列化，或使用ObjectInputFilter白名单过滤危险类。",
+    "elapsed_ms": 15484
+  },
+  {
+    "id": "JSEF-GADGET-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/GadgetChainDeserializationSafe.java",
+    "line": 51,
+    "cwe": "CWE-502",
+    "message": "安全。s1 在第一步即用编译期常量 \"localhost-demo\" 替换了 untrusted 输入，不可信数据未进入 s2 的 Method.invoke 路径；且 safeInvoker 仅允许白名单方法（toString/toLowerCase），不存在 gadget chain 可达 Runtime.exec 的反射调用链。",
+    "elapsed_ms": 10633
+  },
+  {
+    "id": "JSEF-VEND-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vendor/OwaspStyle_SQLi_Confusion.java",
+    "line": 29,
+    "cwe": "CWE-89",
+    "message": "userInput 通过字符串拼接直接嵌入 SQL 语句，攻击者可注入任意 SQL 片段控制查询逻辑；改用 PreparedStatement 参数化查询（如 safeQuery 所示）。",
+    "elapsed_ms": 13355
+  },
+  {
+    "id": "JSEF-VEND-SQL-001S",
+    "hit": false,
+    "file": "benchmark/cases/vendor/OwaspStyle_SQLi_Confusion.java",
+    "line": 39,
+    "cwe": "CWE-89",
+    "message": "使用 PreparedStatement + 占位符（?），用户输入通过 setString 绑定，SQL 结构在编译时固定，参数值不会被解释为 SQL 语法，不存在注入风险。",
+    "elapsed_ms": 13355
+  },
+  {
+    "id": "JSEF-VEND-CMD-001",
+    "hit": true,
+    "file": "benchmark/cases/vendor/JulietStyle_CommandInjection_CrossFile.java",
+    "line": 25,
+    "cwe": "CWE-78",
+    "message": "userData为不可信外部输入，经字符串拼接后直接传入Runtime.getRuntime().exec()，可注入任意OS命令；应使用白名单校验或ProcessBuilder+参数数组隔离命令与参数。",
+    "elapsed_ms": 13588
+  },
+  {
+    "id": "JSEF-VEND-CMD-001S",
+    "hit": false,
+    "file": "benchmark/cases/vendor/JulietStyle_CommandInjection_CrossFile_Good.java",
+    "line": 25,
+    "cwe": "CWE-78",
+    "message": "userData 在到达 exec 前经过 ALLOWED 白名单严格校验（仅允许 \"list\"/\"status\"/\"version\" 三个固定字符串），非白名单值直接抛异常拒绝，无法注入 shell 元字符，因此安全。",
+    "elapsed_ms": 14890
+  },
+  {
+    "id": "JSEF-VEND-PT-001",
+    "hit": true,
+    "file": "benchmark/cases/vendor/PrimeVulStyle_PathTraversal.java",
+    "line": 34,
+    "cwe": "CWE-22",
+    "message": "fileName 直接取自 request.getParameter(\"file\") 未经任何校验即拼入文件路径构造 FileInputStream，攻击者可传入 ../../../etc/passwd 等路径遍历序列读取任意文件；应在拼接前对 fileName 做路径规范化（Paths.get(BASE_DIR, fileName).normalize()）并验证结果仍在 BASE_DIR 下。",
+    "elapsed_ms": 9419
+  },
+  {
+    "id": "JSEF-VEND-PT-001S",
+    "hit": false,
+    "file": "benchmark/cases/vendor/PrimeVulStyle_PathTraversalSafe.java",
+    "line": 30,
+    "cwe": "CWE-22",
+    "message": "已通过 base.toAbsolutePath().normalize() 规范化基路径，并在 resolve(fileName).normalize() 后校验 resolved.startsWith(base)，有效阻断 ../ 穿越攻击。",
+    "elapsed_ms": 6858
+  },
+  {
+    "id": "JSEF-VEND-RND-001",
+    "hit": true,
+    "file": "benchmark/cases/vendor/OwaspStyle_WeakRandom.java",
+    "line": 24,
+    "cwe": "CWE-330",
+    "message": "使用 java.util.Random 生成安全敏感的 token，随机数可预测；应使用 java.security.SecureRandom。",
+    "elapsed_ms": 12309
+  },
+  {
+    "id": "JSEF-VEND-RND-001S",
+    "hit": false,
+    "file": "benchmark/cases/vendor/OwaspStyle_WeakRandom.java",
+    "line": 33,
+    "cwe": "CWE-330",
+    "message": "使用 java.security.SecureRandom 生成 token，提供密码学安全的随机数，是安全的实现。",
+    "elapsed_ms": 12309
+  },
+  {
+    "id": "JSEF-VEND-XSS-001",
+    "hit": true,
+    "file": "benchmark/cases/vendor/JulietStyle_XSS_Reflect.java",
+    "line": 28,
+    "cwe": "CWE-79",
+    "message": "request.getParameter(\"name\")未经任何编码直接写入response输出流，用户可控输入原样回显至HTML页面，可构造恶意脚本实现反射型XSS；修复建议：对输出内容进行HTML实体编码（如使用HtmlUtils.htmlEscape或OWASP Encoder）。",
+    "elapsed_ms": 12628
+  },
+  {
+    "id": "JSEF-VEND-XSS-001S",
+    "hit": false,
+    "file": "benchmark/cases/vendor/JulietStyle_XSS_Reflect.java",
+    "line": 37,
+    "cwe": "CWE-79",
+    "message": "同一不可信源request.getParameter(\"name\")在输出前经过HtmlUtils.htmlEscape转义，特殊字符（<、>、&、\"、'）被编码为HTML实体，浏览器不会将其解析为脚本执行，XSS风险已消除。",
+    "elapsed_ms": 12628
+  },
+  {
+    "id": "JSEF-SSRF-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/SsrfSingleHop.java",
+    "line": 15,
+    "cwe": "CWE-918",
+    "message": "用户输入url参数未经任何白名单/内网地址校验即直接传入new URL()并调用openConnection()发起服务端请求，存在SSRF风险；应对目标URL进行协议白名单（仅允许http/https）、域名/IP黑名单（屏蔽127.0.0.1、10.x、172.16.x、192.168.x等内网地址）或使用白名单域名校验。",
+    "elapsed_ms": 20198
+  },
+  {
+    "id": "JSEF-SSRF-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/SsrfWhitelistSafe.java",
+    "line": 32,
+    "cwe": "CWE-918",
+    "message": "代码在发起请求前先对目标 URL 做了域名白名单校验（ALLOWED_HOSTS.contains）和内网地址校验（isSiteLocalAddress/isLoopbackAddress），两项校验均通过后才执行 openConnection，有效阻止了 SSRF 攻击，属于安全实现。",
+    "elapsed_ms": 27028
+  },
+  {
+    "id": "JSEF-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/XxeUnsafe.java",
+    "line": 19,
+    "cwe": "CWE-611",
+    "message": "未设置DocumentBuilderFactory的安全特性禁用DTD和外部实体，导致XXE攻击。修复建议：设置disallow-doctype-decl等安全特性。",
+    "elapsed_ms": 24669
+  },
+  {
+    "id": "JSEF-XXE-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/XxeSafeConfig.java",
+    "line": 26,
+    "cwe": "CWE-611",
+    "message": "代码在第21-24行已显式设置 disallow-doctype-decl=true、FEATURE_SECURE_PROCESSING=true、XIncludeAware=false、ExpandEntityReferences=false，从配置层彻底阻断外部实体解析，DocumentBuilder.parse不会执行XXE，属于安全加固实现，无漏洞。",
+    "elapsed_ms": 9607
+  },
+  {
+    "id": "JSEF-NOSQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/NosqlInjectionMongo.java",
+    "line": 23,
+    "cwe": "CWE-943",
+    "message": "userField与userValue作为不可信查询参数直接传入Map.of构造BSON过滤器，经Document中转后到达MongoCollection.find() sink，攻击者可注入$where、$gt等操作符实现NoSQL注入；应对userField做白名单校验、对userValue进行类型/结构验证后再传入查询。",
+    "elapsed_ms": 12653
+  },
+  {
+    "id": "JSEF-NOSQL-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/NosqlInjectionSafe.java",
+    "line": 27,
+    "cwe": "CWE-943",
+    "message": "该代码安全：字段名经白名单ALLOWED_FIELDS校验，仅允许'username'和'email'；用户输入userValue通过new Document(userField, userValue)作为字面量传递，不会被解析为MongoDB操作符（如$gt、$regex等），有效防止了NoSQL注入。",
+    "elapsed_ms": 13341
+  },
+  {
+    "id": "JSEF-JWT-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/JwtAuthBypass.java",
+    "line": 20,
+    "cwe": "CWE-345",
+    "message": "Jwts.parser() 未调用 setSigningKey() 且未限制签名算法，导致 alg=none 伪造令牌可绕过认证；应设置强密钥并通过 setAllowedAlgorithms() 限定算法白名单。",
+    "elapsed_ms": 15216
+  },
+  {
+    "id": "JSEF-JWT-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/JwtAuthSafe.java",
+    "line": 24,
+    "cwe": "CWE-345",
+    "message": "该实现已使用强随机密钥（HS256, ≥256bit）签名、显式限定算法为 HS256（阻止 alg=none 攻击）、并校验 token 过期时间，三重防护确保 JWT 完整性与认证有效性，属于安全实现，不存在认证绕过或签名伪造风险。",
+    "elapsed_ms": 12046
+  },
+  {
+    "id": "JSEF-IDOR-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/IdorObjectOwnership.java",
+    "line": 29,
+    "cwe": "CWE-639",
+    "message": "用户传入的 id 直接传给 repo.findById(id) 查询文档，未校验 currentUser 是否为该文档的 ownerId，攻击者可遍历任意 id 读取他人文档；应在返回前比较 currentUser.id 与 doc.ownerId，不匹配则抛出 403/404。",
+    "elapsed_ms": 12012
+  },
+  {
+    "id": "JSEF-IDOR-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/IdorSafe.java",
+    "line": 23,
+    "cwe": "CWE-639",
+    "message": "该行是归属校验逻辑，代码在取出文档后立即比对 doc.ownerId 与 currentUser.id，不匹配则抛出 SecurityException(403)，有效阻止了越权访问，属于安全加固实现，无漏洞。",
+    "elapsed_ms": 7968
+  },
+  {
+    "id": "JSEF-JACKSON-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/JacksonPolymorphic.java",
+    "line": 27,
+    "cwe": "CWE-502",
+    "message": "ObjectMapper 使用 @JsonTypeInfo(use=CLASS) 启用多态反序列化，未配置子类型白名单，攻击者可通过 JSON 类型字段指定任意类导致反序列化利用；修复建议：使用 ObjectMapper.registerSubtypes() 限制允许的子类，或改用 @JsonTypeInfo(use=NAME) 并配合 @JsonSubTypes 显式枚举安全类型。",
+    "elapsed_ms": 10694
+  },
+  {
+    "id": "JSEF-JACKSON-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/JacksonPolymorphicSafe.java",
+    "line": 34,
+    "cwe": "CWE-502",
+    "message": "该实现同时采用了三重安全机制：(1) @JsonTypeInfo 使用 Id.NAME 而非 Id.CLASS，攻击者无法在 JSON 中注入任意类名；(2) @JsonSubTypes 显式白名单限定仅允许 Foo 和 Bar 两个已知子类；(3) BasicPolymorphicTypeValidator 通过 allowIfSubType(Payload.class) 在运行时兜底校验，仅放行 Payload 的子类型。三重防线使得反序列化不可达任意类，不存在不安全反序列化漏洞。",
+    "elapsed_ms": 9163
+  },
+  {
+    "id": "JSEF-TEMPLATE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/TemplateInjection.java",
+    "line": 25,
+    "cwe": "CWE-1336",
+    "message": "用户可控的模板名/内容（userTemplate）未经任何校验或白名单过滤，直接传入 TemplateEngine.process() 被引擎求值，攻击者可注入模板表达式导致 RCE 或信息泄露；应对模板名做白名单限定、对模板内容做严格转义或改用安全的模板沙箱引擎。",
+    "elapsed_ms": 20892
+  },
+  {
+    "id": "JSEF-TEMPLATE-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/TemplateInjectionSafe.java",
+    "line": 24,
+    "cwe": "CWE-1336",
+    "message": "模板名来自固定常量 SAFE_TEMPLATE（welcome.ftl），用户输入仅作为数据模型字段放入 model，不被模板引擎求值，无注入路径。",
+    "elapsed_ms": 12265
+  },
+  {
+    "id": "JSEF-CRYPTO-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/CryptoWeakHash.java",
+    "line": 19,
+    "cwe": "CWE-327",
+    "message": "代码使用已破解的MD5哈希算法进行密码哈希，易受碰撞攻击和彩虹表攻击，应使用bcrypt/scrypt/Argon2等安全密码哈希算法替代",
+    "elapsed_ms": 12922
+  },
+  {
+    "id": "JSEF-CRYPTO-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/CryptoHardcodedKey.java",
+    "line": 29,
+    "cwe": "CWE-798",
+    "message": "AES 密钥硬编码在源码常量 KEY 中（第 21 行），导致密钥可被任何有源码访问权限的人获取，应从安全配置中心或环境变量动态获取密钥。",
+    "elapsed_ms": 8409
+  },
+  {
+    "id": "JSEF-CRYPTO-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/CryptoSafe.java",
+    "line": 31,
+    "cwe": "CWE-327",
+    "message": "安全实现：口令哈希采用PBKDF2WithHmacSHA256算法，迭代次数65536次，密钥长度256位，盐值由SecureRandom在运行时动态生成（16字节真随机），符合NIST推荐的口令哈希最佳实践，不存在弱加密或可预测盐值问题。",
+    "elapsed_ms": 12769
+  },
+  {
+    "id": "JSEF-CRYPTO-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/CryptoSafe.java",
+    "line": 46,
+    "cwe": "CWE-798",
+    "message": "安全实现：对称加密密钥由SecureRandom在运行期动态生成（16字节），IV同样由SecureRandom生成（12字节），采用AES/GCM/NoPadding认证加密模式（128位认证标签），密钥未硬编码在源码中，不存在硬编码凭证或弱加密模式问题。",
+    "elapsed_ms": 12769
+  },
+  {
+    "id": "JSEF-GROOVY-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/groovyInjection/GroovyInjectionVulnerabilityController.java",
+    "line": 57,
+    "cwe": "CWE-917",
+    "message": "未验证用户输入，直接作为Groovy脚本执行，导致表达式语言注入。建议避免执行用户提供的脚本，或实施严格的输入验证和白名单机制。",
+    "elapsed_ms": 17835
+  },
+  {
+    "id": "JSEF-GROOVY-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/groovyInjection/GroovyInjectionVulnerabilityController.java",
+    "line": 101,
+    "cwe": "CWE-917",
+    "message": "未验证用户输入，直接作为Groovy脚本执行，导致表达式语言注入。建议避免执行用户提供的脚本，或实施严格的输入验证和白名单机制。",
+    "elapsed_ms": 17835
+  },
+  {
+    "id": "JSEF-MVEL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/mvelInjection/MvelInjectionVulnerabilityController.java",
+    "line": 46,
+    "cwe": "CWE-917",
+    "message": "用户输入直接传入MVEL.eval()执行，无任何过滤或沙箱限制，可导致远程代码执行（RCE）；应避免将用户输入作为表达式执行，或采用白名单+沙箱机制限制可访问的类与方法。",
+    "elapsed_ms": 37950
+  },
+  {
+    "id": "JSEF-MVEL-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/mvelInjection/MvelInjectionVulnerabilityController.java",
+    "line": 61,
+    "cwe": "CWE-917",
+    "message": "用户输入经MVEL.compileExpression()预编译后由executeExpression()执行，编译过程未做安全过滤，恶意表达式仍会执行导致RCE；应禁止将用户输入作为表达式编译执行，或引入表达式沙箱拦截危险API调用。",
+    "elapsed_ms": 37950
+  },
+  {
+    "id": "JSEF-BEANSHELL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/beanShellInjection/ScriptInjectionVulnerabilityController.java",
+    "line": 46,
+    "cwe": "CWE-917",
+    "message": "用户输入userProvidedScript未经任何校验直接传入BshScriptEvaluator.evaluate()执行，可注入任意BeanShell代码实现RCE；应禁止执行用户脚本或严格白名单校验后以沙箱隔离执行。",
+    "elapsed_ms": 19927
+  },
+  {
+    "id": "JSEF-BEANSHELL-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/beanShellInjection/ScriptInjectionVulnerabilityController.java",
+    "line": 80,
+    "cwe": "CWE-917",
+    "message": "用户输入userCommand未经任何过滤直接传入Runtime.getRuntime().exec()执行系统命令，可实现任意OS命令注入；应对输入做严格白名单校验，或改用ProcessBuilder并限制可执行命令集。",
+    "elapsed_ms": 19927
+  },
+  {
+    "id": "JSEF-OGNL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/onglInjection/OgnlInjectionVulnerabilityController.java",
+    "line": 28,
+    "cwe": "CWE-917",
+    "message": "用户输入的userControlledOgnlExpression直接传入Ognl.parseExpression并执行，无任何过滤，可构造恶意表达式实现RCE；应严禁用户输入作为OGNL表达式执行，或采用白名单+沙箱机制限制可用类和方法。",
+    "elapsed_ms": 17286
+  },
+  {
+    "id": "JSEF-OGNL-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/onglInjection/OgnlInjectionVulnerabilityController.java",
+    "line": 44,
+    "cwe": "CWE-917",
+    "message": "用户输入的userInputCommand直接拼接到@java.lang.Runtime@getRuntime().exec()表达式中，导致任意命令执行；应避免将用户输入拼接进OGNL表达式，改用参数化调用或白名单校验。",
+    "elapsed_ms": 17286
+  },
+  {
+    "id": "JSEF-SCRIPT-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/scriptEngineInjection/ScriptEngineInjectionVulnerabilityController.java",
+    "line": 36,
+    "cwe": "CWE-917",
+    "message": "用户可控的脚本内容直接传递给ScriptEngine.eval()执行，导致远程代码执行。修复建议：避免执行用户提供的脚本内容，如必须使用则实施严格的沙箱机制。",
+    "elapsed_ms": 18999
+  },
+  {
+    "id": "JSEF-SCRIPT-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/scriptEngineInjection/ScriptEngineInjectionVulnerabilityController.java",
+    "line": 101,
+    "cwe": "CWE-917",
+    "message": "用户可控的脚本内容被编译后执行，编译过程无法过滤恶意代码。修复建议：避免执行用户提供的脚本内容，或对输入进行严格的白名单过滤。",
+    "elapsed_ms": 18999
+  },
+  {
+    "id": "JSEF-TEMPLATE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/templateInjection/TemplateInjectionVulnerabilityController.java",
+    "line": 57,
+    "cwe": "CWE-1336",
+    "message": "用户输入通过new StringReader(userInput)直接作为FreeMarker模板内容，攻击者可注入${...}表达式执行任意代码。修复：使用预定义模板文件，仅将用户输入作为数据模型传入，而非作为模板内容解析。",
+    "elapsed_ms": 13910
+  },
+  {
+    "id": "JSEF-TEMPLATE-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/templateInjection/TemplateInjectionVulnerabilityController.java",
+    "line": 92,
+    "cwe": "CWE-1336",
+    "message": "用户输入通过templateEngine.process(userInput, context)直接作为Thymeleaf模板内容解析执行，攻击者可注入[[${...}]]表达式实现远程代码执行。修复：使用预定义模板，用户输入仅作为Context变量数据，不作为模板字符串传入。",
+    "elapsed_ms": 13910
+  },
+  {
+    "id": "JSEF-JNDI-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/jndiInjection/JndiInjectionVulnerabilityController.java",
+    "line": 51,
+    "cwe": "CWE-917",
+    "message": "用户可控参数jndiResourceName直接传入InitialContext.lookup()，攻击者可构造完整RMI URL（如rmi://attacker:1099/Evil）绕过PROVIDER_URL限制导致远程代码执行；应使用白名单校验lookup资源名并禁用远程协议。",
+    "elapsed_ms": 54057
+  },
+  {
+    "id": "JSEF-JNDI-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/jndiInjection/JndiInjectionVulnerabilityController.java",
+    "line": 91,
+    "cwe": "CWE-917",
+    "message": "用户输入userInput经字符串拼接构成RMI URL后传入Context.lookup()，攻击者可控制协议、主机和端口指向恶意RMI服务器实现RCE；应禁止用户输入参与JNDI URL构建，使用固定可信地址。",
+    "elapsed_ms": 54057
+  },
+  {
+    "id": "JSEF-YAML-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/yamlDeserialization/YamlController.java",
+    "line": 22,
+    "cwe": "CWE-502",
+    "message": "默认Yaml构造器使用Constructor类，允许反序列化任意Java对象，攻击者可构造恶意YAML payload执行远程代码；应改用SafeConstructor或通过SnakeYAML 2.x+配置白名单类型限制。",
+    "elapsed_ms": 12505
+  },
+  {
+    "id": "JSEF-YAML-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/yamlDeserialization/YamlController.java",
+    "line": 31,
+    "cwe": "CWE-502",
+    "message": "Yaml.load(String)使用默认Constructor，支持任意类实例化，可触发反序列化攻击链；应使用new Yaml(new SafeConstructor())替代。",
+    "elapsed_ms": 12505
+  },
+  {
+    "id": "JSEF-AUTHBYPASS-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/authBypass/vuln/AuthenticationBypassUnsafeController.java",
+    "line": 37,
+    "cwe": "CWE-287",
+    "message": "接口仅依赖客户端可控的请求参数 role 判定管理员身份，无任何服务端身份认证机制，攻击者直接传 role=admin 即可越权；应通过 Session/JWT 等服务端凭证校验用户真实角色。",
+    "elapsed_ms": 11645
+  },
+  {
+    "id": "JSEF-AUTHBYPASS-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/authBypass/vuln/AuthenticationBypassUnsafeController.java",
+    "line": 58,
+    "cwe": "CWE-287",
+    "message": "接口直接以客户端传入的 userId 返回任意用户档案及敏感信息，无任何身份认证与鉴权检查；应先验证当前会话身份并校验是否有权访问目标 userId。",
+    "elapsed_ms": 11645
+  },
+  {
+    "id": "JSEF-AUTHBYPASS-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/authBypass/sec/AuthenticationBypassSafeController.java",
+    "line": 34,
+    "cwe": "CWE-287",
+    "message": "该方法从 session/安全上下文中获取用户角色（getCurrentUserRoleFromSession()），而非信任请求参数，并在第36行对角色进行严格比对后才授权访问管理员信息，正确实现了基于会话的认证与授权检查，不存在认证绕过漏洞。",
+    "elapsed_ms": 13382
+  },
+  {
+    "id": "JSEF-AUTHZBYPSS-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/authorizationBypass/AuthorizationBypassVulnerabilityController.java",
+    "line": 38,
+    "cwe": "CWE-285",
+    "message": "该接口通过@PathVariable接收userId后直接返回敏感用户信息（薪资、邮箱、角色等），未做任何身份认证或授权校验（无@PreAuthorize、无手动鉴权），任何未授权用户均可通过遍历userId获取全部用户敏感数据；修复方案：参考同文件safe端点，添加@PreAuthorize(\"hasRole('ADMIN') or authentication.principal.username == #userId\")进行基于角色或所有权的访问控制。",
+    "elapsed_ms": 15797
+  },
+  {
+    "id": "JSEF-BROKENAC-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/brokenAccessControl/BrokenAccessControlVulnerabilityController.java",
+    "line": 46,
+    "cwe": "CWE-285",
+    "message": "unsafeGetUserInfo 方法直接通过 @PathVariable userId 查询并返回任意用户的敏感信息（含薪资），未做任何身份验证与资源所有权校验，导致水平越权（IDOR）；应在方法入口处验证当前登录用户身份，并校验请求的 userId 与当前用户是否一致（可参考同文件 safeGetUserInfo 的实现）。",
+    "elapsed_ms": 19544
+  },
+  {
+    "id": "JSEF-IDOR-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/insecureDirectObjectReference/InsecureDirectObjectReferenceController.java",
+    "line": 42,
+    "cwe": "CWE-639",
+    "message": "直接使用用户传入的userId查询并返回对应用户的敏感信息（邮箱、手机号等），未验证当前请求者是否有权访问该用户资料，攻击者可通过遍历userId越权查看任意用户信息。修复建议：从会话/Token中提取当前登录用户ID，仅允许用户查询自身资料，或对管理员角色额外鉴权。",
+    "elapsed_ms": 13208
+  },
+  {
+    "id": "JSEF-REDIRECT-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/vuln/OpenRedirectUnsafeController.java",
+    "line": 42,
+    "cwe": "CWE-601",
+    "message": "用户输入redirectUrl未经任何白名单校验直接传入response.sendRedirect()，攻击者可构造恶意重定向链接实施钓鱼攻击；应在重定向前对目标URL的域名或路径进行白名单校验。",
+    "elapsed_ms": 8849
+  },
+  {
+    "id": "JSEF-REDIRECT-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/sec/OpenRedirectSafeController.java",
+    "line": 47,
+    "cwe": "CWE-601",
+    "message": "该代码在执行重定向前对目标URL进行了白名单域名校验：先通过URI解析提取host，再由isAllowedDomain()比对ALLOWED_DOMAINS白名单（含精确匹配和子域名匹配），未通过校验的请求返回400错误而非重定向，有效防止了开放重定向攻击。",
+    "elapsed_ms": 15548
+  },
+  {
+    "id": "JSEF-REDIRECT-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/openRedirect/OpenRedirectVulnerabilityController.java",
+    "line": 31,
+    "cwe": "CWE-601",
+    "message": "用户输入的userProvidedUrl未经任何白名单校验或协议/域名限制，直接拼接为Spring重定向响应，攻击者可构造任意外部URL诱导用户跳转至恶意站点；修复方案：对重定向目标进行白名单域名校验，或仅允许相对路径/已知安全URL。",
+    "elapsed_ms": 12166
+  },
+  {
+    "id": "JSEF-CORS-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/corsConfig/CorsVulnerabilityController.java",
+    "line": 39,
+    "cwe": "CWE-942",
+    "message": "Access-Control-Allow-Origin设置为通配符*，允许任意源跨域访问，应改为白名单验证具体可信源",
+    "elapsed_ms": 11260
+  },
+  {
+    "id": "JSEF-CLICKJACK-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/vuln/ClickjackingUnsafeController.java",
+    "line": 43,
+    "cwe": "CWE-1021",
+    "message": "控制器未设置X-Frame-Options或Content-Security-Policy frame-ancestors响应头，导致页面可被恶意站点通过iframe嵌入实施点击劫持攻击；应在响应中添加X-Frame-Options: DENY或CSP frame-ancestors 'none'头部。",
+    "elapsed_ms": 13662
+  },
+  {
+    "id": "JSEF-CLICKJACK-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/sec/ClickjackingSafeController.java",
+    "line": 33,
+    "cwe": "CWE-1021",
+    "message": "该代码在响应中设置了 X-Frame-Options: DENY 头，指示浏览器禁止将页面嵌入 frame/iframe/embed/object，有效防御点击劫持，属于安全实现。",
+    "elapsed_ms": 11796
+  },
+  {
+    "id": "JSEF-CLICKJACK-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/clickjacking/ClickjackingVulnerabilityController.java",
+    "line": 41,
+    "cwe": "CWE-1021",
+    "message": "getVulnerablePage()返回包含敏感操作的HTML页面，未设置X-Frame-Options或Content-Security-Policy响应头，导致页面可被任意网站通过iframe嵌入实施点击劫持攻击；应在HttpServletResponse中设置X-Frame-Options: DENY及Content-Security-Policy: frame-ancestors 'none'响应头。",
+    "elapsed_ms": 13218
+  },
+  {
+    "id": "JSEF-SECHEAD-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/securityHeaderMissing/SecurityHeaderMissingController.java",
+    "line": 35,
+    "cwe": "CWE-1021",
+    "message": "响应未设置 X-Frame-Options 或 Content-Security-Policy 头，存在点击劫持（Clickjacking）风险；建议添加 X-Frame-Options: DENY 或 CSP frame-ancestors 策略。",
+    "elapsed_ms": 34829
+  },
+  {
+    "id": "JSEF-SSRF-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/serverSideRequestForgery/ServerSideRequestForgeryController.java",
+    "line": 38,
+    "cwe": "CWE-918",
+    "message": "用户控制的 remoteResourceUrl 参数直接传入 new URL() 和 URL.openConnection()，未做任何协议/域名/IP校验，可被利用访问内网资源或读取本地文件；修复建议：对URL做白名单校验（限制协议为https、限制域名/IP为可信列表）、过滤内网地址（127.0.0.1、10.x、172.16-31.x、192.168.x）、禁用file://和gopher://等危险协议。",
+    "elapsed_ms": 17273
+  },
+  {
+    "id": "JSEF-XXE-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/xmlExternalEntity/XmlExternalEntityVulnerabilityController.java",
+    "line": 72,
+    "cwe": "CWE-611",
+    "message": "DocumentBuilderFactory.newInstance()使用默认配置，未禁用外部实体（external-general-entities、external-parameter-entities、load-external-dtd），导致XXE漏洞；修复方案：调用setFeature(\"http://apache.org/xml/features/disallow-doctype-decl\", true)或逐一禁用外部实体加载",
+    "elapsed_ms": 16397
+  },
+  {
+    "id": "JSEF-CRYPTOSRC-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/CryptoVulnerabilityUnsafeController.java",
+    "line": 47,
+    "cwe": "CWE-327",
+    "message": "使用了已被破解的MD5弱哈希算法，存在碰撞攻击风险；应替换为SHA-256或更高强度的哈希算法，并结合加盐（salt）存储。",
+    "elapsed_ms": 13452
+  },
+  {
+    "id": "JSEF-CRYPTOSRC-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/CryptoVulnerabilityUnsafeController.java",
+    "line": 59,
+    "cwe": "CWE-798",
+    "message": "加密密钥以硬编码形式写死在源码中，任何能访问代码仓库的人都可获取密钥；应将密钥存储在外部密钥管理系统（如Vault、KMS）或安全配置中心中，运行时注入。",
+    "elapsed_ms": 13452
+  },
+  {
+    "id": "JSEF-CRYPTOSRC-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cryptoVuln/vuln/EncryptUnsafeController.java",
+    "line": 61,
+    "cwe": "CWE-798",
+    "message": "PBKDF2使用硬编码固定盐值\"12345678\"（第61行），导致相同密码始终产生相同哈希，易受彩虹表攻击；应为每次派生生成密码学安全的随机盐。",
+    "elapsed_ms": 10782
+  },
+  {
+    "id": "JSEF-HARDCODED-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/hardcodedCredentials/HardcodedCredentialsVulnerabilityController.java",
+    "line": 68,
+    "cwe": "CWE-798",
+    "message": "数据库连接用户名和密码硬编码在源码中（dbUsername='root'、dbPassword='123456'），随代码提交至版本库后凭证永久暴露，且为弱密码+高权限账号；应将凭证迁移至环境变量或密钥管理服务（如 Vault）。",
+    "elapsed_ms": 12861
+  },
+  {
+    "id": "JSEF-WEAKPWD-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/weakPassword/WeakPasswordVulnerabilityController.java",
+    "line": 43,
+    "cwe": "CWE-521",
+    "message": "代码直接使用明文equals()比对用户输入密码与硬编码弱密码（如\"123456\"），且在响应中回显明文密码，无任何密码强度校验、哈希存储或暴力破解防护机制。应实施密码复杂度策略（长度≥8位、包含大小写/数字/特殊字符）、拒绝常见弱密码字典、使用BCrypt等哈希算法存储密码，并在响应中移除敏感信息。",
+    "elapsed_ms": 16748
+  },
+  {
+    "id": "JSEF-DEFAULTCRED-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/defaultCredentials/DefaultCredentialsVulnerabilityController.java",
+    "line": 49,
+    "cwe": "CWE-798",
+    "message": "用户名和密码硬编码在源码中（admin/123456），攻击者可通过反编译获取默认凭证登录系统。建议从外部配置或密钥管理服务读取凭证，密码使用BCrypt等哈希算法存储，并强制首次登录修改密码。",
+    "elapsed_ms": 16382
+  },
+  {
+    "id": "JSEF-SENSITIVE-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/sensitiveDataExposure/SensitiveDataExposureController.java",
+    "line": 34,
+    "cwe": "CWE-532",
+    "message": "接口将明文密码、完整身份证号、银行卡号、手机号等高敏感数据直接拼接返回给客户端，未做脱敏或访问控制；应按数据最小化原则仅返回必要字段，对敏感信息做脱敏处理（如掩码），并配合认证鉴权控制数据可见范围。",
+    "elapsed_ms": 12373
+  },
+  {
+    "id": "JSEF-BIZLOGIC-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/AccountManipulationUnsafeController.java",
+    "line": 47,
+    "cwe": "CWE-840",
+    "message": "充值金额amount未做正数校验，攻击者传入负数可直接减少余额；应在add前校验amount.compareTo(BigDecimal.ZERO)>0。",
+    "elapsed_ms": 16246
+  },
+  {
+    "id": "JSEF-BIZLOGIC-002",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/PriceTamperingUnsafeController.java",
+    "line": 54,
+    "cwe": "CWE-840",
+    "message": "服务端直接信任客户端提交的product.price用于订单金额计算，攻击者可篡改price字段以极低价格购买商品。应从服务端数据库根据productId查询权威价格，而非使用客户端传入的price。",
+    "elapsed_ms": 13146
+  },
+  {
+    "id": "JSEF-BIZLOGIC-003",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/CouponAbuseUnsafeController.java",
+    "line": 52,
+    "cwe": "CWE-840",
+    "message": "优惠券在扣减金额前未校验是否已使用或已过期，且检查与标记之间存在sleep导致的并发时间窗口，可被重复使用同一优惠券；应在操作前用数据库原子行锁（如SELECT ... FOR UPDATE）校验used/expiry状态并原子标记。",
+    "elapsed_ms": 13439
+  },
+  {
+    "id": "JSEF-BIZLOGIC-004",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/vuln/InventoryOversellUnsafeController.java",
+    "line": 57,
+    "cwe": "CWE-840",
+    "message": "库存检查（line44）与扣减（line57-58）非原子操作，Thread.sleep放大了TOCTOU竞态窗口，并发请求可同时通过库存校验导致超卖；应使用数据库乐观锁（CAS）、悲观锁或Redis原子扣减实现check-and-decrement原子性。",
+    "elapsed_ms": 21562
+  },
+  {
+    "id": "JSEF-BIZLOGIC-003S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/businessLogic/sec/CouponAbuseSafeController.java",
+    "line": 88,
+    "cwe": "CWE-840",
+    "message": "该行 Coupon.markAsUsed(couponCode, userId) 调用之前已通过四重验证：(1) 优惠券存在性检查(68行)、(2) 已使用状态检查(72行)、(3) 用户使用历史检查(78行)、(4) 有效期检查(84行)，且整个操作在 ReentrantLock 保护下(64行lock/99行unlock)保证原子性，有效防止了并发重复使用和逻辑绕过，因此该处业务逻辑安全。",
+    "elapsed_ms": 12146
+  },
+  {
+    "id": "JSEF-MASSASSIGN-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/massassignment/vuln/MassAssignmentUnsafeController.java",
+    "line": 55,
+    "cwe": "CWE-915",
+    "message": "控制器直接将@RequestBody绑定的UserProfile对象传入save()，未做字段过滤或使用DTO，攻击者可在JSON中注入isAdmin等敏感字段实现提权；应改用DTO仅接收允许用户修改的字段，或对敏感字段加@Column(updatable=false)/@JsonIgnore等保护。",
+    "elapsed_ms": 13169
+  },
+  {
+    "id": "JSEF-MASSASSIGN-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/massassignment/sec/MassAssignmentSafeController.java",
+    "line": 38,
+    "cwe": "CWE-915",
+    "message": "安全实现：控制器接受UserProfileDTO而非完整UserProfile实体，DTO仅包含username和email字段，手动映射安全字段到实体对象，敏感字段（如isAdmin）不会被用户请求数据覆盖，有效防止了批量赋值攻击。",
+    "elapsed_ms": 13129
+  },
+  {
+    "id": "JSEF-RACE-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/raceCondition/vuln/RaceConditionUnsafeController.java",
+    "line": 77,
+    "cwe": "CWE-362",
+    "message": "sharedCounter++为非原子的读-改-写操作，多线程并发执行时产生竞态条件导致数据丢失；应使用AtomicInteger或synchronized关键字对共享计数器进行同步保护。",
+    "elapsed_ms": 11025
+  },
+  {
+    "id": "JSEF-RACE-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/raceCondition/sec/RaceConditionSafeController.java",
+    "line": 75,
+    "cwe": "CWE-362",
+    "message": "该方法使用synchronized关键字修饰，确保同一时刻只有一个线程能执行sharedCounter++操作，read-modify-write过程具有原子性，竞态条件已被正确防护。",
+    "elapsed_ms": 10146
+  },
+  {
+    "id": "JSEF-CVE334050-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cve202334050/vuln/Cve202334050UnsafeController.java",
+    "line": 63,
+    "cwe": "CWE-502",
+    "message": "SimpleMessageConverter.fromMessage() 对来自 @RequestBody 的 Base64 编码数据进行反序列化，未配置反序列化白名单或 ObjectInputFilter，攻击者可构造恶意 gadget chain 实现 RCE；修复建议：使用带 trustedPackages 白名单的 Jackson MessageConverter 替代 SimpleMessageConverter，或在 JVM 层配置 ObjectInputFilter 限制可反序列化的类。",
+    "elapsed_ms": 52459
+  },
+  {
+    "id": "JSEF-CVE334050-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cve202334050/sec/Cve202334050SafeController.java",
+    "line": 71,
+    "cwe": "CWE-502",
+    "message": "该行使用Jackson2JsonMessageConverter进行反序列化，但ObjectMapper已通过BasicPolymorphicTypeValidator配置了白名单，仅允许com.freedom.securitysamples.vulnerability.cve202334050包下的类被反序列化，且使用JSON格式替代Java原生序列化，有效阻止了恶意gadget链的反序列化利用，因此是安全的。",
+    "elapsed_ms": 16962
+  },
+  {
+    "id": "JSEF-CVE342809-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cve202342809/vuln/Cve202342809UnsafeController.java",
+    "line": 54,
+    "cwe": "CWE-502",
+    "message": "Redisson客户端未配置反序列化白名单，bucket.get()从Redis检索的对象会被默认JdkCodec无限制反序列化，攻击者可构造恶意序列化gadget chain实现远程代码执行；应在Config中配置反序列化允许列表或使用Jackson等安全Codec替代默认JdkCodec。",
+    "elapsed_ms": 20323
+  },
+  {
+    "id": "JSEF-CVE342809-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/cve202342809/sec/Cve202342809SafeController.java",
+    "line": 76,
+    "cwe": "CWE-502",
+    "message": "bucket.get() 使用了配置了反序列化白名单（仅允许 RedisMessage、java.lang.String 等安全类）的 SerializationCodec，恶意 gadget chain 类无法通过白名单校验，会抛出 InvalidClassException 被捕获，因此该处反序列化是安全的。",
+    "elapsed_ms": 22950
+  },
+  {
+    "id": "JSEF-NUMERIC-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/numericAndDateInput/vuln/NumericAndDateInputUnsafeController.java",
+    "line": 37,
+    "cwe": "CWE-20",
+    "message": "numericInput 从 @RequestParam 直接传入 BigDecimal 构造函数，未做长度限制或格式校验，攻击者可提交超长数字字符串导致内存/CPU 耗尽（DoS）。应在解析前校验输入长度、使用正则匹配合法数字格式。",
+    "elapsed_ms": 36491
+  },
+  {
+    "id": "JSEF-NUMERIC-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/numericAndDateInput/sec/NumericAndDateInputSafeController.java",
+    "line": 52,
+    "cwe": "CWE-20",
+    "message": "safe：该方法在第49-50行对numericInput进行了null检查和长度限制（≤50字符），在构造BigDecimal之前已做充分输入校验，且外层捕获NumberFormatException返回通用错误信息，不存在资源耗尽或格式错误风险。",
+    "elapsed_ms": 14770
+  },
+  {
+    "id": "JSEF-RATELIMIT-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ratelimiting/vuln/RateLimitingUnsafeController.java",
+    "line": 45,
+    "cwe": "CWE-307",
+    "message": "sendOtp接口未做任何频率限制，攻击者可无限循环调用导致SMS轰炸或资源耗尽；应基于IP/用户ID在时间窗口内限制请求次数。",
+    "elapsed_ms": 7579
+  },
+  {
+    "id": "JSEF-RATELIMIT-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/ratelimiting/sec/RateLimitingSafeController.java",
+    "line": 45,
+    "cwe": "CWE-307",
+    "message": "该端点已实现基于客户端IP的速率限制（每分钟最多5次请求），超限返回HTTP 429状态码，有效防止暴力破解/凭据填充攻击，属安全实现。",
+    "elapsed_ms": 9463
+  },
+  {
+    "id": "JSEF-REGEXDOS-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/regularExpressionDOS/RegexDosVulnerabilityController.java",
+    "line": 44,
+    "cwe": "CWE-1333",
+    "message": "正则表达式(a+)+b包含嵌套贪婪量词，当输入为大量'a'且无'b'时引擎产生指数级回溯导致CPU耗尽；应移除嵌套重复结构或对输入长度做上限校验。",
+    "elapsed_ms": 13313
+  },
+  {
+    "id": "JSEF-HASHCOLL-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/hashCollision/vuln/HashCollisionUnsafeController.java",
+    "line": 42,
+    "cwe": "CWE-694",
+    "message": "用户可控输入直接作为HashMap键，攻击者可构造大量相同哈希值的字符串触发哈希碰撞导致O(n)退化DoS；应使用HashMap自带的替代结构或对输入进行长度/数量限制，或改用ConcurrentHashMap+限流。",
+    "elapsed_ms": 11757
+  },
+  {
+    "id": "JSEF-HASHCOLL-001S",
+    "hit": false,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/hashCollision/sec/HashCollisionSafeController.java",
+    "line": 56,
+    "cwe": "CWE-694",
+    "message": "该实现通过三重防护确保安全：(1) 输入长度限制（≤100字符）防止超大载荷；(2) 使用SHA-256强密码学哈希将原始输入转换为hex字符串后再作为Map key，攻击者无法构造碰撞输入；(3) 采用ConcurrentHashMap（Java 8+红黑树桶）即使发生碰撞也不会导致O(n)退化。因此该代码不存在Hash Collision DoS漏洞。",
+    "elapsed_ms": 13183
+  },
+  {
+    "id": "JSEF-JSONP-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/jsonpCallback/JsonpCallbackInjectionController.java",
+    "line": 41,
+    "cwe": "CWE-352",
+    "message": "callback参数直接拼接至响应体，未做任何过滤或编码，可导致反射型XSS。建议：对callback参数进行白名单校验（仅允许字母、数字、下划线），或使用CORS替代JSONP。",
+    "elapsed_ms": 27562
+  },
+  {
+    "id": "JSEF-HEADERINJ-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/headerInjection/HeaderInjectionVulnerabilityController.java",
+    "line": 42,
+    "cwe": "CWE-113",
+    "message": "用户可控参数 @RequestParam untrustedHeaderValue 未经任何过滤直接传入 HttpHeaders.add()，攻击者可注入 CRLF（\\r\\n）拆分响应头并注入任意恶意头部（如 Set-Cookie）。修复建议：对输入值过滤 \\r\\n 等控制字符，或使用白名单校验头部值的合法性后再设置。",
+    "elapsed_ms": 61525
+  },
+  {
+    "id": "JSEF-RISKY-001",
+    "hit": true,
+    "file": "src/main/java/com/freedom/securitysamples/vulnerability/RiskyOperations/UnsafeOperationsVulnerabilityController.java",
+    "line": 51,
+    "cwe": "CWE-111",
+    "message": "用户输入通过@RequestParam直接传入并经Long.parseLong转换后用于unsafe.getInt(targetAddress)读取任意内存地址，缺少任何地址范围校验或白名单限制，可导致任意内存读取和敏感信息泄露，应禁止将用户输入作为内存地址使用",
+    "elapsed_ms": 21994
+  },
+  {
+    "id": "JSEF-L0-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0SqlDirect.java",
+    "line": 25,
+    "cwe": "CWE-89",
+    "message": "不可信参数 userInput 通过字符串拼接直接嵌入 SQL 语句，导致 SQL 注入；应使用 PreparedStatement 参数化查询（如 conn.prepareStatement(\"SELECT * FROM users WHERE name = ?\"); stmt.setString(1, userInput)）来消除注入风险。",
+    "elapsed_ms": 8511
+  },
+  {
+    "id": "JSEF-L0-SQL-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0SqlDirectSafe.java",
+    "line": 25,
+    "cwe": "CWE-89",
+    "message": "使用了 PreparedStatement 参数化查询，userInput 通过 ps.setString(1, userInput) 绑定为占位符参数，不参与 SQL 语句拼接，无法改变查询结构，因此不存在 SQL 注入风险。",
+    "elapsed_ms": 8916
+  },
+  {
+    "id": "JSEF-L0-CMD-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0CmdDirect.java",
+    "line": 22,
+    "cwe": "CWE-78",
+    "message": "userInput 未经任何过滤或校验直接传入 Runtime.getRuntime().exec()，导致 OS 命令注入。应对用户输入做白名单校验或使用 ProcessBuilder 配合参数数组传递。",
+    "elapsed_ms": 10456
+  },
+  {
+    "id": "JSEF-L0-CMD-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0CmdDirectSafe.java",
+    "line": 29,
+    "cwe": "CWE-78",
+    "message": "userInput 经白名单校验后被丢弃，Runtime.exec 的参数为硬编码常量 echo localhost-demo，不可信数据未到达 sink，无命令注入风险。",
+    "elapsed_ms": 9919
+  },
+  {
+    "id": "JSEF-L0-XSS-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0XssDirect.java",
+    "line": 22,
+    "cwe": "CWE-79",
+    "message": "userInput未经任何转义或过滤直接拼接写入HTTP响应，造成反射型XSS。应在输出前对HTML特殊字符进行编码（如使用OWASP ESAPI.encoder().encodeForHTML()）。",
+    "elapsed_ms": 7767
+  },
+  {
+    "id": "JSEF-L0-XSS-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0XssDirectSafe.java",
+    "line": 23,
+    "cwe": "CWE-79",
+    "message": "不可信输入 userInput 在第22行经 escapeHtml() 完整转义了 &、<、>、\"、' 五种特殊字符后再拼接至 HTML 输出，脚本注入被有效阻断，属于安全实现。",
+    "elapsed_ms": 8857
+  },
+  {
+    "id": "JSEF-L0-PT-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0PathDirect.java",
+    "line": 23,
+    "cwe": "CWE-22",
+    "message": "不可信入参 userInput 未经任何路径清洗/白名单校验即传入 FileInputStream，攻击者可构造 ../ 遍历读取任意文件；建议对路径做规范化后校验是否落在预期目录内，或使用白名单限制可访问文件。",
+    "elapsed_ms": 9885
+  },
+  {
+    "id": "JSEF-L0-PT-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0PathDirectSafe.java",
+    "line": 29,
+    "cwe": "CWE-22",
+    "message": "安全：代码在第27行使用 Paths.get(BASE_DIR, userInput).normalize() 规范化路径，第28行通过 resolved.startsWith(BASE_DIR) 校验规范化后的路径仍在基准目录内，越界路径会抛出 SecurityException，有效防御路径穿越。",
+    "elapsed_ms": 9762
+  },
+  {
+    "id": "JSEF-L0-XXE-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0XxeDirect.java",
+    "line": 25,
+    "cwe": "CWE-611",
+    "message": "DocumentBuilderFactory 未设置禁用外部实体（如 setFeature 关闭 DTD/外部实体），不可信 XML 直接传入 DocumentBuilder.parse，攻击者可注入外部实体读取文件或发起 SSRF。应在创建 DocumentBuilderFactory 后调用 setFeature(\"http://apache.org/xml/features/disallow-doctype-decl\",true) 或等效配置禁用外部实体。",
+    "elapsed_ms": 10698
+  },
+  {
+    "id": "JSEF-L0-XXE-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0XxeDirectSafe.java",
+    "line": 28,
+    "cwe": "CWE-611",
+    "message": "解析前已通过 disallow-doctype-decl=true 禁用DTD声明，并关闭 external-general-entities、external-parameter-entities 及 XInclude，parser.parse() 不可达外部实体，属安全加固实现，无需报告。",
+    "elapsed_ms": 28581
+  },
+  {
+    "id": "JSEF-L0-SSRF-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0SsrfDirect.java",
+    "line": 23,
+    "cwe": "CWE-918",
+    "message": "userInput 直接传入 new URL() 并调用 openConnection()，无任何校验或白名单，攻击者可控制服务端发起的任意请求；应在连接前校验 URL scheme、host 白名单，或使用 SSRF 防护库（如OWASP CSRFGuard/Netflix OSS）进行过滤。",
+    "elapsed_ms": 12932
+  },
+  {
+    "id": "JSEF-L0-SSRF-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0SsrfDirectSafe.java",
+    "line": 29,
+    "cwe": "CWE-918",
+    "message": "URL.openConnection() 调用前已通过 ALLOWED_HOSTS 白名单严格校验 url.getHost()，仅允许 localhost 和 127.0.0.1，不满足条件时抛出 SecurityException 阻断请求，外部不可达，不存在 SSRF 风险。",
+    "elapsed_ms": 10784
+  },
+  {
+    "id": "JSEF-L0-SPEL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0SpelDirect.java",
+    "line": 21,
+    "cwe": "CWE-917",
+    "message": "userInput 未经任何过滤/白名单校验直接传入 SpEL 表达式解析，可导致任意代码执行；应对输入做白名单或使用 SimpleEvaluationContext 限制求值能力。",
+    "elapsed_ms": 8189
+  },
+  {
+    "id": "JSEF-L0-SPEL-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0SpelDirectSafe.java",
+    "line": 20,
+    "cwe": "CWE-917",
+    "message": "该行 SpEL 表达式为编译期常量字符串 'constant-label'，userInput 未参与表达式求值，仅作为数据打印输出，不存在表达式注入风险。",
+    "elapsed_ms": 8802
+  },
+  {
+    "id": "JSEF-L0-DESER-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level0/L0DeserDirect.java",
+    "line": 26,
+    "cwe": "CWE-502",
+    "message": "不可信字节流 data 直接传入 ObjectInputStream.readObject() 进行反序列化，未做任何类型白名单校验或过滤，可导致远程代码执行。修复建议：使用 ObjectInputFilter 限制可反序列化类，或改用 JSON 等安全序列化格式。",
+    "elapsed_ms": 10578
+  },
+  {
+    "id": "JSEF-L0-DESER-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0DeserDirectSafe.java",
+    "line": 24,
+    "cwe": "CWE-502",
+    "message": "代码未直接调用ObjectInputStream.readObject()，而是通过readAllowed方法传入白名单类名限制反序列化类型，等效于ObjectInputFilter的allowlist机制，有效防止任意类反序列化，判定为安全实现。",
+    "elapsed_ms": 8632
+  },
+  {
+    "id": "JSEF-L0-LDAP-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/level0/L0LdapDirect.java",
+    "line": 25,
+    "cwe": "CWE-90",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 10669
+  },
+  {
+    "id": "JSEF-L0-LDAP-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level0/L0LdapDirectSafe.java",
+    "line": 25,
+    "cwe": "CWE-90",
+    "message": "userInput 在拼入 LDAP 过滤器前经过 escapeLdap() 转义（对 * ( ) \\ \\0 等特殊字符加反斜杠），有效防止 LDAP 注入，代码安全。",
+    "elapsed_ms": 13255
+  },
+  {
+    "id": "JSEF-L4-SQL-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/ChainSqlController.java",
+    "line": 34,
+    "cwe": "CWE-89",
+    "message": "用户输入未经净化直接拼接到SQL语句并执行，导致SQL注入。修复建议：使用PreparedStatement进行参数化查询，或对输入进行严格的白名单验证。",
+    "elapsed_ms": 27161
+  },
+  {
+    "id": "JSEF-L4-SQL-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level4/ChainSqlControllerSafe.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "input 作为参数传入 ChainSqlServiceSafe.process()，链路末端使用 PreparedStatement 参数化查询，不可信输入仅作为绑定参数不进入 SQL 字符串拼接，不存在 SQL 注入风险。",
+    "elapsed_ms": 9948
+  },
+  {
+    "id": "JSEF-L4-SQL-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/ChainSqlMapper.java",
+    "line": 29,
+    "cwe": "CWE-89",
+    "message": "方法参数 sql 直接拼接传入 Statement.executeQuery()，未经预编译或转义，造成 SQL 注入；应使用 PreparedStatement 参数化查询替代字符串拼接。",
+    "elapsed_ms": 13904
+  },
+  {
+    "id": "JSEF-L4-SQL-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level4/ChainSqlServiceSafe.java",
+    "line": 38,
+    "cwe": "CWE-89",
+    "message": "使用PreparedStatement参数化查询（?占位符+setString绑定），输入未拼接进SQL字符串，不存在SQL注入风险。",
+    "elapsed_ms": 10152
+  },
+  {
+    "id": "JSEF-L4-BIND-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/SpringBindingTaint.java",
+    "line": 44,
+    "cwe": "CWE-915",
+    "message": "@ModelAttribute 将整个表单自动绑定到 AccountForm 对象，包括危险字段 role，攻击者可通过表单提交 role=ADMIN 绕过权限控制。应在对象上使用 @InitBinder 配合 setDisallowedFields 或 @JsonIgnore 禁止绑定敏感字段，或改用 DTO 限定可绑定字段。",
+    "elapsed_ms": 16115
+  },
+  {
+    "id": "JSEF-L4-BIND-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level4/SpringBindingTaintSafe.java",
+    "line": 24,
+    "cwe": "CWE-915",
+    "message": "安全。DTO 仅暴露 username 字段，role 不在绑定范围内；role 值来自服务端受控的 roleFromSession()，非不可信表单输入，有效防止了 Mass Assignment。",
+    "elapsed_ms": 9226
+  },
+  {
+    "id": "JSEF-L4-CFG-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/ConfigFlagGatedSink.java",
+    "line": 37,
+    "cwe": "CWE-489",
+    "message": "featureEnabled配置开关可通过运行时配置注入/环境变量被篡改为true，使不可信输入expr经evaluate()进入反射求值sink；应加固配置来源可信度并对输入做严格白名单校验。",
+    "elapsed_ms": 13507
+  },
+  {
+    "id": "JSEF-L4-CFG-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level4/ConfigFlagGatedSinkSafe.java",
+    "line": 20,
+    "cwe": "CWE-489",
+    "message": "FEATURE_ENABLED 为编译期常量 false，不可信 expr 永远无法进入 evaluate 反射路径，危险路径不可达，判定为安全。",
+    "elapsed_ms": 9154
+  },
+  {
+    "id": "JSEF-L4-INT-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level4/InterceptTaint.java",
+    "line": 42,
+    "cwe": "CWE-917",
+    "message": "未净化的用户输入通过拦截器写入request attribute后直接传入SpEL表达式解析，可导致表达式注入；应对输入做白名单校验或使用模板绑定替代动态解析。",
+    "elapsed_ms": 10586
+  },
+  {
+    "id": "JSEF-L4-INT-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level4/InterceptTaintSafe.java",
+    "line": 19,
+    "cwe": "CWE-917",
+    "message": "拦截器注入的不可信属性值 data 仅用于打印输出，未作为表达式文本传入 parseExpression；第19行 parseExpression 接收的是硬编码常量字符串 'constant-label'，不可信数据无法影响 SpEL 求值内容，因此不存在表达式注入风险。",
+    "elapsed_ms": 11484
+  },
+  {
+    "id": "JSEF-L5-JDBC-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level5/GadgetChainJdbc.java",
+    "line": 43,
+    "cwe": "CWE-89",
+    "message": "untrustedFragment 经 constant() + concat() 链式拼接出完整 JDBC URL 后直接传入 connect()（语义等价 DriverManager.getConnection），全程无 URL scheme 白名单校验；应在 sink 前校验 JDBC URL scheme 仅允许受信前缀（如 jdbc:mysql://）并禁止 autoDeserialize 等危险参数。",
+    "elapsed_ms": 87541
+  },
+  {
+    "id": "JSEF-L5-JDBC-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level5/GadgetChainJdbcSafe.java",
+    "line": 35,
+    "cwe": "CWE-89",
+    "message": "JDBC URL 为编译期固定常量 FIXED_URL，不可信输入 untrusted 仅作为数据参数传递给 connectFixed() 并打印输出，未参与 URL 拼接，DriverManager.getConnection 始终使用硬编码的安全连接串，无 SQL 注入风险。",
+    "elapsed_ms": 11456
+  },
+  {
+    "id": "JSEF-L5-S4S-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level5/Spring4ShellChain.java",
+    "line": 45,
+    "cwe": "CWE-917",
+    "message": "攻击者可控的 @RequestParam 参数 propPath 经目标对象图字段赋值（line 41）后原样传入 parseExpression（即 SpelExpressionParser.parseExpression）求值，中间无任何清洗或白名单校验，构成表达式语言注入；修复建议：禁止将未净化的外部输入直接拼入 SpEL 表达式，或对 propPath 严格限定为白名单常量后再求值。",
+    "elapsed_ms": 66893
+  },
+  {
+    "id": "JSEF-L5-S4S-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level5/Spring4ShellChainSafe.java",
+    "line": 23,
+    "cwe": "CWE-917",
+    "message": "propPath 经 class.module 关键字检查后直接拒绝危险路径，未传入 SpelExpressionParser.parseExpression 做表达式求值，仅做日志输出，不存在 EL 注入风险。",
+    "elapsed_ms": 12908
+  },
+  {
+    "id": "JSEF-L5-LOG4J-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/level5/Log4jToJndiChain.java",
+    "line": 58,
+    "cwe": "CWE-917",
+    "message": "untrustedHost 作为攻击者可控参数（L43），经 frag 链多跳拼接（L46-48）组合成 ${jndi:ldap://<attacker>/evil} 表达式串，随后解析并传入 jndiLookup（L58 sink），可构造恶意 LDAP URL 触发 JNDI 注入实现远程代码执行；应对外部输入做白名单校验并避免将其拼入 JNDI 表达式格式串。",
+    "elapsed_ms": 31162
+  },
+  {
+    "id": "JSEF-L5-LOG4J-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/level5/Log4jToJndiChainSafe.java",
+    "line": 30,
+    "cwe": "CWE-917",
+    "message": "安全：代码使用白名单校验不可信主机，仅允许localhost和127.0.0.1；即使主机在白名单内，也不会构建${jndi:...}形式的字符串；jndiLookup方法未被调用，因此没有实际的JNDI查找操作；最终返回的是格式化的日志消息，不包含任何危险操作。",
+    "elapsed_ms": 21865
+  },
+  {
+    "id": "JSEF-A01-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/accesscontrol/IdorByQueryParam.java",
+    "line": 27,
+    "cwe": "CWE-639",
+    "message": "id 参数由外部传入后直接用于 repo.findById(id) 查询并返回资源，未校验 currentUser 是否为该资源的 owner，攻击者可篡改 id 越权读取他人记录；修复建议：查询后比对 record.ownerId 与 currentUser.id，不一致则拒绝返回。",
+    "elapsed_ms": 11961
+  },
+  {
+    "id": "JSEF-A01-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/accesscontrol/IdorByQueryParamSafe.java",
+    "line": 23,
+    "cwe": "CWE-639",
+    "message": "代码在第20行通过查询参数id获取资源后，于第23行显式校验rec.ownerId与currentUser.id是否一致，不一致则抛出SecurityException(403)，归属校验完整有效，不存在越权访问缺陷。",
+    "elapsed_ms": 17949
+  },
+  {
+    "id": "JSEF-A01-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/accesscontrol/IdorByHeader.java",
+    "line": 26,
+    "cwe": "CWE-639",
+    "message": "resourceIdHeader来自HTTP Header（攻击者可控），直接传入repo.findById()查询记录，未校验currentUser是否为该记录的ownerId，导致任意用户可越权读取他人记录；应在查询后增加ownerId与currentUser.id的比对校验。",
+    "elapsed_ms": 20408
+  },
+  {
+    "id": "JSEF-A01-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/accesscontrol/IdorByHeaderSafe.java",
+    "line": 23,
+    "cwe": "CWE-639",
+    "message": "该代码在通过Header获取资源后，立即执行了ownerId与currentUser.id的归属校验，不匹配则抛出SecurityException阻断越权访问，因此不存在IDOR漏洞。",
+    "elapsed_ms": 15153
+  },
+  {
+    "id": "JSEF-A01-003",
+    "hit": true,
+    "file": "benchmark/cases/vuln/accesscontrol/VerticalPrivEsc.java",
+    "line": 21,
+    "cwe": "CWE-285",
+    "message": "isAdmin方法直接信任请求绑定的account.role字段作为授权依据，未与服务端存储的真实角色进行比对，普通用户通过篡改role字段即可伪造ADMIN身份实现垂直提权；应在服务端通过session/token获取当前用户真实角色后再做授权校验。",
+    "elapsed_ms": 23953
+  },
+  {
+    "id": "JSEF-A01-003S",
+    "hit": false,
+    "file": "benchmark/cases/sec/accesscontrol/VerticalPrivEscSafe.java",
+    "line": 17,
+    "cwe": "CWE-285",
+    "message": "角色取自服务端可信Session对象（不可由客户端伪造），而非请求体绑定，故不存在垂直越权/提权漏洞；已通过服务端上下文校验实现安全的授权决策。",
+    "elapsed_ms": 9611
+  },
+  {
+    "id": "JSEF-A01-004",
+    "hit": true,
+    "file": "benchmark/cases/vuln/accesscontrol/WorkflowBypass.java",
+    "line": 22,
+    "cwe": "CWE-840",
+    "message": "queryOrder方法未校验订单前置状态（status==PAID），攻击者可跳过支付流程直接查询未支付订单内容；应在返回前添加订单状态校验，如 if (!\"PAID\".equals(order.status)) throw new AccessDeniedException(\"Order not paid\")。",
+    "elapsed_ms": 19396
+  },
+  {
+    "id": "JSEF-A01-004S",
+    "hit": false,
+    "file": "benchmark/cases/sec/accesscontrol/WorkflowBypassSafe.java",
+    "line": 17,
+    "cwe": "CWE-840",
+    "message": "安全：在返回订单前已校验 order.status 必须为 PAID，未支付则抛出 SecurityException 拒绝访问，状态机前置条件已正确实施，无业务流程绕过风险。",
+    "elapsed_ms": 12709
+  },
+  {
+    "id": "JSEF-A01-005",
+    "hit": true,
+    "file": "benchmark/cases/vuln/accesscontrol/ForceBrowseAdmin.java",
+    "line": 20,
+    "cwe": "CWE-285",
+    "message": "admin 接口未检查 isAdmin 权限，任意用户可访问敏感配置，应在返回前校验 session.isAdmin",
+    "elapsed_ms": 22284
+  },
+  {
+    "id": "JSEF-A01-005S",
+    "hit": false,
+    "file": "benchmark/cases/sec/accesscontrol/ForceBrowseAdminSafe.java",
+    "line": 16,
+    "cwe": "CWE-285",
+    "message": "代码在访问敏感资源前已通过 session.isAdmin 检查进行权限校验，非管理员抛出 SecurityException(403)，强制浏览攻击已被正确阻断，属于安全实现。",
+    "elapsed_ms": 9612
+  },
+  {
+    "id": "JSEF-A02-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/crypto/WeakTlsProtocol.java",
+    "line": 18,
+    "cwe": "CWE-327",
+    "message": "TLSv1.0 已被废弃，存在降级攻击和已知密码学弱点，应使用 TLSv1.2 或 TLSv1.3：SSLContext.getInstance(\"TLSv1.3\") 或在系统属性中强制最低协议版本。",
+    "elapsed_ms": 8478
+  },
+  {
+    "id": "JSEF-A02-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/crypto/WeakTlsProtocolSafe.java",
+    "line": 15,
+    "cwe": "CWE-327",
+    "message": "该代码使用 SSLContext.getInstance(\"TLSv1.2\") 明确指定了 TLSv1.2 协议，该协议目前仍被认为是安全的（非已废弃的 SSLv3/TLSv1.0/TLSv1.1），不存在使用不安全加密协议的问题。",
+    "elapsed_ms": 12627
+  },
+  {
+    "id": "JSEF-A02-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/crypto/ReusedIv.java",
+    "line": 27,
+    "cwe": "CWE-329",
+    "message": "FIXED_IV 为全零固定数组且每次加密复用同一 IV（第27行 cipher.init），AES-GCM 要求每次加密使用唯一随机 IV，重用可导致认证标签伪造和明文恢复。修复：每次加密生成新的随机 IV 并与密文一起传输。",
+    "elapsed_ms": 19347
+  },
+  {
+    "id": "JSEF-A02-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/crypto/ReusedIvSafe.java",
+    "line": 25,
+    "cwe": "CWE-329",
+    "message": "安全。每次调用 encrypt 均通过 SecureRandom 生成全新 12 字节 IV 并用于 GCMParameterSpec，不存在 IV 重用问题。",
+    "elapsed_ms": 10537
+  },
+  {
+    "id": "JSEF-A02-003",
+    "hit": true,
+    "file": "benchmark/cases/vuln/crypto/PbkdfWeakParam.java",
+    "line": 22,
+    "cwe": "CWE-916",
+    "message": "PBKDF2迭代次数仅1000次，远低于OWASP推荐的600,000次，攻击者可大幅降低暴力破解成本；应将iterationCount提升至至少600,000并使用随机盐。",
+    "elapsed_ms": 8840
+  },
+  {
+    "id": "JSEF-A02-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/crypto/EcbMode.java",
+    "line": 23,
+    "cwe": "CWE-327",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4485
+  },
+  {
+    "id": "JSEF-A02-005",
+    "hit": false,
+    "file": "benchmark/cases/vuln/crypto/InsecureRandomStream.java",
+    "line": 19,
+    "cwe": "CWE-330",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 5219
+  },
+  {
+    "id": "JSEF-A04-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecureDesign/PriceTampering.java",
+    "line": 20,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4251
+  },
+  {
+    "id": "JSEF-A04-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecureDesign/MassAssignPrivEsc.java",
+    "line": 20,
+    "cwe": "CWE-915",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3775
+  },
+  {
+    "id": "JSEF-A04-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecureDesign/BusinessRuleBypass.java",
+    "line": 20,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4507
+  },
+  {
+    "id": "JSEF-A04-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecureDesign/QuotaBypassRace.java",
+    "line": 19,
+    "cwe": "CWE-362",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4267
+  },
+  {
+    "id": "JSEF-A05-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/misconfig/CorsWildcardCreds.java",
+    "line": 18,
+    "cwe": "CWE-942",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4643
+  },
+  {
+    "id": "JSEF-A05-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/misconfig/VerboseErrorLeak.java",
+    "line": 15,
+    "cwe": "CWE-209",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 5447
+  },
+  {
+    "id": "JSEF-A05-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/misconfig/MissingSecurityHeader.java",
+    "line": 18,
+    "cwe": "CWE-693",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 5464
+  },
+  {
+    "id": "JSEF-A05-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/misconfig/DebugEndpointExposed.java",
+    "line": 20,
+    "cwe": "CWE-489",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7039
+  },
+  {
+    "id": "JSEF-A05-005",
+    "hit": false,
+    "file": "benchmark/cases/vuln/misconfig/InsecureCookie.java",
+    "line": 15,
+    "cwe": "CWE-614",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 6390
+  },
+  {
+    "id": "JSEF-A06-001",
+    "hit": false,
+    "file": "benchmark/cases/vendor/components/VulnerableDepLog4j.java",
+    "line": 23,
+    "cwe": "CWE-1104",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7228
+  },
+  {
+    "id": "JSEF-A06-002",
+    "hit": false,
+    "file": "benchmark/cases/vendor/components/VulnerableDepCommonsCollections.java",
+    "line": 23,
+    "cwe": "CWE-1104",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 6682
+  },
+  {
+    "id": "JSEF-A06-003",
+    "hit": false,
+    "file": "benchmark/cases/vendor/components/OutdatedSpringVersion.java",
+    "line": 23,
+    "cwe": "CWE-937",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 6406
+  },
+  {
+    "id": "JSEF-A08-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/integrity/UnsignedJarLoad.java",
+    "line": 23,
+    "cwe": "CWE-494",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 5257
+  },
+  {
+    "id": "JSEF-A08-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/integrity/UnsafeDeserOfTrust.java",
+    "line": 23,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4054
+  },
+  {
+    "id": "JSEF-A08-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/integrity/BuildScriptInjection.java",
+    "line": 21,
+    "cwe": "CWE-506",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7605
+  },
+  {
+    "id": "JSEF-A09-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logging/MissingLoginFailLog.java",
+    "line": 23,
+    "cwe": "CWE-778",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 11490
+  },
+  {
+    "id": "JSEF-A09-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logging/InadequateLogContent.java",
+    "line": 21,
+    "cwe": "CWE-532",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4040
+  },
+  {
+    "id": "JSEF-A09-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logging/NoAuditTrail.java",
+    "line": 20,
+    "cwe": "CWE-778",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4208
+  },
+  {
+    "id": "JSEF-A09-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logging/SwallowSecurityException.java",
+    "line": 24,
+    "cwe": "CWE-390",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4109
+  },
+  {
+    "id": "JSEF-SQL-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/mybatis/MybatisMapperInjection.java",
+    "line": 33,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4172
+  },
+  {
+    "id": "JSEF-SQL-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/mybatis/MybatisAnnotationInjection.java",
+    "line": 30,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3837
+  },
+  {
+    "id": "JSEF-SQL-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/jpa/JpaNativeQueryInjection.java",
+    "line": 31,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3888
+  },
+  {
+    "id": "JSEF-SQL-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/postgres/PgCopyInjection.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3408
+  },
+  {
+    "id": "JSEF-SQL-005",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/jdbc/StoredProcedureInjection.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3189
+  },
+  {
+    "id": "JSEF-SQL-006",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/jdbc/JdbcNamedParamAbuse.java",
+    "line": 26,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3095
+  },
+  {
+    "id": "JSEF-SQL-007",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/jpa/HqlInjection.java",
+    "line": 32,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3167
+  },
+  {
+    "id": "JSEF-SQL-008",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sql/jdbc/BatchUpdateInjection.java",
+    "line": 24,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3513
+  },
+  {
+    "id": "JSEF-PF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/confusion/SqlPartialParam.java",
+    "line": 31,
+    "cwe": "CWE-89",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3446
+  },
+  {
+    "id": "JSEF-PF-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/confusion/CmdPartialAllowlist.java",
+    "line": 33,
+    "cwe": "CWE-78",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3271
+  },
+  {
+    "id": "JSEF-NC-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/confusion/ConfusionDeserWhitelistType.java",
+    "line": 35,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3300
+  },
+  {
+    "id": "JSEF-NC-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/confusion/ConfusionSsrfPrivateIpCheck.java",
+    "line": 33,
+    "cwe": "CWE-918",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3415
+  },
+  {
+    "id": "JSEF-BL-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/blind/BlindSsrfNoResponse.java",
+    "line": 23,
+    "cwe": "CWE-918",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3270
+  },
+  {
+    "id": "JSEF-BL-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/blind/ErrorBasedInfoLeak.java",
+    "line": 22,
+    "cwe": "CWE-209",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3436
+  },
+  {
+    "id": "JSEF-BL-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/blind/TimingSideChannel.java",
+    "line": 22,
+    "cwe": "CWE-208",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3533
+  },
+  {
+    "id": "JSEF-CX-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/context/LogInjectionCrlf.java",
+    "line": 19,
+    "cwe": "CWE-93",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3628
+  },
+  {
+    "id": "JSEF-CX-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/context/HeaderInjectionFromParam.java",
+    "line": 21,
+    "cwe": "CWE-113",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3401
+  },
+  {
+    "id": "JSEF-V1-AGT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/agent-capability-bypass/AgentToolNoAuthz.java",
+    "line": 21,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3273
+  },
+  {
+    "id": "JSEF-V1-AGT-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/agent-capability-bypass/AgentIntentBypass.java",
+    "line": 19,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3183
+  },
+  {
+    "id": "JSEF-V1-AGT-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/agent-capability-bypass/AgentPrivilegeEscalate.java",
+    "line": 20,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3125
+  },
+  {
+    "id": "JSEF-V1-ORG-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/origin-integrity/WebhookNoSigVerify.java",
+    "line": 15,
+    "cwe": "CWE-345",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3142
+  },
+  {
+    "id": "JSEF-V1-ORG-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/origin-integrity/SignedTokenNoVerify.java",
+    "line": 18,
+    "cwe": "CWE-347",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3149
+  },
+  {
+    "id": "JSEF-V1-ORG-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/origin-integrity/IntegrityCheckBypass.java",
+    "line": 15,
+    "cwe": "CWE-345",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3398
+  },
+  {
+    "id": "JSEF-V1-TNT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/multi-tenant/TenantDataLeak.java",
+    "line": 20,
+    "cwe": "CWE-639",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3535
+  },
+  {
+    "id": "JSEF-V1-TNT-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/multi-tenant/TenantIdSpoof.java",
+    "line": 20,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3524
+  },
+  {
+    "id": "JSEF-V1-TRU-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/trust-boundary/TrustInternalInput.java",
+    "line": 19,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3820
+  },
+  {
+    "id": "JSEF-V1-DEF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecure-default/InsecureDefaultCreds.java",
+    "line": 15,
+    "cwe": "CWE-1188",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3387
+  },
+  {
+    "id": "JSEF-V1-DEF-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/insecure-default/DebugDefaultOn.java",
+    "line": 18,
+    "cwe": "CWE-16",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3504
+  },
+  {
+    "id": "JSEF-V1-PRV-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/priv-esc/RoleManipulationEsc.java",
+    "line": 19,
+    "cwe": "CWE-269",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3567
+  },
+  {
+    "id": "JSEF-V1-PRV-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/priv-esc/VerticalPrivEscToken.java",
+    "line": 18,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3874
+  },
+  {
+    "id": "JSEF-V1-AUT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/missing-authorization/NewEndpointNoAuthz.java",
+    "line": 13,
+    "cwe": "CWE-862",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3848
+  },
+  {
+    "id": "JSEF-V1-AUT-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/missing-authorization/AnonymousAdminEndpoint.java",
+    "line": 13,
+    "cwe": "CWE-862",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3695
+  },
+  {
+    "id": "JSEF-V2-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java",
+    "line": 36,
+    "cwe": "CWE-284",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3572
+  },
+  {
+    "id": "JSEF-V2-001B",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sandbox/ScriptEngineSandboxEscape.java",
+    "line": 55,
+    "cwe": "CWE-284",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3572
+  },
+  {
+    "id": "JSEF-V2-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sandbox/GroovySandboxEscape.java",
+    "line": 71,
+    "cwe": "CWE-265",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4135
+  },
+  {
+    "id": "JSEF-V2-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sandbox/ClassloaderEscape.java",
+    "line": 41,
+    "cwe": "CWE-284",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3515
+  },
+  {
+    "id": "JSEF-V2-003B",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sandbox/ClassloaderEscape.java",
+    "line": 53,
+    "cwe": "CWE-284",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3515
+  },
+  {
+    "id": "JSEF-XSSSTORED-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/xss-stored/XssStored.java",
+    "line": 18,
+    "cwe": "CWE-79",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3288
+  },
+  {
+    "id": "JSEF-XSSDOM-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/xss-dom/XssDom.java",
+    "line": 14,
+    "cwe": "CWE-79",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3120
+  },
+  {
+    "id": "JSEF-CRLF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/crlf/CrlfInjection.java",
+    "line": 16,
+    "cwe": "CWE-93",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3042
+  },
+  {
+    "id": "JSEF-SMUGGLE-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/smuggling/HttpSmuggling.java",
+    "line": 19,
+    "cwe": "CWE-444",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2987
+  },
+  {
+    "id": "JSEF-EL-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/el-injection/ElInjection.java",
+    "line": 18,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3111
+  },
+  {
+    "id": "JSEF-FM-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/freemarker/FreemarkerInjection.java",
+    "line": 16,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3111
+  },
+  {
+    "id": "JSEF-THYME-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/thymeleaf/ThymeleafInjection.java",
+    "line": 16,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3478
+  },
+  {
+    "id": "JSEF-REDOS-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/redos/Redos.java",
+    "line": 21,
+    "cwe": "CWE-1333",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3274
+  },
+  {
+    "id": "JSEF-REDOS-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/redos/Redos.java",
+    "line": 31,
+    "cwe": "CWE-1333",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3274
+  },
+  {
+    "id": "JSEF-ZIPSLIP-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/zip-slip/ZipSlip.java",
+    "line": 28,
+    "cwe": "CWE-22",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3343
+  },
+  {
+    "id": "JSEF-TLS-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tls/TlsVerificationBypass.java",
+    "line": 24,
+    "cwe": "CWE-295",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3286
+  },
+  {
+    "id": "JSEF-TLS-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tls/TlsVerificationBypass.java",
+    "line": 40,
+    "cwe": "CWE-295",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3286
+  },
+  {
+    "id": "JSEF-CSRF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/csrf/CsrfTransfer.java",
+    "line": 24,
+    "cwe": "CWE-352",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3723
+  },
+  {
+    "id": "JSEF-S4S-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/spring4shell/Spring4ShellBinding.java",
+    "line": 33,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3531
+  },
+  {
+    "id": "JSEF-ACTUATOR-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/actuator/ActuatorExposure.java",
+    "line": 19,
+    "cwe": "CWE-749",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3702
+  },
+  {
+    "id": "JSEF-JWTNONE-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/jwt-algnone/JwtAlgNone.java",
+    "line": 24,
+    "cwe": "CWE-347",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4057
+  },
+  {
+    "id": "JSEF-JWTKID-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/jwt-kid/JwtKidTraversal.java",
+    "line": 29,
+    "cwe": "CWE-22",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3533
+  },
+  {
+    "id": "JSEF-JWTKID-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/jwt-kid/JwtKidTraversal.java",
+    "line": 39,
+    "cwe": "CWE-22",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3533
+  },
+  {
+    "id": "JSEF-BROKENAC-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/broken-access-control/BrokenAccessControlVulnB.java",
+    "line": 21,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3302
+  },
+  {
+    "id": "JSEF-DEFAULTCRED-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/default-credentials/DefaultCredentialsVulnB.java",
+    "line": 24,
+    "cwe": "CWE-798",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3226
+  },
+  {
+    "id": "JSEF-HARDCODED-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/hardcoded-credentials/HardcodedCredentialsVulnB.java",
+    "line": 24,
+    "cwe": "CWE-798",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3718
+  },
+  {
+    "id": "JSEF-IDOR-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/idor/IdorVulnB.java",
+    "line": 21,
+    "cwe": "CWE-639",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3403
+  },
+  {
+    "id": "JSEF-JSONP-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/jsonp-callback-injection/JsonpCallbackInjectionVulnB.java",
+    "line": 21,
+    "cwe": "CWE-352",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3641
+  },
+  {
+    "id": "JSEF-REGEXDOS-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/regex-dos/RegexDosVulnB.java",
+    "line": 23,
+    "cwe": "CWE-1333",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3646
+  },
+  {
+    "id": "JSEF-RISKY-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/risky-operations/UnsafeOperationsVulnB.java",
+    "line": 35,
+    "cwe": "CWE-111",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3709
+  },
+  {
+    "id": "JSEF-SENSITIVE-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sensitive-data-exposure/SensitiveDataExposureVulnB.java",
+    "line": 21,
+    "cwe": "CWE-532",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4372
+  },
+  {
+    "id": "JSEF-WEAKPWD-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/weak-password/WeakPasswordVulnB.java",
+    "line": 21,
+    "cwe": "CWE-521",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3557
+  },
+  {
+    "id": "JSEF-L5-CMD-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/level5/GadgetChainCmd.java",
+    "line": 47,
+    "cwe": "CWE-78",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3504
+  },
+  {
+    "id": "JSEF-L5-SSRF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/level5/GadgetChainSsrf.java",
+    "line": 49,
+    "cwe": "CWE-918",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3948
+  },
+  {
+    "id": "JSEF-L5-XXE-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/level5/GadgetChainXxe.java",
+    "line": 47,
+    "cwe": "CWE-611",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3387
+  },
+  {
+    "id": "JSEF-LT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/FastjsonCrossFile_C_Sink.java",
+    "line": 33,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3409
+  },
+  {
+    "id": "JSEF-LT-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/Spring4ShellStateMachine.java",
+    "line": 69,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3541
+  },
+  {
+    "id": "JSEF-LT-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/CommonsCollectionsGadget.java",
+    "line": 124,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 5696
+  },
+  {
+    "id": "JSEF-LT-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/ShiroRememberMeGadget.java",
+    "line": 58,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4907
+  },
+  {
+    "id": "JSEF-LT-005",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/Log4jConcatLong.java",
+    "line": 70,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 6482
+  },
+  {
+    "id": "JSEF-LT-006",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/FastjsonVersionGated.java",
+    "line": 51,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4917
+  },
+  {
+    "id": "JSEF-LT-001P",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/FastjsonCrossFilePerturbed.java",
+    "line": 69,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 6745
+  },
+  {
+    "id": "JSEF-LT-003P",
+    "hit": false,
+    "file": "benchmark/cases/vuln/longtask/CommonsCollectionsPerturbed.java",
+    "line": 121,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4065
+  },
+  {
+    "id": "JSEF-PERF-SQL-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/SlowSqlNoLimit_L1.java",
+    "line": 44,
+    "cwe": "CWE-400",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 10129
+  },
+  {
+    "id": "JSEF-PERF-SQL-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/SlowSqlNoLimit_L2.java",
+    "line": 47,
+    "cwe": "CWE-400",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7005
+  },
+  {
+    "id": "JSEF-PERF-SQL-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/SlowSqlNoLimit_L3.java",
+    "line": 48,
+    "cwe": "CWE-400",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3756
+  },
+  {
+    "id": "JSEF-PERF-SQL-003B",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/SlowSqlNoLimit_L3.java",
+    "line": 64,
+    "cwe": "CWE-400",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3756
+  },
+  {
+    "id": "JSEF-PERF-DB-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/DbResourceLeak.java",
+    "line": 47,
+    "cwe": "CWE-772",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3935
+  },
+  {
+    "id": "JSEF-PERF-IO-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/StreamResourceLeak.java",
+    "line": 37,
+    "cwe": "CWE-772",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4070
+  },
+  {
+    "id": "JSEF-PERF-SLEEP-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/SleepWithLock.java",
+    "line": 36,
+    "cwe": "CWE-410",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4104
+  },
+  {
+    "id": "JSEF-PERF-ALLOC-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/LargeAllocInLoop.java",
+    "line": 33,
+    "cwe": "CWE-400",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3932
+  },
+  {
+    "id": "JSEF-PERF-REDOS-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/perf/RegexCompileInjection.java",
+    "line": 33,
+    "cwe": "CWE-1333",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3877
+  },
+  {
+    "id": "JSEF-TB-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java",
+    "line": 24,
+    "cwe": "CWE-501",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3842
+  },
+  {
+    "id": "JSEF-REFLECT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/reflection-injection/ReflectionInjection.java",
+    "line": 22,
+    "cwe": "CWE-470",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3703
+  },
+  {
+    "id": "JSEF-FMT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/format-string/FormatStringInjection.java",
+    "line": 21,
+    "cwe": "CWE-134",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3734
+  },
+  {
+    "id": "JSEF-HOST-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tls/HostnameVerifierBypass.java",
+    "line": 35,
+    "cwe": "CWE-295",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3546
+  },
+  {
+    "id": "JSEF-XSLT-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/xslt/XsltInjection.java",
+    "line": 44,
+    "cwe": "CWE-91",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3217
+  },
+  {
+    "id": "JSEF-FWD-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/forward/UnvalidatedForward.java",
+    "line": 34,
+    "cwe": "CWE-98",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3646
+  },
+  {
+    "id": "JSEF-SEED-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/random/PredictableSeed.java",
+    "line": 45,
+    "cwe": "CWE-338",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3693
+  },
+  {
+    "id": "JSEF-PAY-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/PaymentPriceTamper.java",
+    "line": 31,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3436
+  },
+  {
+    "id": "JSEF-PAY-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/CouponReuse.java",
+    "line": 28,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3527
+  },
+  {
+    "id": "JSEF-MEM-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/MembershipLevelTamper.java",
+    "line": 24,
+    "cwe": "CWE-285",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3410
+  },
+  {
+    "id": "JSEF-MEM-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/InviteRewardAbuse.java",
+    "line": 24,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3463
+  },
+  {
+    "id": "JSEF-WF-001",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/DuplicateRefund.java",
+    "line": 25,
+    "cwe": "CWE-840",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3438
+  },
+  {
+    "id": "JSEF-WF-002",
+    "hit": false,
+    "file": "benchmark/cases/vuln/logic/SkipPaymentStep.java",
+    "line": 23,
+    "cwe": "CWE-862",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3921
+  },
+  {
+    "id": "JSEF-TCM-101",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM1_DirectTypeSelect.java",
+    "line": 28,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4317
+  },
+  {
+    "id": "JSEF-TCM-102",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM1_DirectTypeSelect.java",
+    "line": 40,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4317
+  },
+  {
+    "id": "JSEF-TCM-201",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM2_InheritanceBypass.java",
+    "line": 45,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 8228
+  },
+  {
+    "id": "JSEF-TCM-301",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM3_ParserCacheBypass.java",
+    "line": 46,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 8192
+  },
+  {
+    "id": "JSEF-TCM-302",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM3_ParserCacheBypass.java",
+    "line": 83,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 8192
+  },
+  {
+    "id": "JSEF-TCM-401",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM4_PrivateFieldBind.java",
+    "line": 74,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7629
+  },
+  {
+    "id": "JSEF-TCM-402",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM4_PrivateFieldBind.java",
+    "line": 92,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7629
+  },
+  {
+    "id": "JSEF-TCM-501",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM5_PropertyAsCode.java",
+    "line": 42,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7474
+  },
+  {
+    "id": "JSEF-TCM-502",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM5_PropertyAsCode.java",
+    "line": 58,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7474
+  },
+  {
+    "id": "JSEF-TCM-503",
+    "hit": false,
+    "file": "benchmark/cases/vuln/tcm/TCM5_PropertyAsCode.java",
+    "line": 85,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7474
+  },
+  {
+    "id": "JSEF-SBM-101",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM1_BinderTraversal.java",
+    "line": 61,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4920
+  },
+  {
+    "id": "JSEF-SBM-102",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM1_BinderTraversal.java",
+    "line": 76,
+    "cwe": "CWE-94",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4920
+  },
+  {
+    "id": "JSEF-SBM-201",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java",
+    "line": 41,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4224
+  },
+  {
+    "id": "JSEF-SBM-202",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java",
+    "line": 57,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4224
+  },
+  {
+    "id": "JSEF-SBM-301",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java",
+    "line": 24,
+    "cwe": "CWE-22",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7266
+  },
+  {
+    "id": "JSEF-SBM-302",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java",
+    "line": 37,
+    "cwe": "CWE-749",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 7266
+  },
+  {
+    "id": "JSEF-SBM-401",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM4_AuthzBypass.java",
+    "line": 39,
+    "cwe": "CWE-862",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4058
+  },
+  {
+    "id": "JSEF-SBM-402",
+    "hit": false,
+    "file": "benchmark/cases/vuln/sbm/SBM4_AuthzBypass.java",
+    "line": 57,
+    "cwe": "CWE-862",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 4058
+  },
+  {
+    "id": "JSEF-DBG-101",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG1_ParserNegotiation.java",
+    "line": 34,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3486
+  },
+  {
+    "id": "JSEF-DBG-102",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG1_ParserNegotiation.java",
+    "line": 72,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3486
+  },
+  {
+    "id": "JSEF-DBG-201",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG2_CrossTrustAttachment.java",
+    "line": 31,
+    "cwe": "CWE-913",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3188
+  },
+  {
+    "id": "JSEF-DBG-202",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG2_CrossTrustAttachment.java",
+    "line": 55,
+    "cwe": "CWE-913",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3188
+  },
+  {
+    "id": "JSEF-DBG-301",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java",
+    "line": 42,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2971
+  },
+  {
+    "id": "JSEF-DBG-302",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java",
+    "line": 62,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2971
+  },
+  {
+    "id": "JSEF-DBG-303",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java",
+    "line": 38,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3113
+  },
+  {
+    "id": "JSEF-DBG-304",
+    "hit": false,
+    "file": "benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java",
+    "line": 56,
+    "cwe": "CWE-502",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3113
+  },
+  {
+    "id": "JSEF-STR-101",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR1_DoubleEvaluation.java",
+    "line": 36,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3026
+  },
+  {
+    "id": "JSEF-STR-102",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR1_DoubleEvaluation.java",
+    "line": 62,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 3026
+  },
+  {
+    "id": "JSEF-STR-201",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR2_ProtocolLayerInjection.java",
+    "line": 36,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2975
+  },
+  {
+    "id": "JSEF-STR-202",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR2_ProtocolLayerInjection.java",
+    "line": 53,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2975
+  },
+  {
+    "id": "JSEF-STR-301",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR3_ExclusionListBypass.java",
+    "line": 87,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2958
+  },
+  {
+    "id": "JSEF-STR-302",
+    "hit": false,
+    "file": "benchmark/cases/vuln/str/STR3_ExclusionListBypass.java",
+    "line": 113,
+    "cwe": "CWE-917",
+    "message": "(未产出：模型未覆盖/超时)",
+    "elapsed_ms": 2958
+  }
+]

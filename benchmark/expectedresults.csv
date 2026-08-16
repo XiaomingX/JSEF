@@ -179,11 +179,11 @@ JSEF-A01-005S,285,L4,safe,benchmark/cases/sec/accesscontrol/ForceBrowseAdminSafe
 JSEF-A02-001,327,L2,vuln,benchmark/cases/vuln/crypto/WeakTlsProtocol.java,18,protocol config,SSLContext.getInstance(TLSv1.0),hardcoded-key-ecb,
 JSEF-A02-001S,327,L2,safe,benchmark/cases/sec/crypto/WeakTlsProtocolSafe.java,15,protocol config,SSLContext.getInstance(TLSv1.2),hardcoded-key-ecb,
 JSEF-A02-002,329,L3,vuln,benchmark/cases/vuln/crypto/ReusedIv.java,25,fixed IV (reused),"Cipher(AES/GCM, reused IV)",reused-iv,
-JSEF-A02-002S,329,L3,safe,benchmark/cases/sec/crypto/ReusedIvSafe.java,25,SecureRandom IV (unique per encrypt),"Cipher(AES/GCM, random IV)",reused-iv,
+JSEF-A02-002S,329,L3,safe,benchmark/cases/sec/crypto/ReusedIvSafe.java,39,SecureRandom IV (unique per encrypt),"Cipher(AES/GCM, random IV)",reused-iv,
 JSEF-A02-003,916,L3,vuln,benchmark/cases/vuln/crypto/PbkdfWeakParam.java,22,password,PBEKeySpec(iterationCount=1000),weak-hash,
 JSEF-A02-003S,916,L3,safe,benchmark/cases/sec/crypto/PbkdfWeakParamSafe.java,22,password,"PBEKeySpec(iterationCount>=100000, random salt)",weak-hash,
 JSEF-A02-004,327,L2,vuln,benchmark/cases/vuln/crypto/EcbMode.java,23,plaintext,Cipher(AES/ECB),hardcoded-key-ecb,
-JSEF-A02-004S,327,L2,safe,benchmark/cases/sec/crypto/EcbModeSafe.java,25,plaintext,"Cipher(AES/GCM, random IV)",hardcoded-key-ecb,
+JSEF-A02-004S,327,L2,safe,benchmark/cases/sec/crypto/EcbModeSafe.java,39,plaintext,"Cipher(AES/GCM, random IV)",hardcoded-key-ecb,
 JSEF-A02-005,330,L2,vuln,benchmark/cases/vuln/crypto/InsecureRandomStream.java,19,Random instance,token string (predictable),weak-random,
 JSEF-A02-005S,330,L2,safe,benchmark/cases/sec/crypto/InsecureRandomStreamSafe.java,16,SecureRandom instance,token string (unpredictable),weak-random,
 JSEF-A04-001,840,L3,vuln,benchmark/cases/vuln/insecureDesign/PriceTampering.java,20,request-bound price,price * qty (total),business-logic,
@@ -249,7 +249,7 @@ JSEF-NC-001S,502,L3,safe,benchmark/cases/vuln/confusion/ConfusionDeserWhitelistT
 JSEF-NC-002,918,L3,vuln,benchmark/cases/vuln/confusion/ConfusionSsrfPrivateIpCheck.java,33,request parameter url,URL.openConnection,ssrf,
 JSEF-NC-002S,918,L3,safe,benchmark/cases/vuln/confusion/ConfusionSsrfPrivateIpCheck.java,44,request parameter url,URL.openConnection,ssrf,
 JSEF-BL-001,918,L3,vuln,benchmark/cases/vuln/blind/BlindSsrfNoResponse.java,23,request parameter url,URL.openConnection,ssrf,
-JSEF-BL-001S,918,L3,safe,benchmark/cases/sec/blind/BlindSsrfNoResponseSafe.java,19,request parameter url,URL.openConnection,ssrf,
+JSEF-BL-001S,918,L3,safe,benchmark/cases/sec/blind/BlindSsrfNoResponseSafe.java,30,request parameter url,URL.openConnection,ssrf,
 JSEF-BL-002,209,L2,vuln,benchmark/cases/vuln/blind/ErrorBasedInfoLeak.java,22,exception.getMessage(),HTTP response body,security-header-missing,
 JSEF-BL-002S,209,L2,safe,benchmark/cases/sec/blind/ErrorBasedInfoLeakSafe.java,16,exception,generic message to client,security-header-missing,
 JSEF-BL-003,208,L4,vuln,benchmark/cases/vuln/blind/TimingSideChannel.java,22,user input,String.equals (non-constant-time),timing-attack,
@@ -375,10 +375,10 @@ JSEF-SENSITIVE-002,532,L1,vuln,benchmark/cases/vuln/sensitive-data-exposure/Sens
 JSEF-SENSITIVE-002S,532,L1,safe,benchmark/cases/sec/sensitive-data-exposure/SensitiveDataExposureSafeB.java,21,@RequestParam userId,"response body (masked, no plaintext password/securityAnswer)",sensitive-data-exposure,
 JSEF-WEAKPWD-002,521,L1,vuln,benchmark/cases/vuln/weak-password/WeakPasswordVulnB.java,21,@RequestParam password,plaintext equals comparison,weak-password,
 JSEF-WEAKPWD-002S,521,L1,safe,benchmark/cases/sec/weak-password/WeakPasswordSafeB.java,24,@RequestParam password,password hashing store (weak rejected),weak-password,
-JSEF-L5-CMD-001,78,L5,vuln,benchmark/cases/vuln/level5/GadgetChainCmd.java,47,"extracted untrusted fragment",Runtime.getRuntime().exec,command-injection,"benchmark/cases/vuln/level5/GadgetChainCmd.java:70,benchmark/cases/vuln/level5/GadgetChainCmd.java:71,benchmark/cases/vuln/level5/GadgetChainCmd.java:72,benchmark/cases/vuln/level5/GadgetChainCmd.java:73"
-JSEF-L5-CMD-001S,78,L5,safe,benchmark/cases/sec/level5/GadgetChainCmdSafe.java,52,"extracted untrusted fragment",Runtime.getRuntime().exec,command-injection,
-JSEF-L5-SSRF-001,918,L5,vuln,benchmark/cases/vuln/level5/GadgetChainSsrf.java,49,untrusted host,"new URL(...).openConnection",ssrf,"benchmark/cases/vuln/level5/GadgetChainSsrf.java:65,benchmark/cases/vuln/level5/GadgetChainSsrf.java:66,benchmark/cases/vuln/level5/GadgetChainSsrf.java:67,benchmark/cases/vuln/level5/GadgetChainSsrf.java:70"
-JSEF-L5-SSRF-001S,918,L5,safe,benchmark/cases/sec/level5/GadgetChainSsrfSafe.java,49,untrusted host,"new URL(...).openConnection",ssrf,
+JSEF-L5-CMD-001,78,L5,vuln,benchmark/cases/vuln/level5/GadgetChainCmd.java,47,extracted untrusted fragment,Runtime.getRuntime().exec,command-injection,"benchmark/cases/vuln/level5/GadgetChainCmd.java:70,benchmark/cases/vuln/level5/GadgetChainCmd.java:71,benchmark/cases/vuln/level5/GadgetChainCmd.java:72,benchmark/cases/vuln/level5/GadgetChainCmd.java:73"
+JSEF-L5-CMD-001S,78,L5,safe,benchmark/cases/sec/level5/GadgetChainCmdSafe.java,52,extracted untrusted fragment,Runtime.getRuntime().exec,command-injection,
+JSEF-L5-SSRF-001,918,L5,vuln,benchmark/cases/vuln/level5/GadgetChainSsrf.java,49,untrusted host,new URL(...).openConnection,ssrf,"benchmark/cases/vuln/level5/GadgetChainSsrf.java:65,benchmark/cases/vuln/level5/GadgetChainSsrf.java:66,benchmark/cases/vuln/level5/GadgetChainSsrf.java:67,benchmark/cases/vuln/level5/GadgetChainSsrf.java:70"
+JSEF-L5-SSRF-001S,918,L5,safe,benchmark/cases/sec/level5/GadgetChainSsrfSafe.java,49,untrusted host,new URL(...).openConnection,ssrf,
 JSEF-L5-XXE-001,611,L5,vuln,benchmark/cases/vuln/level5/GadgetChainXxe.java,47,untrusted xml,SAXReader.read,xxe,"benchmark/cases/vuln/level5/GadgetChainXxe.java:63,benchmark/cases/vuln/level5/GadgetChainXxe.java:64,benchmark/cases/vuln/level5/GadgetChainXxe.java:65,benchmark/cases/vuln/level5/GadgetChainXxe.java:43"
 JSEF-L5-XXE-001S,611,L5,safe,benchmark/cases/sec/level5/GadgetChainXxeSafe.java,46,untrusted xml,SAXReader.read,xxe,
 JSEF-LT-001,502,L4,vuln,benchmark/cases/vuln/longtask/FastjsonCrossFile_C_Sink.java,33,untrustedJson(type field),JSON.parseObject(AutoType),deserialization,"benchmark/cases/vuln/longtask/FastjsonCrossFile_A_Source.java:28,benchmark/cases/vuln/longtask/FastjsonCrossFile_B_Transport.java:24,benchmark/cases/vuln/longtask/FastjsonCrossFile_B_Transport.java:38,benchmark/cases/vuln/longtask/FastjsonCrossFile_C_Sink.java:30"
@@ -412,12 +412,12 @@ JSEF-PERF-ALLOC-001,400,L2,vuln,benchmark/cases/vuln/perf/LargeAllocInLoop.java,
 JSEF-PERF-ALLOC-001S,400,L2,safe,benchmark/cases/sec/perf/LargeAllocInLoop_Safe.java,32,requestParam(n),reused buffer,perf-anti-pattern,
 JSEF-PERF-REDOS-001,1333,L2,vuln,benchmark/cases/vuln/perf/RegexCompileInjection.java,33,requestParam(userRegex),Pattern.compile,redos,
 JSEF-PERF-REDOS-001S,1333,L2,safe,benchmark/cases/sec/perf/RegexCompileInjection_Safe.java,35,requestParam(input),Pattern.compile(fixed),redos,
-JSEF-TB-001,501,L3,vuln,benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java,24,HttpServletRequest parameter,HttpSession.setAttribute(name, taintedValue),trust-boundary,"benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java:23,benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java:26"
-JSEF-TB-001S,501,L3,safe,benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java,31,HttpServletRequest parameter,HttpSession.setAttribute(name, validatedValue),trust-boundary,"benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java:25,benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java:32"
+JSEF-TB-001,501,L3,vuln,benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java,24,HttpServletRequest parameter,"HttpSession.setAttribute(name, taintedValue)",trust-boundary,"benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java:23,benchmark/cases/vuln/trust-boundary/TrustBoundaryViolation.java:26"
+JSEF-TB-001S,501,L3,safe,benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java,31,HttpServletRequest parameter,"HttpSession.setAttribute(name, validatedValue)",trust-boundary,"benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java:25,benchmark/cases/sec/trust-boundary/TrustBoundaryViolation_Safe.java:32"
 JSEF-REFLECT-001,470,L4,vuln,benchmark/cases/vuln/reflection-injection/ReflectionInjection.java,22,HttpServletRequest parameter,Method.invoke,reflection-injection,"benchmark/cases/vuln/reflection-injection/ReflectionInjection.java:21,benchmark/cases/vuln/reflection-injection/ReflectionInjection.java:24,benchmark/cases/vuln/reflection-injection/ReflectionInjection.java:26"
 JSEF-REFLECT-001S,470,L4,safe,benchmark/cases/sec/reflection-injection/ReflectionInjection_Safe.java,31,HttpServletRequest parameter,Method.invoke(allowlist),reflection-injection,"benchmark/cases/sec/reflection-injection/ReflectionInjection_Safe.java:20,benchmark/cases/sec/reflection-injection/ReflectionInjection_Safe.java:32,benchmark/cases/sec/reflection-injection/ReflectionInjection_Safe.java:33"
-JSEF-FMT-001,134,L3,vuln,benchmark/cases/vuln/format-string/FormatStringInjection.java,21,HttpServletRequest parameter,String.format(taintedFmt, args),format-string,"benchmark/cases/vuln/format-string/FormatStringInjection.java:20,benchmark/cases/vuln/format-string/FormatStringInjection.java:23"
-JSEF-FMT-001S,134,L3,safe,benchmark/cases/sec/format-string/FormatStringInjection_Safe.java,22,HttpServletRequest parameter,String.format(fixedTemplate, args),format-string,"benchmark/cases/sec/format-string/FormatStringInjection_Safe.java:18,benchmark/cases/sec/format-string/FormatStringInjection_Safe.java:23"
+JSEF-FMT-001,134,L3,vuln,benchmark/cases/vuln/format-string/FormatStringInjection.java,21,HttpServletRequest parameter,"String.format(taintedFmt, args)",format-string,"benchmark/cases/vuln/format-string/FormatStringInjection.java:20,benchmark/cases/vuln/format-string/FormatStringInjection.java:23"
+JSEF-FMT-001S,134,L3,safe,benchmark/cases/sec/format-string/FormatStringInjection_Safe.java,22,HttpServletRequest parameter,"String.format(fixedTemplate, args)",format-string,"benchmark/cases/sec/format-string/FormatStringInjection_Safe.java:18,benchmark/cases/sec/format-string/FormatStringInjection_Safe.java:23"
 JSEF-HOST-001,295,L2,vuln,benchmark/cases/vuln/tls/HostnameVerifierBypass.java,35,attacker MITM hostname,HostnameVerifier.verify(true),hostname-verifier,
 JSEF-HOST-001S,295,L2,safe,benchmark/cases/sec/tls/HostnameVerifierBypass_Safe.java,32,attacker MITM hostname,HostnameVerifier.verify(default),hostname-verifier,
 JSEF-XSLT-001,91,L3,vuln,benchmark/cases/vuln/xslt/XsltInjection.java,44,user stylesheet,TransformerFactory.newTransformer,xslt-injection,"benchmark/cases/vuln/xslt/XsltInjection.java:36,benchmark/cases/vuln/xslt/XsltInjection.java:45"
@@ -427,12 +427,12 @@ JSEF-FWD-001S,98,L2,safe,benchmark/cases/sec/forward/UnvalidatedForward_Safe.jav
 JSEF-SEED-001,338,L2,vuln,benchmark/cases/vuln/random/PredictableSeed.java,45,timestamp seed,new SecureRandom(seed),predictable-seed,
 JSEF-SEED-001S,338,L2,safe,benchmark/cases/sec/random/PredictableSeed_Safe.java,30,system entropy,new SecureRandom(),predictable-seed,
 JSEF-PAY-001,840,L3,vuln,benchmark/cases/vuln/logic/PaymentPriceTamper.java,31,@RequestParam amount/quantity,total = clientAmount * clientQty (no server recompute),payment-logic,"benchmark/cases/vuln/logic/PaymentPriceTamper.java:29,benchmark/cases/vuln/logic/PaymentPriceTamper.java:33"
-JSEF-PAY-001S,840,L3,safe,benchmark/cases/sec/logic/PaymentPriceTamper_Safe.java,25,server price (authoritative),serverPrice * quantity (total, validated),payment-logic,
+JSEF-PAY-001S,840,L3,safe,benchmark/cases/sec/logic/PaymentPriceTamper_Safe.java,25,server price (authoritative),"serverPrice * quantity (total, validated)",payment-logic,
 JSEF-PAY-002,840,L3,vuln,benchmark/cases/vuln/logic/CouponReuse.java,28,@RequestParam couponCode,applyDiscount(code) (no dedupe),payment-logic,"benchmark/cases/vuln/logic/CouponReuse.java:26,benchmark/cases/vuln/logic/CouponReuse.java:30"
-JSEF-PAY-002S,840,L3,safe,benchmark/cases/sec/logic/CouponReuse_Safe.java,27,couponCode,applyDiscount(code) after dedupe check,payment-logic,
+JSEF-PAY-002S,840,L3,safe,benchmark/cases/sec/logic/CouponReuse_Safe.java,30,couponCode,applyDiscount(code) after dedupe check,payment-logic,
 JSEF-MEM-001,285,L3,vuln,benchmark/cases/vuln/logic/MembershipLevelTamper.java,24,@RequestParam membershipLevel,grantByLevel(clientLevel) (no real-level check),membership-logic,"benchmark/cases/vuln/logic/MembershipLevelTamper.java:22,benchmark/cases/vuln/logic/MembershipLevelTamper.java:26"
 JSEF-MEM-001S,285,L3,safe,benchmark/cases/sec/logic/MembershipLevelTamper_Safe.java,20,server session real level,grantByLevel(realLevel),membership-logic,
-JSEF-MEM-002,840,L3,vuln,benchmark/cases/vuln/logic/InviteRewardAbuse.java,24,@RequestParam inviteCode,issueReward(inviter,invitee) (no self-invite/rate limit),membership-logic,"benchmark/cases/vuln/logic/InviteRewardAbuse.java:22,benchmark/cases/vuln/logic/InviteRewardAbuse.java:26"
+JSEF-MEM-002,840,L3,vuln,benchmark/cases/vuln/logic/InviteRewardAbuse.java,24,@RequestParam inviteCode,"issueReward(inviter,invitee) (no self-invite/rate limit)",membership-logic,"benchmark/cases/vuln/logic/InviteRewardAbuse.java:22,benchmark/cases/vuln/logic/InviteRewardAbuse.java:26"
 JSEF-MEM-002S,840,L3,safe,benchmark/cases/sec/logic/InviteRewardAbuse_Safe.java,31,inviteCode,issueReward after self-invite/rate-limit check,membership-logic,
 JSEF-WF-001,840,L4,vuln,benchmark/cases/vuln/logic/DuplicateRefund.java,25,@RequestParam orderId,doRefund(orderId) (no status==PAID check),workflow-bypass,"benchmark/cases/vuln/logic/DuplicateRefund.java:23,benchmark/cases/vuln/logic/DuplicateRefund.java:27,benchmark/cases/vuln/logic/DuplicateRefund.java:29"
 JSEF-WF-001S,840,L4,safe,benchmark/cases/sec/logic/DuplicateRefund_Safe.java,25,orderId,doRefund after status==PAID check,workflow-bypass,
@@ -466,7 +466,7 @@ JSEF-SBM-201,917,L2,vuln,benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java,41,
 JSEF-SBM-201S,917,L2,safe,benchmark/cases/sec/sbm/SBM2_ConfigExpression_Safe.java,47,stored route definition,restricted eval context,config-as-expression,
 JSEF-SBM-202,917,L4,vuln,benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java,57,stored config (cross-stage),ScriptEngine.eval,config-as-expression,"benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java:51,benchmark/cases/vuln/sbm/SBM2_ConfigExpression.java:58"
 JSEF-SBM-202S,917,L4,safe,benchmark/cases/sec/sbm/SBM2_ConfigExpression_Safe.java,63,stored config,static config no eval,config-as-expression,
-JSEF-SBM-301,22,L2,vuln,benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java,24,untrusted path+content (no authz),Files.write(path, content),privileged-endpoint-exposure,
+JSEF-SBM-301,22,L2,vuln,benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java,24,untrusted path+content (no authz),"Files.write(path, content)",privileged-endpoint-exposure,
 JSEF-SBM-301S,22,L2,safe,benchmark/cases/sec/sbm/SBM3_PrivilegedEndpoint_Safe.java,32,path+content,authz check + path allowlist,privileged-endpoint-exposure,
 JSEF-SBM-302,749,L4,vuln,benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java,37,untrusted beanName (no authz),Method.invoke(refresh),privileged-endpoint-exposure,"benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java:35,benchmark/cases/vuln/sbm/SBM3_PrivilegedEndpoint.java:38"
 JSEF-SBM-302S,749,L4,safe,benchmark/cases/sec/sbm/SBM3_PrivilegedEndpoint_Safe.java,42,beanName,authz check before refresh,privileged-endpoint-exposure,
@@ -485,11 +485,11 @@ JSEF-DBG-202S,913,L5,safe,benchmark/cases/sec/dbg/DBG2_CrossTrustAttachment_Safe
 JSEF-DBG-301,502,L3,vuln,benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java,42,encoded/obfuscated class name,Class.forName(bypassed).newInstance(),list-bypass-encoding,"benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java:33,benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java:45"
 JSEF-DBG-301S,502,L3,safe,benchmark/cases/sec/dbg/DBG3_ListBypassByEncoding_Safe.java,33,class name,Class-object equality (not string),list-bypass-encoding,
 JSEF-DBG-302,502,L4,vuln,benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java,62,string-concat class name,ClassLoader.loadClass/forName(bypassed),list-bypass-encoding,"benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java:60,benchmark/cases/vuln/dbg/DBG3_ListBypassByEncoding.java:64"
-JSEF-DBG-302S,502,L4,safe,benchmark/cases/sec/dbg/DBG3_ListBypassByEncoding_Safe.java,52,class name,no dynamic ClassLoader, exact compare,list-bypass-encoding,
+JSEF-DBG-302S,502,L4,safe,benchmark/cases/sec/dbg/DBG3_ListBypassByEncoding_Safe.java,52,class name,"no dynamic ClassLoader, exact compare",list-bypass-encoding,
 JSEF-DBG-303,502,L3,vuln,benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java,38,nested/obfuscated class name,Class.forName(bypassed).newInstance(),list-bypass-encoding,"benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java:29,benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java:40"
 JSEF-DBG-303S,502,L3,safe,benchmark/cases/sec/dbg/DBG3_EncodingVariants_Safe.java,32,class name,Class-object equality (not string),list-bypass-encoding,
 JSEF-DBG-304,502,L4,vuln,benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java,56,escape/double-write class name,ClassLoader.loadClass/forName(bypassed),list-bypass-encoding,"benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java:54,benchmark/cases/vuln/dbg/DBG3_EncodingVariants.java:58"
-JSEF-DBG-304S,502,L4,safe,benchmark/cases/sec/dbg/DBG3_EncodingVariants_Safe.java,51,class name,no dynamic ClassLoader, exact compare,list-bypass-encoding,
+JSEF-DBG-304S,502,L4,safe,benchmark/cases/sec/dbg/DBG3_EncodingVariants_Safe.java,51,class name,"no dynamic ClassLoader, exact compare",list-bypass-encoding,
 JSEF-STR-101,917,L2,vuln,benchmark/cases/vuln/str/STR1_DoubleEvaluation.java,36,first-eval result (re-evaluated),second evaluate() (double evaluation),double-evaluation,
 JSEF-STR-101S,917,L2,safe,benchmark/cases/sec/str/STR1_DoubleEvaluation_Safe.java,33,template,no re-evaluation (result as data),double-evaluation,
 JSEF-STR-102,917,L4,vuln,benchmark/cases/vuln/str/STR1_DoubleEvaluation.java,62,first-eval result (cross-stage),second evaluate(),double-evaluation,"benchmark/cases/vuln/str/STR1_DoubleEvaluation.java:54,benchmark/cases/vuln/str/STR1_DoubleEvaluation.java:63"
@@ -512,7 +512,7 @@ JSEF-EXT-004,347,L2,vuln,benchmark/cases/vuln/jwt/JwtWeakSecret.java,18,token,JW
 JSEF-EXT-004S,347,L2,safe,benchmark/cases/sec/jwt/JwtWeakSecretSafe.java,22,token,JWTVerifier.withAlgorithm(HMAC(strong random key)),jwt,
 JSEF-EXT-005,601,L1,vuln,benchmark/cases/vuln/open-redirect/OpenRedirect.java,13,@RequestParam redirectUrl,response.sendRedirect(redirectUrl),open-redirect,
 JSEF-EXT-005S,601,L1,safe,benchmark/cases/sec/open-redirect/OpenRedirectSafe.java,19,@RequestParam redirectUrl,allowlist validation before sendRedirect,open-redirect,
-JSEF-EXT-006,93,L2,vuln,benchmark/cases/vuln/crlf/CrlfCookie.java,15,username,response.addHeader("Set-Cookie", value),crlf,
+JSEF-EXT-006,93,L2,vuln,benchmark/cases/vuln/crlf/CrlfCookie.java,15,username,"response.addHeader(""Set-Cookie"", value)",crlf,
 JSEF-EXT-006S,93,L2,safe,benchmark/cases/sec/crlf/CrlfCookieSafe.java,15,username,sanitize CR/LF before addHeader,crlf,
 JSEF-EXT-007,330,L1,vuln,benchmark/cases/vuln/weak-random/WeakRandomToken.java,14,new Random(),token generation (nextInt),weak-random,
 JSEF-EXT-007S,330,L1,safe,benchmark/cases/sec/weak-random/WeakRandomSafe.java,16,SecureRandom,SecureRandom.nextBytes token generation,weak-random,
@@ -535,7 +535,7 @@ JSEF-EXT-015S,639,L3,safe,benchmark/cases/sec/idor/IdorSafeExt.java,33,@RequestP
 JSEF-EXT-016,862,L3,vuln,benchmark/cases/vuln/missing-authz/MissingAuthzAdmin.java,12,authenticated request,admin action without role check,missing-authz,
 JSEF-EXT-016S,862,L3,safe,benchmark/cases/sec/missing-authz/MissingAuthzAdminSafe.java,14,authenticated request,role check before admin action,missing-authz,
 JSEF-EXT-017,362,L3,vuln,benchmark/cases/vuln/race/RaceCondition.java,15,withdraw request,balance update after non-atomic check,race,
-JSEF-EXT-017S,362,L3,safe,benchmark/cases/sec/race/RaceConditionSafe.java,15,withdraw request,atomic compareAndSet withdraw,race,
+JSEF-EXT-017S,362,L3,safe,benchmark/cases/sec/race/RaceConditionSafe.java,27,withdraw request,atomic compareAndSet withdraw,race,
 JSEF-EXT-018,502,L3,vuln,benchmark/cases/vuln/deserialize/XStreamUnsafe.java,14,untrusted xml,XStream.fromXML,deserialize,
 JSEF-EXT-018S,502,L3,safe,benchmark/cases/sec/deserialize/DeserializeSafe.java,21,untrusted xml,XStream with type allowlist,deserialize,
 JSEF-EXT-019,502,L3,vuln,benchmark/cases/vuln/deserialize/JacksonDefaultTyping.java,17,untrusted json,ObjectMapper.readValue with default typing,deserialize,

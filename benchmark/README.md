@@ -175,7 +175,7 @@ benchmark/
 
 ## 5. 如何产出结果 + 跑 Scorecard
 
-1. 确保 `benchmark/expectedresults.csv` 已存在（每条样本 `id, cwe, level, type(vuln/safe), file, line, source, sink, category`）。
+1. 确保 `benchmark/expectedresults.csv` 已存在（每条样本 **10 列**：`id, cwe, level, type, file, line, source, sink, category, trace`）。
 2. 运行 `benchmark/scripts/` 下的 scorecard 脚本（Python），输入为某对象的 SARIF/JSON 结果：
    ```bash
    python benchmark/scripts/scorecard.py \
@@ -183,13 +183,16 @@ benchmark/
      --results  benchmark/results/claude-<model>/ \
      --out      benchmark/results/claude-<model>/scorecard.json
    ```
-3. 脚本输出：
-   - TP / FN / FP / TN → **Recall / Precision / Youden Score = TPR − FPR**（OWASP 口径，0–100）。
-   - 综合指标 **F1 = 2·P·R/(P+R)** 与 **MCC（Matthews 相关系数）**：正负样本不均衡时 MCC 比 Youden 更稳健，三指标并列输出。
+3. 脚本输出（全部指标）：
+   - **TP / FN / FP / TN** → **Recall**（检出率）、**Precision**（精确率）、**FPR**（误报率 = FP/(FP+TN)，越低越好）。
+   - **Youden Score = (Recall − FPR) × 100**（OWASP 口径，0–100，越高越好）。
+   - **F1 = 2·P·R/(P+R)** 与 **MCC（Matthews 相关系数）**：正负样本不均衡时 MCC 比 Youden 更稳健，四指标并列输出。
    - **真实时延**：逐样本 `elapsed_ms` 汇总为 `avg / p50 / p95 / max` 与 **超时率 `timeout_rate`**（阈值取 `--timeout-ms`，默认 120000ms）。
-   - **定位精度**：`exact_hit_rate`（file:line 精确命中率）与 `near_hit_rate`（容差内命中率），容差由 `--line-tolerance` 控制（默认 0 严格；设为 2 表示 ±2 行内算 near hit）。
+   - **定位精度**：`exact_hit_rate`（file:line 精确命中率）与 `near_hit_rate`（容差内命中率），容差由 `--line-tolerance` 控制（**默认 1**：CHECKPOINT 注释行恒在 sink 行上方，工具通常报 sink 行，容差 1 消除系统性偏移）。
+   - **CWE 精确度** `cwe_accuracy`：TP 中被测对象上报的 CWE 与 expected 精确匹配率（结果文件无 CWE 字段时为 N/A）。
    - 报告简洁度（有效告警 / 输出量）、能力完备度（命中 CWE 覆盖数）。
    - 按 CWE 与 level 分组的"能力档位"数据，用于雷达图。
+
 
 ### 5.1 scorecard 关键参数
 
@@ -198,13 +201,39 @@ benchmark/
 | `--expected <csv>` | 事实源 `expectedresults.csv`（必填）。 |
 | `--result <file/dir>` | 单对象结果（SARIF 或 `id→{hit,file,line,...}` JSON）。 |
 | `--results-dir <dir>` | 多对象根目录，遍历 `<dir>/<object>/result.json`（或首个 `*.sarif`），产出**交叉矩阵 `cross_matrix.json`**（object × metric + object × CWE 热力），供 `generate_report.py` 消费。 |
-| `--line-tolerance <k>` | 定位精度容差（行）。`exact_hit_rate` 要求行精确，`near_hit_rate` 放宽到 ±k 行。默认 0。 |
+| `--line-tolerance <k>` | 定位精度容差（行）。**默认 1**（CHECKPOINT 注释行恒在 sink 行上方，工具报 sink 行差 1，容差 1 消除系统性偏移）；设为 0 要求行精确。 |
 | `--timeout-ms <ms>` | 单次样本超时阈值，用于超时统计（默认 120000）。 |
 | `--name <object>` | 被测对象名（单对象模式写 `scorecard.json` 时用）。 |
 | `--out <path>` | 输出 JSON 路径。 |
-| `--check-trace` | 可选。开启路径证据链评测：对 CSV 中带 `trace` 列的样本（即支持 trace 的 expected 样本），将 expected 节点与本对象结果声明的 `trace` 节点比对，额外产出 `trace_recall` / `trace_precision` / `trace_expected_nodes` / `trace_reported_nodes` / `trace_support_count`。仅对支持 trace 的样本统计，不影响主 Recall/Precision/F1/MCC。 |
+| `--check-trace` | 可选。开启路径证据链评测：对 CSV 中带 `trace` 列的样本，将 expected 节点与本对象结果声明的 `trace` 节点比对，额外产出 `trace_recall` / `trace_precision`。仅对支持 trace 的样本统计，不影响主 Recall/Precision/F1/MCC。 |
 
-> scorecard 已升级为行业标准口径（时延/定位/F1/MCC/交叉矩阵），对应 `MY_PLAN.md` Phase G（G1）与 `plans/00-benchmark-gap-completion.md` Phase 6。
+> scorecard 已升级为行业标准口径（时延/定位/FPR/F1/MCC/CWE精确度/交叉矩阵），对应 `MY_PLAN.md` Phase G（G1）与 `plans/00-benchmark-gap-completion.md` Phase 6。
+
+### 5.3 官方盲化模式（防标签泄漏）
+
+> **重要**：当被测对象能读取仓库源码时，目录名（`vuln/`/`sec/`）、类名（`*Safe`/`*Unsafe`）、CHECKPOINT 注解均会直接泄漏正确答案，评测结果不可信。请使用官方盲化工具进行可信评测。
+
+```bash
+# 生成盲化语料（移除标签）+ 私有 manifest（ANCHOR_N → 真实 checkpoint id）
+python3 benchmark/scripts/blind.py \
+  --cases-dir benchmark/cases \
+  --out       benchmark/blinded \
+  --manifest  benchmark/blinded/manifest.json
+```
+
+**盲化内容**：`// [CHECKPOINT ...] → /*ANCHOR_N*/`、移除 `// [VULN]/[SAFE]` 标记、剥除 Javadoc、替换类名中 Safe/Unsafe/Vuln 词素、package 替换为 `blinded`。  
+**manifest.json 私有保存，不对被测对象公开**；被测对象仅收到 `benchmark/blinded/*.java`，按 `/*ANCHOR_N*/` 锚点行报告 anchor id，scorecard 用 manifest 回连到真实 checkpoint id 计分。
+
+**未标注 sink 扫描**（补标辅助）：
+
+```bash
+python3 benchmark/scripts/scan_untagged_sinks.py \
+  --cases-dir benchmark/cases/vuln --quiet
+```
+
+扫描 20 种危险调用模式，列出有 sink 但附近无 `// [CHECKPOINT]` 的候选位置，供人工审核补标。
+
+
 
 ### 5.2 双源校验（门禁自测）
 
@@ -241,16 +270,25 @@ python3 benchmark/scripts/validate_checkpoints.py \
 
 对每个被测对象各产出一份 scorecard，横向比对：
 
-| 维度 | 关注点 |
-|------|--------|
-| Recall | 谁漏报多（FN 高，尤其 L3–L5） |
-| Precision | 谁误报多（FP 高，Safe 混淆样本） |
-| Youden Score | 综合档位（0–100，越高越好） |
-| 时延 / 超时率 | 谁慢、谁超时 |
-| 报告简洁度 | 谁啰嗦、谁精准到 file:line |
-| CWE 覆盖 | 谁能力完备度高 |
+| 维度 | 指标 | 关注点 | 备注 |
+|------|------|--------|------|
+| **检出能力** | Recall | 谁漏报多（FN 高，尤其 L3–L5） | 主要衡量覆盖广度 |
+| **误报控制** | **FPR**（误报率） | 谁对 Safe 样本误报多（FP/(FP+TN)） | **FPR 是首要精确度指标，越低越好** |
+| **精确率** | Precision | FP/(FP+TN+TP) 口径的补充 | 受样本比例影响，与 FPR 互补 |
+| **综合档位** | **Youden Score** | (Recall − FPR) × 100，0–100 | OWASP 口径，平衡检出与误报 |
+| **均衡指标** | **F1 / MCC** | 正负样本不均衡时 MCC > Youden | **MCC = −1/0/+1 区间，更稳健** |
+| **CWE 正确性** | **cwe_accuracy** | TP 中 CWE 分类是否正确 | 测"报对了还是瞎蒙的" |
+| **高难度区分度** | L4/L5 Recall | 谁在跨文件/gadget-chain 上拉开差距 | L1–L3 饱和后 L4/L5 是核心区分维度 |
+| **定位精度** | exact_hit_rate | 谁能精确到 file:line | 工程落地价值 |
+| **时延 / 超时率** | avg_elapsed / timeout | 谁慢、谁超时 | 成本效益评估 |
+| **报告简洁度** | simplicity | 谁啰嗦、谁精准 | 实用性 |
+| **CWE 覆盖广度** | 能力完备度 | 谁覆盖 CWE 种类多 | 综合能力评估 |
+
+> **推荐主排行榜顺序**：Youden Score > F1 > MCC > FPR > Recall；其中 FPR 和 MCC 作为精确度维度的首要指标，优先于 Precision 单独列出。L4/L5 分层 Recall 单独列子表，体现区分度价值。
 
 由此识别"入门级 SAST / 强 SAST / 不同档次 LLM"的差异，定位各对象的能力断点。
+
+
 
 ---
 
