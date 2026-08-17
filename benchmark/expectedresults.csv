@@ -669,3 +669,5 @@ JSEF-NV510,917,L4,vuln,benchmark/cases/vuln/spring-data-spel/SpringDataSpelVuln.
 JSEF-NV510S,917,L4,safe,benchmark/cases/sec/spring-data-spel/SpringDataSpelSafe.java,16,userInput,SpEL in @Query,spring-data-spel,
 JSEF-NV511,307,L3,vuln,benchmark/cases/vuln/graphql-brute/GraphqlAliasVuln.java,22,aliasedQueries,graphql execute (no rate/cost limit),graphql-brute,
 JSEF-NV511S,307,L3,safe,benchmark/cases/sec/graphql-brute/GraphqlAliasSafe.java,18,aliasedQueries,graphql execute (no rate/cost limit),graphql-brute,
+JSEF-NV512,89,L3,vuln,benchmark/cases/vuln/case-bypass/CaseSensitiveBlacklistVuln.java,27,userInput,jdbcTemplate.queryForList (case-sensitive blacklist bypass),sql-injection,"benchmark/cases/vuln/case-bypass/CaseSensitiveBlacklistVuln.java:25,benchmark/cases/vuln/case-bypass/CaseSensitiveBlacklistVuln.java:29"
+JSEF-NV512S,89,L3,safe,benchmark/cases/sec/case-bypass/CaseSensitiveBlacklistSafe.java,17,userInput,jdbcTemplate.queryForList (normalized keyword check),sql-injection,
