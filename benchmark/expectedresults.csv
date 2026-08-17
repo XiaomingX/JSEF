@@ -687,3 +687,15 @@ JSEF-GM-007,502,L4,vuln,benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java,48,
 JSEF-GM-007S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmTemplatesImplSafe.java,68,@type/_bytecodes,defineClass (SupportNonPublicField off),fastjson-gadget-mine,
 JSEF-GM-008,502,L4,vuln,benchmark/cases/vuln/gadgetmine/GmVariantKick.java,44,@type/setDataSourceName|setAutoCommit,InitialContext.lookup (variant of same root),fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmVariantKick.java:47,benchmark/cases/vuln/gadgetmine/GmVariantKick.java:64,benchmark/cases/vuln/gadgetmine/GmVariantKick.java:74"
 JSEF-GM-008S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmVariantKickSafe.java,54,@type/setDataSourceName|setAutoCommit,InitialContext.lookup (autoType off / deny),fastjson-gadget-mine,
+JSEF-JGG-001,502,L5,vuln,benchmark/cases/vuln/gadgetmine/JacksonGetterGadget.java,50,untrusted json field,"getter auto-invocation -> Runtime.exec (Jackson gadget)",jackson-getter-gadget,"benchmark/cases/vuln/gadgetmine/JacksonGetterGadget.java:36,benchmark/cases/vuln/gadgetmine/JacksonGetterGadget.java:48,benchmark/cases/vuln/gadgetmine/JacksonGetterGadget.java:53"
+JSEF-JGG-001S,502,L5,safe,benchmark/cases/sec/gadgetmine/JacksonGetterGadgetSafe.java,36,untrusted json field,getter no side-effect,jackson-getter-gadget,
+JSEF-CTR-001,602,L2,vuln,benchmark/cases/vuln/logic/ClientTrustedRoleVuln.java,27,request param role,grantRole (trusts client-supplied role),client-trusted-role,
+JSEF-CTR-001S,602,L2,safe,benchmark/cases/sec/logic/ClientTrustedRoleSafe.java,21,request param role,server session authority,client-trusted-role,
+JSEF-LDAPH-001,90,L2,vuln,benchmark/cases/vuln/ldap-injection/LdapBlacklistHoleVuln.java,27,user input filter,sanitize only strips ' (ldap injection),ldap-injection-hole,
+JSEF-LDAPH-001S,90,L2,safe,benchmark/cases/sec/ldap-injection/LdapBlacklistHoleSafe.java,21,user input filter,RFC4515 encode,ldap-injection-hole,
+JSEF-DBS-001,78,L2,vuln,benchmark/cases/vuln/taint-variants/DeadBranchSanitizeVuln.java,30,user cmd,sanitize in dead branch (unreachable),dead-branch-sanitize,
+JSEF-DBS-001S,78,L2,safe,benchmark/cases/sec/taint-variants/DeadBranchSanitizeSafe.java,20,user cmd,sanitize on live path,dead-branch-sanitize,
+JSEF-DSC-001,89,L2,vuln,benchmark/cases/vuln/taint-variants/DiscardedSanitizeVuln.java,26,user name,discarded sanitize return value,discarded-sanitize,
+JSEF-DSC-001S,89,L2,safe,benchmark/cases/sec/taint-variants/DiscardedSanitizeSafe.java,20,user name,use sanitized return value,discarded-sanitize,
+JSEF-SSM-001,918,L3,vuln,benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java,31,userUrl,"scheme allowlist missing file:///gopher:///169.254.169.254",ssrf-scheme-metadata,"benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java:32,benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java:34"
+JSEF-SSM-001S,918,L3,safe,benchmark/cases/sec/ssrf-metadata/SsrfSchemeMetadataSafe.java,36,userUrl,scheme + resolved-IP allowlist,ssrf-scheme-metadata,
