@@ -220,11 +220,39 @@ def _find_line_comment_start(line: str) -> int:
     return -1
 
 
+# 答案词 → 中性替换。匹配顺序敏感：较长的词须先匹配，避免被拆坏
+# （Insecure 先于 Secure；Unsafe/Vulnerable 先于更短的子串）。
+# 同时覆盖大小写变体：SAFE 常出现在块注释（如 “SAFE 版：…”），
+# safe/vuln 常作为方法名（如 static void safe(...)），均直接泄漏答案侧。
+ANSWER_WORD_REPLACEMENTS = [
+    ("Unsafe",      "Bx"),
+    ("Vulnerable",  "Bx"),
+    ("Insecure",    "Bx"),
+    ("VULN",        "Bx"),
+    ("Vuln",        "Bx"),
+    ("vuln",        "bx"),
+    ("SAFE",        "BX"),
+    ("Safe",        "By"),
+    ("Secure",      "By"),
+    ("safe",        "by"),
+]
+_ANSWER_WORD_SUB = re.compile(
+    "|".join(re.escape(p) for p, _ in ANSWER_WORD_REPLACEMENTS)
+)
+
+
 def _replace_answer_words_in_identifiers(source: str) -> str:
-    """在 Java 标识符中替换答案词，不替换字符串字面量内容。
-    Unsafe/Vulnerable/Insecure/Vuln → X (标记为漏洞侧中性词)
-    Safe/Secure → Y (标记为安全侧中性词)
-    两侧统一用 B 前缀替换，保留原词长度信息无关紧要。
+    """在 Java 源码中替换答案词，不替换字符串/字符字面量内容。
+
+    Unsafe/Vulnerable/Insecure/Vuln → Bx（漏洞侧中性词）
+    Safe/Secure                    → By（安全侧中性词）
+
+    盲化目标是不让被测对象从类名/标识符猜出答案。Java 标识符常把答案词
+    连写进驼峰类名（InjectionSafe、SsrfWhitelistSafe、SqlInjectionVuln、
+    XxeSafeConfig），因此**不能用 ``\\b`` 词边界**：连写词素前置仍是字母，
+    词边界匹配会漏掉它们，造成标签泄漏。这里对标识符文本做无边界的整词
+    替换（仅跳过字符串/字符字面量），驼峰内的答案词素（无论前后是否字母）
+    都会被盲化。匹配顺序敏感：Insecure 须先于 Secure。
     """
     result = []
     i = 0
@@ -234,9 +262,17 @@ def _replace_answer_words_in_identifiers(source: str) -> str:
 
     while i < n:
         if in_string:
+            # 收集完整字符串字面量内容，退出后再统一盲化（答案词 / 包路径段）
             if source[i] == '\\' and i + 1 < n:
                 result.append(source[i]); result.append(source[i+1]); i += 2; continue
-            if source[i] == '"': in_string = False
+            if source[i] == '"':
+                in_string = False
+                result.append(source[i])
+                # 回溯本段字符串内容并盲化（包在引号之间）
+                # 重新定位串起点：上一个未写出的 '"' 之后
+                # 简化：直接在已写出的 result 上反向替换刚写入的串内容
+                _blind_last_string_literal(result)
+                i += 1; continue
             result.append(source[i]); i += 1; continue
 
         if in_char:
@@ -248,29 +284,52 @@ def _replace_answer_words_in_identifiers(source: str) -> str:
         if source[i] == '"': in_string = True; result.append(source[i]); i += 1; continue
         if source[i] == "'": in_char   = True; result.append(source[i]); i += 1; continue
 
-        # 尝试匹配答案词（要求前后为非字母数字_，即单词边界）
-        matched = False
-        for pattern, replacement in [
-            ("Unsafe",      "Bx"),
-            ("Vulnerable",  "Bx"),
-            ("Insecure",    "Bx"),
-            ("Vuln",        "Bx"),
-            ("Safe",        "By"),
-            ("Secure",      "By"),
-        ]:
-            plen = len(pattern)
-            if source[i:i+plen] == pattern:
-                before_ok = (i == 0 or not (source[i-1].isalnum() or source[i-1] == '_'))
-                after_ok  = (i + plen >= n or not (source[i+plen].isalnum() or source[i+plen] == '_'))
-                if before_ok and after_ok:
-                    result.append(replacement)
-                    i += plen
-                    matched = True
-                    break
-        if not matched:
-            result.append(source[i]); i += 1
+        # 在标识符/其它非字面量文本中，尝试无边界替换答案词素
+        m = _ANSWER_WORD_SUB.match(source, i)
+        if m:
+            result.append(dict(ANSWER_WORD_REPLACEMENTS)[m.group(0)])
+            i = m.end()
+            continue
+
+        result.append(source[i]); i += 1
 
     return "".join(result)
+
+
+def _blind_last_string_literal(result):
+    """result 末尾刚写完一个完整字符串字面量（含首尾引号）。
+
+    把引号之间的内容做答案词 + 包路径段盲化，消除字符串里藏着的
+    全限定类名 / 包路径泄漏（如 ``"com.jsef.benchmark.sec.SafeDto"``、
+    ``"com.example.SafeDto"``），这些直接暗示安全/漏洞侧答案。
+    """
+    # 找到末尾的 " ... " 起点
+    s = "".join(result)
+    end = len(s) - 1
+    if end < 0 or s[end] != '"':
+        return
+    start = s.rfind('"', 0, end)
+    if start < 0:
+        return
+    inner = s[start + 1:end]
+    blinded = _blind_string_inner(inner)
+    new_s = s[:start + 1] + blinded + s[end:]
+    del result[:]
+    result.extend(new_s)
+
+
+def _blind_string_inner(text: str) -> str:
+    """盲化字符串内容中的答案词与包路径段 / URL 段。"""
+    # 包路径段：benchmark 下的 sec / vuln 目录暗示直接泄漏答案（点分隔）
+    text = text.replace("benchmark.sec", "benchmark.bx")
+    text = text.replace("benchmark.vuln", "benchmark.bz")
+    text = re.sub(r"(?<=\.)sec(?=\.)", "bx", text)
+    text = re.sub(r"(?<=\.)vuln(?=\.)", "bz", text)
+    # URL 段：/sec/ 与 /vuln/ 同样泄漏安全/漏洞侧（JSEF 约定路由）
+    text = re.sub(r"(?<=/)sec(?=/)", "bx", text)
+    text = re.sub(r"(?<=/)vuln(?=/)", "bz", text)
+    # 答案词（类名/标识符语义）
+    return _ANSWER_WORD_SUB.sub(lambda m: dict(ANSWER_WORD_REPLACEMENTS)[m.group(0)], text)
 
 
 # ——————————————————————————————————————————————————————————————————

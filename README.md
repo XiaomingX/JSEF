@@ -112,13 +112,14 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 > 数据来源：`benchmark/expectedresults.csv`（事实源，与源码 `// [CHECKPOINT]` 标注双向一致，经 `validate_checkpoints.py` 校验退出码 0）
 
-- **503 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞样本 + **原子范式样本族 TCM/SBM/DBG/STR**）
-- **268 个 VULN**（应报）+ **235 个 SAFE**（不应报，用于算 TN/FP）
-- 难度分布：L0 x 18、L1 x 139、L2 x 106、L3 x 115、L4 x 86、L5 x 39（完整 L0-L5 梯度）
-- CWE 覆盖：**69 类**（仅计 VULN）。高频：表达式注入(917) x 25、反序列化(502) x 21、SQLi(89) x 17、命令注入(78) x 12、授权失效(285) x 10、硬编码凭证/密钥(798) x 7、业务逻辑(840) x 7、SSRF(918) x 6、IDOR(639) x 6、路径穿越(22) x 5、ReDoS(1333) x 5、性能 DoS(400) x 5
-- 覆盖 **121 个 category**（slug），含 OWASP Top 10 2021 全类；**65 条**样本带 `trace=` 路径节点（支持 `--check-trace` 路径正确性评测）
+- **670 条**机器可读 checkpoint 标注（覆盖 `src/main` 现有漏洞 + `benchmark/cases` 梯度样本 + 长程任务 + 代码质量/性能 DoS + LGTM 缺口 + 逻辑漏洞样本 + **原子范式样本族 TCM/SBM/DBG/STR** + **高区分度数据流变形/防护语义陷阱样本族**）
+- **351 个 VULN**（应报）+ **319 个 SAFE**（不应报，用于算 TN/FP）
+- 难度分布：L0 x 18、L1 x 165、L2 x 168、L3 x 166、L4 x 112、L5 x 41（完整 L0-L5 梯度）
+- CWE 覆盖：**82 类**（仅计 VULN）。高频：表达式注入(917) x 39、反序列化(502) x 79、SQLi(89) x 42、命令注入(78) x 27、授权失效(285) x 22、硬编码凭证/密钥(798) x 13、业务逻辑(840) x 19、SSRF(918) x 19、IDOR(639) x 18、路径穿越(22) x 13、ReDoS(1333) x 5、性能 DoS(400) x 8
+- 覆盖 **204 个 category**（slug），含 OWASP Top 10 2021 全类；**79 条**样本带 `trace=` 路径节点（支持 `--check-trace` 路径正确性评测）
 - 专项样本族：长程任务(LT) x 16、代码质量/性能 DoS(PERF) x 15、信任边界(TB)/反射(REFLECT)/格式串(FMT)/hostname(HOST)/XSLT(XSLT)/forward(FWD)/种子(SEED) 各 x 2
 - **原子范式样本族（TCM/SBM/DBG/STR）** x 64：从 Fastjson、Spring Boot、Dubbo、Struts2 的真实 0day/1day 中抽象出**与具体库无关**的底层危险组合，用纯 Java 标准库自包含复现。详见下方「原子范式样本族」章节。
+- **高区分度数据流变形 / 防护语义陷阱样本族（NV / TV）**：针对大模型与弱 SAST 的失分点补充。聚焦"污点经框架/状态/类型系统隐式传播"（getter 序列化、绑定、二次加载、Stream/Optional/异步 lambda、Map 间接、静态字段跨类）与"表面有防护实则可绕"（黑名单单次替换、清洗用错变量、前缀/弱正则校验、防护语序错误、配置默认危险）两类陷阱，每条配 SAFE 对照制造误报压力。含文件上传(434)、JWT RS256→HS256 算法混淆(347)、jku/x5u 不可信 JWKS(347/918)、XMLDecoder(502)、XStream 白名单语序(502)、Hessian2(502)、JEXL/Velocity SSTI(917/1336)、SVG/XXE 错误工厂(611)、路径规范化绕过(22)、双重解码(22)、重定向前缀绕过(601)、整数溢出/金额语义(190/682)、HPP 提权(915)、OAuth 缺 state CSRF(352)、资源 DoS(Zip Bomb/无界队列/400/409/776)、CompletableFuture 异步 SpEL(917)、三元/catch/循环入命令(78)、静态字段跨类污点(89)、SSRF 302 跟随/DNS 重绑定(918)、正则嵌套绕过 XSS(79)、Spring Cloud Function/@Query SpEL(917)、GraphQL 别名爆破(307) 等 **34 个新类别**。详见 `plans/06-new-vuln-gap-supplement.md`。
 
 ### 原子范式样本族（TCM / SBM / DBG / STR）
 
