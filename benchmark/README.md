@@ -224,6 +224,8 @@ python3 benchmark/scripts/blind.py \
 **盲化内容**：`// [CHECKPOINT ...] → /*ANCHOR_N*/`、移除 `// [VULN]/[SAFE]` 标记、剥除 Javadoc、替换类名中 Safe/Unsafe/Vuln 词素、package 替换为 `blinded`。  
 **manifest.json 私有保存，不对被测对象公开**；被测对象仅收到 `benchmark/blinded/*.java`，按 `/*ANCHOR_N*/` 锚点行报告 anchor id，scorecard 用 manifest 回连到真实 checkpoint id 计分。
 
+**盲化完整性（已修复标签泄漏）**：`blind.py` 现对**连写词素**（如 `InjectionSafe`、`SsrfWhitelistSafe`、`SafeDto`）与**全小写/全大写变体**（`safe`/`SAFE`/`vuln`/`VULN`）做无边界替换，并盲化**字符串字面量内的全限定类名 / 包路径段**（`com.jsef.benchmark.sec.SafeDto` → `...bx.ByDto`、`/sec/` → `/bx/`、URL 段 `jku`/包路径 `benchmark.sec` 等）。修复前连写词素因单词边界不匹配而残留，盲化后仍有 245 个类名泄漏 `Safe`/`Vuln` 标签；修复后盲化输出 **0 残留**。验证：`python3 benchmark/scripts/blind.py --cases-dir benchmark/cases --out /tmp/blinded && grep -ril "safe\|vuln" /tmp/blinded/*.java | grep -v blinded | wc -l` 应为 0。
+
 **未标注 sink 扫描**（补标辅助）：
 
 ```bash

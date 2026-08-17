@@ -587,3 +587,85 @@ JSEF-FP-006,79,L4,safe,benchmark/cases/sec/str/RecordValidatedSafe.java,30,recor
 JSEF-FP-006V,79,L4,vuln,benchmark/cases/vuln/str/MutableFieldXss.java,19,rawName,response output,xss,
 JSEF-FP-007,79,L3,safe,benchmark/cases/sec/str/HtmlEscapedSafe.java,21,userInput,response output (htmlEscape),xss,
 JSEF-FP-007V,79,L3,vuln,benchmark/cases/vuln/str/RawHtmlXss.java,18,userInput,response output (raw),xss,
+JSEF-TV-001,89,L4,vuln,benchmark/cases/vuln/taint-variants/StoredTaintSql.java,39,loadFromStore(key) (stored/2nd-order taint),jdbcTemplate.queryForList,taint-variant,"benchmark/cases/vuln/taint-variants/StoredTaintSql.java:37,benchmark/cases/vuln/taint-variants/StoredTaintSql.java:41"
+JSEF-TV-001S,89,L4,safe,benchmark/cases/sec/taint-variants/StoredTaintSqlSafe.java,24,loadFromStore(key) (stored/2nd-order taint),jdbcTemplate.queryForList,taint-variant,
+JSEF-TV-002,79,L4,vuln,benchmark/cases/vuln/taint-variants/BlacklistBypassXss.java,26,input,response.getWriter().print (after blacklist replace),taint-variant,"benchmark/cases/vuln/taint-variants/BlacklistBypassXss.java:25,benchmark/cases/vuln/taint-variants/BlacklistBypassXss.java:28"
+JSEF-TV-002S,79,L4,safe,benchmark/cases/sec/taint-variants/BlacklistBypassXssSafe.java,15,input,response.getWriter().print (after html-escape),taint-variant,
+JSEF-TV-003,78,L4,vuln,benchmark/cases/vuln/taint-variants/StreamPropagation.java,30,userInput,Runtime.getRuntime().exec (via Stream.forEach),taint-variant,"benchmark/cases/vuln/taint-variants/StreamPropagation.java:25,benchmark/cases/vuln/taint-variants/StreamPropagation.java:31"
+JSEF-TV-003S,78,L4,safe,benchmark/cases/sec/taint-variants/StreamPropagationSafe.java,20,userInput,"Runtime.getRuntime().exec (via Stream.forEach, filtered)",taint-variant,
+JSEF-TV-004,89,L4,vuln,benchmark/cases/vuln/taint-variants/WrongVarSanitized.java,25,input,"jdbcTemplate.update (uses raw input, not sanitized)",taint-variant,"benchmark/cases/vuln/taint-variants/WrongVarSanitized.java:25,benchmark/cases/vuln/taint-variants/WrongVarSanitized.java:29"
+JSEF-TV-004S,89,L4,safe,benchmark/cases/sec/taint-variants/WrongVarSanitizedSafe.java,15,input,jdbcTemplate.update (uses sanitized value),taint-variant,
+JSEF-TV-005,918,L4,vuln,benchmark/cases/vuln/taint-variants/PrefixCheckSsrf.java,30,url,URL.openConnection (after startsWith prefix check),taint-variant,"benchmark/cases/vuln/taint-variants/PrefixCheckSsrf.java:30,benchmark/cases/vuln/taint-variants/PrefixCheckSsrf.java:34"
+JSEF-TV-005S,918,L4,safe,benchmark/cases/sec/taint-variants/PrefixCheckSsrfSafe.java,23,url,URL.openConnection (after host allowlist),taint-variant,
+JSEF-TV-008,917,L5,vuln,benchmark/cases/vuln/taint-variants/MapIndirectSpel.java,33,userInput,SpelExpressionParser.parseExpression (via Map.get),taint-variant,"benchmark/cases/vuln/taint-variants/MapIndirectSpel.java:33,benchmark/cases/vuln/taint-variants/MapIndirectSpel.java:34,benchmark/cases/vuln/taint-variants/MapIndirectSpel.java:38"
+JSEF-TV-008S,917,L5,safe,benchmark/cases/sec/taint-variants/MapIndirectSpelSafe.java,21,userInput,"SpelExpressionParser.parseExpression (via Map.get, data only)",taint-variant,
+JSEF-L4-TENANT-001,284,L4,vuln,benchmark/cases/vuln/level4/TenantContextInjection.java,46,HTTP Header X-Tenant-Id,SQL string concat via ThreadLocal,multi-tenant,"benchmark/cases/vuln/level4/TenantContextInjection.java:38,benchmark/cases/vuln/level4/TenantContextInjection.java:43"
+JSEF-L4-TENANT-001S,284,L4,safe,benchmark/cases/sec/level4/TenantContextInjectionSafe.java,34,JWT tenant claim (server-side),TENANT ThreadLocal after whitelist check,multi-tenant,
+JSEF-NV301,190,L3,vuln,benchmark/cases/vuln/int-overflow/QtyOverflowVuln.java,29,qty (Integer.MAX_VALUE),charge(total) (integer overflow),int-overflow,
+JSEF-NV301S,190,L3,safe,benchmark/cases/sec/int-overflow/QtyOverflowSafe.java,24,qty (Integer.MAX_VALUE),charge(total) (integer overflow),int-overflow,
+JSEF-NV302,682,L2,vuln,benchmark/cases/vuln/float-money/FloatMoneyVuln.java,26,balance (double),balance comparison (double ==),float-money,
+JSEF-NV302S,682,L2,safe,benchmark/cases/sec/float-money/FloatMoneySafe.java,26,balance (double),balance comparison (double ==),float-money,
+JSEF-NV303,682,L2,vuln,benchmark/cases/vuln/compareto-amount/CompareToAmountVuln.java,28,amountStr,amount compare (lexicographic compareTo),compareto-amount,
+JSEF-NV303S,682,L2,safe,benchmark/cases/sec/compareto-amount/CompareToAmountSafe.java,24,amountStr,amount compare (lexicographic compareTo),compareto-amount,
+JSEF-NV201,22,L3,vuln,benchmark/cases/vuln/path-canon/PathCanonVuln.java,31,userPath,Files.write (path not canonicalized),path-traversal,
+JSEF-NV201S,22,L3,safe,benchmark/cases/sec/path-canon/PathCanonSafe.java,31,userPath,Files.write (after toRealPath + prefix check),path-traversal,
+JSEF-NV202,22,L2,vuln,benchmark/cases/vuln/replace-once/ReplaceOnceBypassVuln.java,30,userPath,"Files.write (after single replace("".."",""""))",path-traversal,
+JSEF-NV202S,22,L2,safe,benchmark/cases/sec/replace-once/ReplaceOnceBypassSafe.java,35,userPath,Files.write (after whitelist + normalize),path-traversal,
+JSEF-NV203,22,L3,vuln,benchmark/cases/vuln/double-decode/DoubleDecodeTraversalVuln.java,39,userPath,Files.write (after second decode),path-traversal,"benchmark/cases/vuln/double-decode/DoubleDecodeTraversalVuln.java:38,benchmark/cases/vuln/double-decode/DoubleDecodeTraversalVuln.java:44"
+JSEF-NV203S,22,L3,safe,benchmark/cases/sec/double-decode/DoubleDecodeTraversalSafe.java,35,userPath,Files.write (after single decode + normalize),path-traversal,
+JSEF-NV204,601,L2,vuln,benchmark/cases/vuln/redirect-prefix/RedirectStartsWithVuln.java,26,userUrl,sendRedirect (after startsWith prefix check),open-redirect,
+JSEF-NV204S,601,L2,safe,benchmark/cases/sec/redirect-prefix/RedirectStartsWithSafe.java,29,userUrl,sendRedirect (after host whitelist check),open-redirect,
+JSEF-NV101,434,L2,vuln,benchmark/cases/vuln/file-upload/UnrestrictedUploadVuln.java,38,filename (双写 .phphpp / 伪造 Content-Type),Files.write (extension blacklist bypass),file-upload,
+JSEF-NV101S,434,L2,safe,benchmark/cases/sec/file-upload/UnrestrictedUploadSafe.java,35,filename,Files.write (extension+mime whitelist + UUID + isolated dir),file-upload,
+JSEF-NV102,347,L3,vuln,benchmark/cases/vuln/jwt-alg-confusion/JwtAlgConfusionVuln.java,42,token.alg header,"JWT.verify (RS256→HS256, publicKey as HMAC secret)",jwt-alg-confusion,
+JSEF-NV102S,347,L3,safe,benchmark/cases/sec/jwt-alg-confusion/JwtAlgConfusionSafe.java,23,token.alg header,"JWT.verify (fixed RS256 + pinned publicKey, reject alg change)",jwt-alg-confusion,
+JSEF-NV103,347,L4,vuln,benchmark/cases/vuln/jwt-jku/JwtJkuVuln.java,32,jku header URL,JWT verify using fetched JWKS (SSRF+pubkey poison),jwt-jku,"benchmark/cases/vuln/jwt-jku/JwtJkuVuln.java:31,benchmark/cases/vuln/jwt-jku/JwtJkuVuln.java:33"
+JSEF-NV103S,347,L4,safe,benchmark/cases/sec/jwt-jku/JwtJkuSafe.java,20,jku header URL,JWT verify using local whitelist kid pinned publicKey,jwt-jku,
+JSEF-NV104,502,L2,vuln,benchmark/cases/vuln/xmldecoder/XmlDecoderVuln.java,25,userXml,XMLDecoder.readObject,xmldecoder,
+JSEF-NV104S,502,L2,safe,benchmark/cases/sec/xmldecoder/XmlDecoderSafe.java,18,userXml,XMLDecoder.readObject (rejected / not used),xmldecoder,
+JSEF-NV105,502,L3,vuln,benchmark/cases/vuln/xstream-late/XstreamLateAllowlistVuln.java,31,userXml,XStream.fromXML (allowlist AFTER parse),xstream-late,
+JSEF-NV105S,502,L3,safe,benchmark/cases/sec/xstream-late/XstreamLateAllowlistSafe.java,26,userXml,XStream.fromXML (allowlist BEFORE parse),xstream-late,
+JSEF-NV106,502,L2,vuln,benchmark/cases/vuln/hessian/HessianUnsafeVuln.java,27,hessianBytes,Hessian2Input.readObject,hessian,
+JSEF-NV106S,502,L2,safe,benchmark/cases/sec/hessian/HessianUnsafeSafe.java,32,hessianBytes,Hessian2Input.readObject (after trusted-source + type allowlist),hessian,
+JSEF-NV107,917,L2,vuln,benchmark/cases/vuln/jexl/JexlInjectionVuln.java,28,userInput,JEXLExpression.evaluate,jexl,
+JSEF-NV107S,917,L2,safe,benchmark/cases/sec/jexl/JexlInjectionSafe.java,27,userInput,"JEXLExpression.evaluate (fixed expr, input as data only)",jexl,
+JSEF-NV108,1336,L2,vuln,benchmark/cases/vuln/velocity/VelocitySstiVuln.java,30,userInput,VelocityEngine.evaluate,velocity,
+JSEF-NV108S,1336,L2,safe,benchmark/cases/sec/velocity/VelocitySstiSafe.java,29,userInput,"VelocityEngine.evaluate (fixed template, input as data only)",velocity,
+JSEF-NV109,611,L3,vuln,benchmark/cases/vuln/svg-xxe/SvgXxeVuln.java,29,svgBytes,DocumentBuilder.parse (XXE via SVG),svg-xxe,
+JSEF-NV109S,611,L3,safe,benchmark/cases/sec/svg-xxe/SvgXxeSafe.java,27,svgBytes,DocumentBuilder.parse (XXE blocked by disallow-doctype-decl),svg-xxe,
+JSEF-NV110,611,L3,vuln,benchmark/cases/vuln/xxe-wrong-factory/XxeWrongFactoryVuln.java,33,userXml,DocumentBuilder.parse (hardening on wrong factory instance),xxe-wrong-factory,
+JSEF-NV110S,611,L3,safe,benchmark/cases/sec/xxe-wrong-factory/XxeWrongFactorySafe.java,27,userXml,DocumentBuilder.parse (hardening on same factory instance),xxe-wrong-factory,
+JSEF-NV401,915,L4,vuln,benchmark/cases/vuln/hpp-mass-assign/HppRoleBindingVuln.java,31,roles (repeated param roles=USER&roles=ADMIN),setRoles(bound list),hpp-mass-assign,"benchmark/cases/vuln/hpp-mass-assign/HppRoleBindingVuln.java:34,benchmark/cases/vuln/hpp-mass-assign/HppRoleBindingVuln.java:36"
+JSEF-NV401S,915,L4,safe,benchmark/cases/sec/hpp-mass-assign/HppRoleBindingSafe.java,27,roles (single-value),setRoles(bound list),hpp-mass-assign,"benchmark/cases/sec/hpp-mass-assign/HppRoleBindingSafe.java:30,benchmark/cases/sec/hpp-mass-assign/HppRoleBindingSafe.java:31"
+JSEF-NV402,352,L4,vuln,benchmark/cases/vuln/oauth-csrf/OAuthStateVuln.java,23,oauth callback (no state),bindAccount (no state CSRF),oauth-csrf,"benchmark/cases/vuln/oauth-csrf/OAuthStateVuln.java:24,benchmark/cases/vuln/oauth-csrf/OAuthStateVuln.java:28"
+JSEF-NV402S,352,L4,safe,benchmark/cases/sec/oauth-csrf/OAuthStateSafe.java,23,oauth callback (with state),bindAccount,oauth-csrf,"benchmark/cases/sec/oauth-csrf/OAuthStateSafe.java:24,benchmark/cases/sec/oauth-csrf/OAuthStateSafe.java:30"
+JSEF-NV403,400,L1,vuln,benchmark/cases/vuln/upload-size/UploadNoSizeLimitVuln.java,17,uploadStream,Files.copy (no size limit),upload-size,
+JSEF-NV403S,400,L1,safe,benchmark/cases/sec/upload-size/UploadNoSizeLimitSafe.java,19,uploadStream,Files.copy (size-limited),upload-size,
+JSEF-NV404,409,L2,vuln,benchmark/cases/vuln/zip-bomb/ZipBombVuln.java,19,zipBytes,ZipInputStream entries (no ratio/size check),zip-bomb,
+JSEF-NV404S,409,L2,safe,benchmark/cases/sec/zip-bomb/ZipBombSafe.java,21,zipBytes,ZipInputStream entries (size-checked),zip-bomb,
+JSEF-NV405,776,L2,vuln,benchmark/cases/vuln/xml-dos/XmlBombVuln.java,16,xml,XML parse (entity expansion),xml-dos,
+JSEF-NV405S,776,L2,safe,benchmark/cases/sec/xml-dos/XmlBombSafe.java,17,xml,XML parse (doctype disallowed),xml-dos,
+JSEF-NV406,400,L2,vuln,benchmark/cases/vuln/unbounded-queue/UnboundedQueueVuln.java,17,task,queue.put (unbounded queue OOM),unbounded-queue,
+JSEF-NV406S,400,L2,safe,benchmark/cases/sec/unbounded-queue/UnboundedQueueSafe.java,20,task,queue.put (bounded + reject),unbounded-queue,
+JSEF-NV501,917,L3,vuln,benchmark/cases/vuln/async-taint/AsyncTaintVuln.java,26,tainted(lambda捕获),SpEL.parseExpression (in CompletableFuture),async-taint,
+JSEF-NV501S,917,L3,safe,benchmark/cases/sec/async-taint/AsyncTaintSafe.java,14,tainted(lambda捕获),SpEL.parseExpression (in CompletableFuture),async-taint,
+JSEF-NV502,78,L2,vuln,benchmark/cases/vuln/ternary-dispatch/TernaryDispatchVuln.java,22,x,Runtime.exec (ternary concat),ternary-dispatch,
+JSEF-NV502S,78,L2,safe,benchmark/cases/sec/ternary-dispatch/TernaryDispatchSafe.java,12,x,Runtime.exec (ternary concat),ternary-dispatch,
+JSEF-NV503,78,L3,vuln,benchmark/cases/vuln/exception-path-exec/ExceptionExecVuln.java,26,e.getMessage(),Runtime.exec (in catch),exception-path-exec,
+JSEF-NV503S,78,L3,safe,benchmark/cases/sec/exception-path-exec/ExceptionExecSafe.java,15,e.getMessage(),Runtime.exec (in catch),exception-path-exec,
+JSEF-NV504,78,L3,vuln,benchmark/cases/vuln/loop-taint/LoopTaintVuln.java,22,parts[],Runtime.exec (loop-accumulated),loop-taint,"benchmark/cases/vuln/loop-taint/LoopTaintVuln.java:23,benchmark/cases/vuln/loop-taint/LoopTaintVuln.java:26"
+JSEF-NV504S,78,L3,safe,benchmark/cases/sec/loop-taint/LoopTaintSafe.java,24,parts[],Runtime.exec (loop-accumulated),loop-taint,
+JSEF-NV505,89,L3,vuln,benchmark/cases/vuln/static-taint/StaticTaintVuln.java,18,public static String T,jdbcTemplate (cross-class static taint),static-taint,"benchmark/cases/vuln/static-taint/StaticTaintVuln.java:31,benchmark/cases/vuln/static-taint/StaticTaintVuln.java:32"
+JSEF-NV505S,89,L3,safe,benchmark/cases/sec/static-taint/StaticTaintSafe.java,13,public static String T,jdbcTemplate (cross-class static taint),static-taint,
+JSEF-NV506,918,L3,vuln,benchmark/cases/vuln/ssrf-redirect/SsrfRedirectVuln.java,31,userUrl,openConnection (follows 302 to intranet),ssrf-redirect,
+JSEF-NV506S,918,L3,safe,benchmark/cases/sec/ssrf-redirect/SsrfRedirectSafe.java,21,userUrl,openConnection (follows 302 to intranet),ssrf-redirect,
+JSEF-NV507,918,L4,vuln,benchmark/cases/vuln/ssrf-toctou/SsrfRebindVuln.java,32,host,openConnection (DNS rebind TOCTOU),ssrf-toctou,"benchmark/cases/vuln/ssrf-toctou/SsrfRebindVuln.java:27,benchmark/cases/vuln/ssrf-toctou/SsrfRebindVuln.java:33"
+JSEF-NV507S,918,L4,safe,benchmark/cases/sec/ssrf-toctou/SsrfRebindSafe.java,22,host,openConnection (DNS rebind TOCTOU),ssrf-toctou,
+JSEF-NV508,79,L2,vuln,benchmark/cases/vuln/regex-sanitize/RegexSanitizeXssVuln.java,22,input,response output (nested regex bypass),regex-sanitize,
+JSEF-NV508S,79,L2,safe,benchmark/cases/sec/regex-sanitize/RegexSanitizeXssSafe.java,13,input,response output (nested regex bypass),regex-sanitize,
+JSEF-NV509,917,L4,vuln,benchmark/cases/vuln/spring-cloud-func/SpringCloudFuncVuln.java,23,routing-expression header,SpEL.parseExpression,spring-cloud-func,"benchmark/cases/vuln/spring-cloud-func/SpringCloudFuncVuln.java:22,benchmark/cases/vuln/spring-cloud-func/SpringCloudFuncVuln.java:24"
+JSEF-NV509S,917,L4,safe,benchmark/cases/sec/spring-cloud-func/SpringCloudFuncSafe.java,14,routing-expression header,SpEL.parseExpression,spring-cloud-func,
+JSEF-NV510,917,L4,vuln,benchmark/cases/vuln/spring-data-spel/SpringDataSpelVuln.java,18,userInput,SpEL in @Query,spring-data-spel,"benchmark/cases/vuln/spring-data-spel/SpringDataSpelVuln.java:20,benchmark/cases/vuln/spring-data-spel/SpringDataSpelVuln.java:26"
+JSEF-NV510S,917,L4,safe,benchmark/cases/sec/spring-data-spel/SpringDataSpelSafe.java,16,userInput,SpEL in @Query,spring-data-spel,
+JSEF-NV511,307,L3,vuln,benchmark/cases/vuln/graphql-brute/GraphqlAliasVuln.java,22,aliasedQueries,graphql execute (no rate/cost limit),graphql-brute,
+JSEF-NV511S,307,L3,safe,benchmark/cases/sec/graphql-brute/GraphqlAliasSafe.java,18,aliasedQueries,graphql execute (no rate/cost limit),graphql-brute,
