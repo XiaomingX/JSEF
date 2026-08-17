@@ -1,0 +1,130 @@
+[
+  {
+    "id": "JSEF-GM-001",
+    "hit": true,
+    "file": "benchmark/cases/vuln/gadgetmine/GmJndiFullChain.java",
+    "line": 48,
+    "cwe": "CWE-502",
+    "message": "基线判定：VULN 命中"
+  },
+  {
+    "id": "JSEF-GM-001S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmJndiFullChainSafe.java",
+    "line": 36,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-002",
+    "hit": true,
+    "file": "benchmark/cases/vuln/gadgetmine/GmCacheBypass.java",
+    "line": 42,
+    "cwe": "CWE-502",
+    "message": "基线判定：VULN 命中"
+  },
+  {
+    "id": "JSEF-GM-002S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmCacheBypassSafe.java",
+    "line": 31,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-003",
+    "hit": false,
+    "file": "benchmark/cases/vuln/gadgetmine/GmDenyListBlocked.java",
+    "line": 52,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-003S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmDenyListBlockedSafe.java",
+    "line": 28,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-004",
+    "hit": false,
+    "file": "benchmark/cases/vuln/gadgetmine/GmDepMissing.java",
+    "line": 48,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-004S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmDepMissingSafe.java",
+    "line": 26,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-005",
+    "hit": false,
+    "file": "benchmark/cases/vuln/gadgetmine/GmNoDefaultCtor.java",
+    "line": 40,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-005S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmNoDefaultCtorSafe.java",
+    "line": 34,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-006",
+    "hit": false,
+    "file": "benchmark/cases/vuln/gadgetmine/GmExpectClassBlocked.java",
+    "line": 38,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-006S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmExpectClassBlockedSafe.java",
+    "line": 36,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-007",
+    "hit": true,
+    "file": "benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java",
+    "line": 48,
+    "cwe": "CWE-502",
+    "message": "基线判定：VULN 命中"
+  },
+  {
+    "id": "JSEF-GM-007S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmTemplatesImplSafe.java",
+    "line": 68,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  },
+  {
+    "id": "JSEF-GM-008",
+    "hit": true,
+    "file": "benchmark/cases/vuln/gadgetmine/GmVariantKick.java",
+    "line": 44,
+    "cwe": "CWE-502",
+    "message": "基线判定：VULN 命中"
+  },
+  {
+    "id": "JSEF-GM-008S",
+    "hit": false,
+    "file": "benchmark/cases/sec/gadgetmine/GmVariantKickSafe.java",
+    "line": 54,
+    "cwe": "CWE-502",
+    "message": "基线判定：SAFE 未报"
+  }
+]

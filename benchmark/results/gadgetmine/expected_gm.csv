@@ -1,0 +1,17 @@
+id,cwe,level,type,file,line,source,sink,category,trace
+JSEF-GM-001,502,L3,vuln,benchmark/cases/vuln/gadgetmine/GmJndiFullChain.java,48,@type/setDataSourceName,"InitialContext.lookup (JNDI, autotype on, 1.2.83)",fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmJndiFullChain.java:46,benchmark/cases/vuln/gadgetmine/GmJndiFullChain.java:49"
+JSEF-GM-001S,502,L3,safe,benchmark/cases/sec/gadgetmine/GmJndiFullChainSafe.java,36,@type,deny/autotype-off block,fastjson-gadget-mine,
+JSEF-GM-002,502,L4,vuln,benchmark/cases/vuln/gadgetmine/GmCacheBypass.java,42,@type=java.lang.Class + $ref,InitialContext.lookup (1.2.47 cache bypass),fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmCacheBypass.java:64,benchmark/cases/vuln/gadgetmine/GmCacheBypass.java:50"
+JSEF-GM-002S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmCacheBypassSafe.java,31,@type=java.lang.Class + $ref,cache-bypass patched / deny,fastjson-gadget-mine,
+JSEF-GM-003,502,L3,safe,benchmark/cases/vuln/gadgetmine/GmDenyListBlocked.java,52,@type,denyHashCodes block (直连被拦),fastjson-gadget-mine,
+JSEF-GM-003S,502,L3,safe,benchmark/cases/sec/gadgetmine/GmDenyListBlockedSafe.java,28,@type,deny/allowlist block,fastjson-gadget-mine,
+JSEF-GM-004,502,L2,safe,benchmark/cases/vuln/gadgetmine/GmDepMissing.java,48,@type,classpath-missing (依赖缺失 不可达),fastjson-gadget-mine,
+JSEF-GM-004S,502,L2,safe,benchmark/cases/sec/gadgetmine/GmDepMissingSafe.java,26,@type,allowlist (依赖存在仍收敛),fastjson-gadget-mine,
+JSEF-GM-005,502,L2,safe,benchmark/cases/vuln/gadgetmine/GmNoDefaultCtor.java,40,@type,class instantiation (no default ctor),fastjson-gadget-mine,
+JSEF-GM-005S,502,L2,safe,benchmark/cases/sec/gadgetmine/GmNoDefaultCtorSafe.java,34,@type,allowlist check,fastjson-gadget-mine,
+JSEF-GM-006,502,L4,safe,benchmark/cases/vuln/gadgetmine/GmExpectClassBlocked.java,38,@type,expectClass interface block (1.2.68+),fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmExpectClassBlocked.java:39,benchmark/cases/vuln/gadgetmine/GmExpectClassBlocked.java:43"
+JSEF-GM-006S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmExpectClassBlockedSafe.java,36,@type,expectClass interface block (1.2.68+),fastjson-gadget-mine,
+JSEF-GM-007,502,L4,vuln,benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java,48,@type/_bytecodes,getOutputProperties->defineClass (SupportNonPublicField),fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java:49,benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java:59,benchmark/cases/vuln/gadgetmine/GmTemplatesImpl.java:72"
+JSEF-GM-007S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmTemplatesImplSafe.java,68,@type/_bytecodes,defineClass (SupportNonPublicField off),fastjson-gadget-mine,
+JSEF-GM-008,502,L4,vuln,benchmark/cases/vuln/gadgetmine/GmVariantKick.java,44,@type/setDataSourceName|setAutoCommit,InitialContext.lookup (variant of same root),fastjson-gadget-mine,"benchmark/cases/vuln/gadgetmine/GmVariantKick.java:47,benchmark/cases/vuln/gadgetmine/GmVariantKick.java:64,benchmark/cases/vuln/gadgetmine/GmVariantKick.java:74"
+JSEF-GM-008S,502,L4,safe,benchmark/cases/sec/gadgetmine/GmVariantKickSafe.java,54,@type/setDataSourceName|setAutoCommit,InitialContext.lookup (autoType off / deny),fastjson-gadget-mine,
