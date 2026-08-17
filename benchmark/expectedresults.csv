@@ -699,3 +699,13 @@ JSEF-DSC-001,89,L2,vuln,benchmark/cases/vuln/taint-variants/DiscardedSanitizeVul
 JSEF-DSC-001S,89,L2,safe,benchmark/cases/sec/taint-variants/DiscardedSanitizeSafe.java,20,user name,use sanitized return value,discarded-sanitize,
 JSEF-SSM-001,918,L3,vuln,benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java,31,userUrl,"scheme allowlist missing file:///gopher:///169.254.169.254",ssrf-scheme-metadata,"benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java:32,benchmark/cases/vuln/ssrf-metadata/SsrfSchemeMetadataVuln.java:34"
 JSEF-SSM-001S,918,L3,safe,benchmark/cases/sec/ssrf-metadata/SsrfSchemeMetadataSafe.java,36,userUrl,scheme + resolved-IP allowlist,ssrf-scheme-metadata,
+JSEF-PR-001,1333,L4,vuln,benchmark/cases/vuln/patch-regression/PatchRedosVuln.java,29,userProvidedRegex,String.matches,patch-regression-redos,
+JSEF-PR-001S,1333,L4,vuln,benchmark/cases/sec/patch-regression/PatchRedosSec.java,41,userInput,Pattern.matcher in input-length-driven loop,patch-regression-redos,
+JSEF-PR-002,502,L4,vuln,benchmark/cases/vuln/patch-regression/PatchDeserializeVuln.java,31,untrusted json,ObjectMapper.readValue with default typing,patch-regression-gadget,
+JSEF-PR-002S,502,L4,vuln,benchmark/cases/sec/patch-regression/PatchDeserializeSec.java,46,untrusted json,ObjectMapper.readValue with dangerous class in allowlist,patch-regression-gadget,
+JSEF-PR-003,639,L4,vuln,benchmark/cases/vuln/patch-regression/PatchIdorVuln.java,31,path param id,loadResourceById without owner check,patch-regression-idor,
+JSEF-PR-003S,639,L4,vuln,benchmark/cases/sec/patch-regression/PatchIdorSec.java,42,path param id,loadResourceById with role-only check (no owner check),patch-regression-idor,
+JSEF-PR-004,327,L4,vuln,benchmark/cases/vuln/patch-regression/PatchCryptoVuln.java,29,hardcoded key + ECB mode,Cipher.init AES/ECB,patch-regression-crypto,
+JSEF-PR-004S,327,L4,vuln,benchmark/cases/sec/patch-regression/PatchCryptoSec.java,42,missing config,SecretKeySpec with hardcoded fallback key,patch-regression-crypto,
+JSEF-LR-001,917,L5,vuln,benchmark/cases/vuln/longrange/Entry.java,46,@RequestBody requestBody,SpEL-evaluated value stitched into bean definition,longrange-spel,"benchmark/cases/vuln/longrange/Config.java:49,benchmark/cases/vuln/longrange/Config.java:28,benchmark/cases/vuln/longrange/SpelParser.java:37,benchmark/cases/vuln/longrange/SpelParser.java:39"
+JSEF-LR-002,502,L5,vuln,benchmark/cases/vuln/longrange/EntryDeser.java,47,@RequestBody bytes,persisted object triggers dangerous getter,longrange-deserialize,"benchmark/cases/vuln/longrange/Gateway.java:52,benchmark/cases/vuln/longrange/Gateway.java:30,benchmark/cases/vuln/longrange/Deserializer.java:39,benchmark/cases/vuln/longrange/Deserializer.java:42"
