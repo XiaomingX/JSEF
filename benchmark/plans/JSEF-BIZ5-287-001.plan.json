@@ -1,0 +1,11 @@
+{
+  "id": "JSEF-BIZ5-287-001",
+  "title": "Authentication Bypass 多步规划（CWE-287 跨中间件 JWT 信任链）",
+  "steps": [
+    {"goal": "定位入口：AuthFilter.doFilter 的 source 为 Authorization 头的 token", "evidence": "benchmark/cases/vuln/bizlogic5/AuthFilter.java:37"},
+    {"goal": "追踪验证器：JwtVerifier.verify 跳过签名校验，静默返回 principal", "evidence": "benchmark/cases/vuln/bizlogic5/JwtVerifier.java:16"},
+    {"goal": "追踪上下文：RequestContext.setPrincipal 注入未验证身份（信任边界被破坏）", "evidence": "benchmark/cases/vuln/bizlogic5/RequestContext.java:16"},
+    {"goal": "判定缺陷：AdminResource.handle 仅检查 principal 非空即放行，伪造 token 可达 sink", "evidence": "benchmark/cases/vuln/bizlogic5/AdminResource.java:27"},
+    {"goal": "产出可达性证明：伪造/空 token 经中间件注入未验证 principal 绕过认证", "evidence": "benchmark/cases/vuln/bizlogic5/AuthFilter.java:42"}
+  ]
+}

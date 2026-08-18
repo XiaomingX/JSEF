@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-BIZ5-732-001",
+  "title": "Incorrect Permission Assignment 多步规划（CWE-732 危险文件权限赋权）",
+  "steps": [
+    {"goal": "定位入口：FileUploadController.upload 的 source 为请求参数 mode（权限八进制串）", "evidence": "benchmark/cases/vuln/bizlogic5/FileUploadController.java:33"},
+    {"goal": "追踪透传：StorageService.store 将用户 mode 原样下发给权限网关", "evidence": "benchmark/cases/vuln/bizlogic5/StorageService.java:21"},
+    {"goal": "判定缺陷：FilePermissionGateway.apply 按外部可控 mode 设置文件权限，可设为 0777", "evidence": "benchmark/cases/vuln/bizlogic5/FilePermissionGateway.java:16"},
+    {"goal": "产出可达性证明：攻击者上传文件指定 mode=0777 使敏感文件全局可写/执行", "evidence": "benchmark/cases/vuln/bizlogic5/FileUploadController.java:34"}
+  ]
+}

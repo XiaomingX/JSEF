@@ -1,0 +1,11 @@
+{
+  "id": "JSEF-BIZ5-863C-001",
+  "title": "Combined Gadget Chain 多步规划（CWE-863 多租户+权限组合链）",
+  "steps": [
+    {"goal": "定位入口：TenantAdminController.adminOp 的 source 为 X-Tenant-Id + X-Role + targetTenant", "evidence": "benchmark/cases/vuln/bizlogic5/TenantAdminController.java:50"},
+    {"goal": "识别弱点(a)：TenantIsolationService.belongsTo 用 startsWith 前缀比较，租户隔离可绕过", "evidence": "benchmark/cases/vuln/bizlogic5/TenantIsolationService.java:14"},
+    {"goal": "识别弱点(b)：RoleElevationService.elevate 无调用者校验，低权可自提 ADMIN", "evidence": "benchmark/cases/vuln/bizlogic5/RoleElevationService.java:14"},
+    {"goal": "判定组合可达性：两弱点叠加使攻击者跨租户以 ADMIN 触达 CrossTenantAdminService.run", "evidence": "benchmark/cases/vuln/bizlogic5/CrossTenantAdminService.java:14"},
+    {"goal": "产出可达性证明：任意非 ADMIN 租户借前缀绕过+自提角色执行跨租户管理操作", "evidence": "benchmark/cases/vuln/bizlogic5/TenantAdminController.java:53"}
+  ]
+}

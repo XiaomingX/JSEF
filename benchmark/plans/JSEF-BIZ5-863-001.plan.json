@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-BIZ5-863-001",
+  "title": "Incorrect Authorization 多步规划（CWE-863 角色级授权缺失）",
+  "steps": [
+    {"goal": "定位入口：识别 AdminController.purgeCache 的 source 为外部 X-Auth-Token 请求头", "evidence": "benchmark/cases/vuln/bizlogic5/AdminController.java:33"},
+    {"goal": "追踪授权判断：isAuthenticated 仅校验登录态，未校验 ADMIN 角色（授权错误而非缺失）", "evidence": "benchmark/cases/vuln/bizlogic5/InsecureAuthzService.java:21"},
+    {"goal": "判定可达性：已登录非 ADMIN 用户可跨过错误授权抵达 SystemResourceService.purgeCache sink", "evidence": "benchmark/cases/vuln/bizlogic5/SystemResourceService.java:15"},
+    {"goal": "产出可达性证明：token 经 isAuthenticated 直接放行至高危管理操作", "evidence": "benchmark/cases/vuln/bizlogic5/AdminController.java:34"}
+  ]
+}
