@@ -725,3 +725,7 @@ JSEF-MSP-007,502,L5,vuln,benchmark/cases/vuln/msp-reachability/VersionGatedReach
 JSEF-MSP-007S,502,L5,safe,benchmark/cases/sec/msp-reachability/VersionGatedReachability_Safe.java,18,attacker-controlled typeName,type allowlist reject,msp-reachability,
 JSEF-MSP-008,862,L5,vuln,benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java,35,low-privilege callerRole,adminResource accessible,msp-reachability,"benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:36,benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:37"
 JSEF-MSP-008S,862,L5,safe,benchmark/cases/sec/msp-reachability/ConditionalAuthzBypass_Safe.java,15,low-privilege callerRole,role check reject,msp-reachability,
+JSEF-XSS-SAN-001,79,L3,vuln,benchmark/cases/vuln/xss-sanitizer/XssSanitizerBypass.java,33,userInput,HTML response body (sanitizer bypass),xss-sanitizer-bypass,
+JSEF-XSS-SAN-001S,79,L3,safe,benchmark/cases/sec/xss-sanitizer/XssSanitizerBypassSafe.java,25,userInput,HTML response body (encoded),xss-sanitizer-bypass,
+JSEF-SECLOG-001,532,L2,vuln,benchmark/cases/vuln/secret-log/SecretLogged.java,25,apiKey,logger.info (secret written to log),secret-log-leak,
+JSEF-SECLOG-001S,532,L2,safe,benchmark/cases/sec/secret-log/SecretLoggedSafe.java,25,apiKey,logger.info (masked),secret-log-leak,
