@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-001",
+  "title": "MvcBinderStateMachine 多步规划（@InitBinder 状态机）",
+  "steps": [
+    {"goal": "识别绑定开关默认状态：allowFieldBinding 默认 true 才危险", "evidence": "benchmark/cases/vuln/msp-statemachine/MvcBinderStateMachine.java:30"},
+    {"goal": "追踪参数名→对象图路径映射：binder 把任意参数名映射为对象图路径", "evidence": "benchmark/cases/vuln/msp-statemachine/MvcBinderStateMachine.java:47"},
+    {"goal": "判定状态机危险分支：开关开启时映射路径被喂入表达式求值 sink", "evidence": "benchmark/cases/vuln/msp-statemachine/MvcBinderStateMachine.java:63"},
+    {"goal": "产出可达性证明：开关开启且攻击者控制参数名时路径可达 ExpressionParser.parseExpression", "evidence": "benchmark/cases/vuln/msp-statemachine/MvcBinderStateMachine.java:63"}
+  ]
+}

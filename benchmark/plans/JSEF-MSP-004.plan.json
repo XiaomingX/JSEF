@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-004",
+  "title": "ReconChainSsrf 多步规划（Filter source → 无害中转 → 内网 sink）",
+  "steps": [
+    {"goal": "信息收集：在 Filter 定位不可信 source（请求头 X-Target-Url）", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSsrf_Filter.java:33"},
+    {"goal": "调用图构建：追 targetUrl 流经 LogRelay（无害日志）到 TransformRelay（无害改写）", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSsrf_LogRelay.java:19"},
+    {"goal": "污点确认：TransformRelay 把 URL 透传到 ReconChainSsrf_Service", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSsrf_LogRelay.java:19"},
+    {"goal": "确认 sink：Service 对内网地址发起请求（SSRF）", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSsrf_Service.java:14"}
+  ]
+}

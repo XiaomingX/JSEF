@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-005",
+  "title": "DistractorForkCmd 多步规划（排除假 sink 与无害分叉，锁定真 sink）",
+  "steps": [
+    {"goal": "识别真 source（@RequestParam cmd）", "evidence": "benchmark/cases/vuln/msp-distractor/DistractorForkCmd.java:50"},
+    {"goal": "排除假 sink：filteredExec 有白名单拦截，不是可达危险终点", "evidence": "benchmark/cases/vuln/msp-distractor/DistractorForkCmd.java:50"},
+    {"goal": "忽略无害分叉：auditLog 仅日志，污点不传播到 sink", "evidence": "benchmark/cases/vuln/msp-distractor/DistractorForkCmd.java:50"},
+    {"goal": "锁定真 sink：ServiceB.execute 直连 Runtime.exec，产出可达性证明", "evidence": "benchmark/cases/vuln/msp-distractor/DistractorForkCmd.java:61"}
+  ]
+}

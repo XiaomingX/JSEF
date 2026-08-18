@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-007",
+  "title": "VersionGatedReachability 多步规划（版本 + 配置双门控可达性证明）",
+  "steps": [
+    {"goal": "定位 sink 代码：UnsafeTypeDeserializer 的危险反序列化类型白名单缺失", "evidence": "benchmark/cases/vuln/msp-reachability/VersionGatedReachability.java:44"},
+    {"goal": "识别版本门控：依赖版本 >= 2.0 才启用动态类型解析", "evidence": "benchmark/cases/vuln/msp-reachability/VersionGatedReachability.java:43"},
+    {"goal": "识别配置门控：enableUnsafeType=true 才放开危险类型", "evidence": "benchmark/cases/vuln/msp-reachability/VersionGatedReachability.java:43"},
+    {"goal": "产出可达性证明：版本>=2.0 且配置开启时，不可信类型名可达危险反序列化 sink", "evidence": "benchmark/cases/vuln/msp-reachability/VersionGatedReachability.java:44"}
+  ]
+}
