@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-002",
+  "title": "JpaMethodSecurityStateMachine 多步规划（@PreAuthorize 状态机绕过）",
+  "steps": [
+    {"goal": "识别方法安全开关默认状态：methodSecurityEnabled 默认 false 才危险", "evidence": "benchmark/cases/vuln/msp-statemachine/JpaMethodSecurityStateMachine.java:26"},
+    {"goal": "解析 @PreAuthorize 权限表达式语义（如 hasRole('ADMIN')）", "evidence": "benchmark/cases/vuln/msp-statemachine/JpaMethodSecurityStateMachine.java:31"},
+    {"goal": "判定状态机危险分支：开关关闭时表达式求值被跳过，注解形同虚设", "evidence": "benchmark/cases/vuln/msp-statemachine/JpaMethodSecurityStateMachine.java:50"},
+    {"goal": "产出可达性证明：开关关闭且低权限调用方可达敏感业务方法（越权）", "evidence": "benchmark/cases/vuln/msp-statemachine/JpaMethodSecurityStateMachine.java:50"}
+  ]
+}

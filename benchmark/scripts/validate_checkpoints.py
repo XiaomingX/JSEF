@@ -31,6 +31,7 @@
 
 import argparse
 import csv
+import json
 import os
 import re
 import subprocess
@@ -195,6 +196,11 @@ def main(argv=None):
     parser.add_argument("--src-dir",
                         default="src/main/java/com/freedom/securitysamples/vulnerability",
                         help="漏洞源码目录（默认 src/main/java/.../vulnerability）")
+    parser.add_argument("--plans-dir",
+                        default=None,
+                        help="多步规划 manifest 目录（默认 None：不检查）。"
+                             "若提供，额外校验 manifest 的 id 与 CSV/源码 id 关联一致性，"
+                             "仅告警不阻断（不置 rc=1），保持双源门禁退出码 0 不变。")
     args = parser.parse_args(argv)
 
     rc = 0
@@ -323,6 +329,62 @@ def main(argv=None):
         print("[trace 节点] %d 个无效" % trace_invalid)
     else:
         print("\n[trace 节点] 共 0 个样本带 trace")
+
+    # 6) plans manifest id 关联检查（可选 --plans-dir，仅告警不阻断）
+    if args.plans_dir:
+        plan_orphan_manifest = []  # manifest 有但 CSV/源码无 id
+        plan_orphan_id = []        # CSV/源码有（msp- 类）但无 manifest
+        plan_bad_schema = []
+        if os.path.isdir(args.plans_dir):
+            all_ids = csv_ids | src_ids
+            for fn in sorted(os.listdir(args.plans_dir)):
+                if not fn.endswith(".plan.json"):
+                    continue
+                fp = os.path.join(args.plans_dir, fn)
+                try:
+                    with open(fp, encoding="utf-8") as fh:
+                        data = json.load(fh)
+                except (ValueError, OSError) as exc:
+                    plan_bad_schema.append((fn, str(exc)))
+                    continue
+                pid = (data.get("id") or "").strip()
+                if not pid:
+                    plan_bad_schema.append((fn, "缺少 id 字段"))
+                    continue
+                if pid not in all_ids:
+                    plan_orphan_manifest.append(pid)
+                steps = data.get("steps") or []
+                if not isinstance(steps, list) or not steps:
+                    plan_bad_schema.append((pid, "steps 为空或非数组"))
+
+            # 源码/CSV 中 JSEF-MSP- 类样本应有 manifest
+            # （safe 样本 id 形如 JSEF-MSP-XXXS，复用对应 vuln 的 manifest）
+            for sid in sorted(all_ids):
+                if not sid.startswith("JSEF-MSP-"):
+                    continue
+                base = sid[:-1] if sid.endswith("S") else sid
+                if not os.path.isfile(
+                        os.path.join(args.plans_dir, "%s.plan.json" % base)):
+                    plan_orphan_id.append(sid)
+
+        if plan_orphan_manifest:
+            print("\n[plans 孤儿 manifest] manifest 的 id 不在 CSV/源码中（仅告警，不阻断）：")
+            for pid in plan_orphan_manifest:
+                print("  - %s" % pid)
+        else:
+            print("\n[plans 孤儿 manifest] 无（通过）")
+        if plan_orphan_id:
+            print("\n[plans 缺失 manifest] JSEF-MSP- 样本无对应 plan.json（仅告警，不阻断）：")
+            for sid in plan_orphan_id:
+                print("  - %s" % sid)
+        else:
+            print("\n[plans 缺失 manifest] 无（通过）")
+        if plan_bad_schema:
+            print("\n[plans schema 异常]（仅告警，不阻断）：")
+            for item in plan_bad_schema:
+                print("  - %s: %s" % item)
+        else:
+            print("\n[plans schema 异常] 无（通过）")
 
     print("\n" + "=" * 64)
     if rc == 0:

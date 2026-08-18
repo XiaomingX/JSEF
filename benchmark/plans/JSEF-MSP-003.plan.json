@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-003",
+  "title": "ReconChainSql 多步规划（跨文件侦察 → 派生查询注入）",
+  "steps": [
+    {"goal": "信息收集：在 Controller 定位不可信 source（@RequestParam sortField）", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSql_Source.java:36"},
+    {"goal": "调用图构建：追 sortField 流向 ReconChainSql_Repo 的方法调用", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSql_Repo.java:22"},
+    {"goal": "污点确认：Repo 把 sortField 拼入派生查询方法名形成隐式 SQL 注入", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSql_Repo.java:22"},
+    {"goal": "确认 sink：生成的查询经 ReconChainSql_Sink.runQuery 执行", "evidence": "benchmark/cases/vuln/msp-recon/ReconChainSql_Sink.java:14"}
+  ]
+}

@@ -241,6 +241,9 @@ def _parse_simple_json(data):
             trace = item.get("trace") or []
             if isinstance(trace, str):
                 trace = [t.strip() for t in trace.split(",") if t.strip()]
+            plan = item.get("plan") or []
+            if isinstance(plan, str):
+                plan = [p.strip() for p in plan.split(",") if p.strip()]
             findings[sid] = {
                 "hit": hit,
                 "file": item.get("file", ""),
@@ -249,6 +252,7 @@ def _parse_simple_json(data):
                 "message": item.get("message", ""),
                 "elapsed_ms": int(elapsed) if elapsed is not None else None,
                 "trace": list(trace),
+                "plan": list(plan),
             }
             if elapsed is not None:
                 elapsed_list.append(int(elapsed))
@@ -273,6 +277,9 @@ def _parse_simple_json(data):
                 trace = val.get("trace") or []
                 if isinstance(trace, str):
                     trace = [t.strip() for t in trace.split(",") if t.strip()]
+                plan = val.get("plan") or []
+                if isinstance(plan, str):
+                    plan = [p.strip() for p in plan.split(",") if p.strip()]
             findings[sid] = {
                 "hit": hit,
                 "file": file_,
@@ -281,6 +288,7 @@ def _parse_simple_json(data):
                 "message": message,
                 "elapsed_ms": int(elapsed) if elapsed is not None else None,
                 "trace": list(trace),
+                "plan": list(plan),
             }
             if elapsed is not None:
                 elapsed_list.append(int(elapsed))
@@ -337,11 +345,13 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         near_hit = False
         result_trace = []
         result_cwe = None
+        result_plan = []
         cwe_correct = None
         if rep is not None:
             elapsed = rep.get("elapsed_ms")
             result_line = rep.get("line")
             result_trace = list(rep.get("trace") or [])
+            result_plan = list(rep.get("plan") or [])
             result_cwe = str(rep.get("cwe") or "").strip().lstrip("CWE-").lstrip("cwe-") or None
             if reported and s["type"] == "vuln" and isinstance(result_line, int) and result_line >= 0:
                 diff = abs(result_line - s["line"])
@@ -371,6 +381,7 @@ def align(samples, findings, use_sarif, line_tolerance=0):
         entry["near_hit"] = near_hit
         entry["result_trace"] = result_trace
         entry["result_cwe"] = result_cwe
+        entry["result_plan"] = result_plan
         entry["cwe_correct"] = cwe_correct
         aligned.append(entry)
     return aligned
@@ -588,6 +599,105 @@ def compute_trace_metrics(aligned, line_tolerance=0):
     }
 
 
+def compute_plan_metrics(aligned, plans_map):
+    """计算多步规划（plan / sub-goal chain）指标，仅对支持 plan 的 expected 样本统计。
+
+    对标 Cybench 的显式 subtask 检查点：将期望步骤（plans manifest 的 ``steps[].goal``）
+    与被测结果声明的 ``result_plan``（步骤序列）比对，产出覆盖率与顺序正确性。
+
+    Args:
+        aligned: align() 的输出（含 ``id`` 与 ``result_plan`` 实测步骤序列）。
+        plans_map: {id: [step_goal, ...]} 期望步骤映射，由 plans manifest 目录加载。
+
+    Returns:
+        dict: {plan_coverage, plan_order, plan_support_count,
+               plan_expected_steps, plan_reported_steps, plan_hit_steps}
+            - plan_coverage = 命中期望步骤数 / 期望步骤数（集合覆盖，方向无关）。
+            - plan_order = 顺序正确性 ∈ [0,1]：基于最长公共子序列（LCSubSeq）占
+              期望步骤长度的比例；乱序/缺步会显著降分。
+    """
+    def _norm(s):
+        return (s or "").strip().lower()
+
+    def _lcs_len(a, b):
+        """最长公共子序列长度（步骤按归一化字符串匹配，顺序敏感）。"""
+        n, m = len(a), len(b)
+        if n == 0 or m == 0:
+            return 0
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+        for i in range(1, n + 1):
+            ai = _norm(a[i - 1])
+            for j in range(1, m + 1):
+                if ai == _norm(b[j - 1]):
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+        return dp[n][m]
+
+    total_expected = 0
+    total_reported = 0
+    total_hit = 0
+    total_order = 0.0
+    support = 0
+    for a in aligned:
+        sid = a.get("id")
+        exp_steps = plans_map.get(sid)
+        if not exp_steps:
+            continue  # 仅对支持 plan 的 expected 样本统计
+        support += 1
+        res_plan = a.get("result_plan") or []
+        total_expected += len(exp_steps)
+        total_reported += len(res_plan)
+        # 覆盖率：expected 步骤中有多少出现在被测步骤集合里
+        res_set = {_norm(x) for x in res_plan}
+        for es in exp_steps:
+            if _norm(es) in res_set:
+                total_hit += 1
+        # 顺序正确性：LCSubSeq / 期望长度
+        if exp_steps:
+            total_order += _lcs_len(exp_steps, res_plan) / len(exp_steps)
+
+    def safe_div(num, den):
+        return (num / den) if den else 0.0
+
+    return {
+        "plan_coverage": safe_div(total_hit, total_expected),
+        "plan_order": safe_div(total_order, support),
+        "plan_support_count": support,
+        "plan_expected_steps": total_expected,
+        "plan_reported_steps": total_reported,
+        "plan_hit_steps": total_hit,
+    }
+
+
+def load_plans_map(plans_dir):
+    """从 plans manifest 目录加载 {id: [step_goal,...]} 映射。
+
+    Args:
+        plans_dir: manifest 目录（含若干 ``<id>.plan.json``）。
+
+    Returns:
+        dict: {id: [step_goal, ...]}；目录不存在时返回空 dict。
+    """
+    plans_map = {}
+    if not plans_dir or not os.path.isdir(plans_dir):
+        return plans_map
+    for fn in sorted(os.listdir(plans_dir)):
+        if not fn.endswith(".plan.json"):
+            continue
+        fp = os.path.join(plans_dir, fn)
+        try:
+            with open(fp, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (ValueError, OSError):
+            continue
+        pid = (data.get("id") or "").strip()
+        steps = data.get("steps") or []
+        if pid and isinstance(steps, list):
+            plans_map[pid] = [s.get("goal", "") for s in steps if isinstance(s, dict)]
+    return plans_map
+
+
 # --------------------------------------------------------------------------- #
 # 时延 / 超时 / 简洁度
 # --------------------------------------------------------------------------- #
@@ -676,7 +786,8 @@ def render_markdown(name, metrics, timing, simplicity, completeness):
 # --------------------------------------------------------------------------- #
 # 单对象评分（供 --result 与 --results-dir 复用）
 # --------------------------------------------------------------------------- #
-def score_object(samples, result_path, timeout_ms, line_tolerance=0, check_trace=False):
+def score_object(samples, result_path, timeout_ms, line_tolerance=0,
+                 check_trace=False, plans_map=None):
     """对一个被测对象结果文件算分，返回 (report_dict, aligned)。
 
     Args:
@@ -685,12 +796,14 @@ def score_object(samples, result_path, timeout_ms, line_tolerance=0, check_trace
         timeout_ms: 超时阈值（ms）。
         line_tolerance: 命中行号容差（int）。
         check_trace: 是否计算路径证据链指标（--check-trace）。
+        plans_map: {id: [step_goal,...]} 多步规划期望步骤（--check-plan），None 则不评测。
 
     Returns:
         tuple: (report, aligned)
             - report: 含 name / metrics / timing / simplicity / completeness /
               by_cwe / by_level 的 dict；若 check_trace 则 metrics 含
-              trace_recall / trace_precision，否则为 null。
+              trace_recall / trace_precision，若 plans_map 非 None 则含
+              plan_coverage / plan_order，否则为 null。
             - aligned: align() 输出。
     """
     use_sarif = result_path.lower().endswith(".sarif")
@@ -710,6 +823,18 @@ def score_object(samples, result_path, timeout_ms, line_tolerance=0, check_trace
     else:
         metrics["trace_recall"] = None
         metrics["trace_precision"] = None
+
+    if plans_map is not None:
+        pm = compute_plan_metrics(aligned, plans_map)
+        metrics["plan_coverage"] = pm["plan_coverage"]
+        metrics["plan_order"] = pm["plan_order"]
+        metrics["plan_support_count"] = pm["plan_support_count"]
+        metrics["plan_expected_steps"] = pm["plan_expected_steps"]
+        metrics["plan_reported_steps"] = pm["plan_reported_steps"]
+        metrics["plan_hit_steps"] = pm["plan_hit_steps"]
+    else:
+        metrics["plan_coverage"] = None
+        metrics["plan_order"] = None
 
     tp = metrics["TP"]
     fp = metrics["FP"]
@@ -826,6 +951,10 @@ def main(argv=None):
     parser.add_argument("--check-trace", action="store_true",
                         help="开启路径证据链评测：对支持 trace 的 expected 样本（CSV trace 列非空）"
                              "与被测结果 trace 计算 trace_recall/trace_precision；否则为 null。向后兼容。")
+    parser.add_argument("--check-plan", default=None, metavar="DIR",
+                        help="开启多步规划评测：传入 plans manifest 目录（如 benchmark/plans）。"
+                             "对支持 plan 的 expected 样本（manifest 存在），比对被测结果声明的 plan "
+                             "步骤序列与期望步骤，计算 plan_coverage / plan_order。向后兼容。")
     parser.add_argument("--out", default=None,
                         help="写出结构化 JSON 路径；多对象模式下若为目录则在其中写 cross_matrix.json")
     parser.add_argument("--verbose", action="store_true",
@@ -861,12 +990,16 @@ def main(argv=None):
             print("[警告] 无法写出 --out: %s" % exc, file=sys.stderr)
         return 0
 
+    # 2.5) 加载多步规划 manifest（--check-plan）
+    plans_map = load_plans_map(args.check_plan) if args.check_plan else None
+
     # 3) 单对象模式
     result_path = args.result
     try:
         report, aligned = score_object(
             samples, result_path, args.timeout_ms,
-            line_tolerance=args.line_tolerance, check_trace=args.check_trace)
+            line_tolerance=args.line_tolerance, check_trace=args.check_trace,
+            plans_map=plans_map)
     except (FileNotFoundError, ValueError) as exc:
         print("[错误] %s" % exc, file=sys.stderr)
         return 2
@@ -891,6 +1024,17 @@ def main(argv=None):
                  metrics.get("trace_hit_nodes", 0)))
         print("  trace_recall=%.3f  trace_precision=%.3f" % (tr if tr is not None else 0.0,
                                                               tp_ if tp_ is not None else 0.0))
+
+    if args.check_plan:
+        pc = metrics.get("plan_coverage")
+        po = metrics.get("plan_order")
+        print("\n[多步规划 plan] 支持样本=%d，expected 步骤=%d，被测步骤=%d，命中=%d"
+              % (metrics.get("plan_support_count", 0),
+                 metrics.get("plan_expected_steps", 0),
+                 metrics.get("plan_reported_steps", 0),
+                 metrics.get("plan_hit_steps", 0)))
+        print("  plan_coverage=%.3f  plan_order=%.3f" % (pc if pc is not None else 0.0,
+                                                          po if po is not None else 0.0))
 
     if args.verbose:
         by_cwe = report["by_cwe"]

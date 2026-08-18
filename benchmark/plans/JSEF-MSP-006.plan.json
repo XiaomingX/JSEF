@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-006",
+  "title": "DecoyParamXss 多步规划（识别真污点参数，排除已净化诱饵）",
+  "steps": [
+    {"goal": "枚举入参：nickname / bio / avatar 三个请求参数", "evidence": "benchmark/cases/vuln/msp-distractor/DecoyParamXss.java:39"},
+    {"goal": "排除诱饵：bio 经 escapeHtml 净化、avatar 经协议白名单，均不到达 sink", "evidence": "benchmark/cases/vuln/msp-distractor/DecoyParamXss.java:39"},
+    {"goal": "识别真污点：nickname 未净化，直连模板渲染", "evidence": "benchmark/cases/vuln/msp-distractor/DecoyParamXss.java:39"},
+    {"goal": "锁定 sink：render(nickname) 输出到 HTML 响应（XSS）", "evidence": "benchmark/cases/vuln/msp-distractor/DecoyParamXss.java:43"}
+  ]
+}

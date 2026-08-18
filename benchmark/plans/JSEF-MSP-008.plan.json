@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-MSP-008",
+  "title": "ConditionalAuthzBypass 多步规划（维护模式 + 时序窗口双条件可达性证明）",
+  "steps": [
+    {"goal": "定位受保护资源：adminResource 应仅 ADMIN 可访问", "evidence": "benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:37"},
+    {"goal": "识别维护模式门控：maintenanceMode=true 时进入宽松分支", "evidence": "benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:36"},
+    {"goal": "识别时序窗口：skipAuthWindow=true 时跳过角色校验", "evidence": "benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:36"},
+    {"goal": "产出可达性证明：维护模式开启且时序窗口内，低权限调用方可达 adminResource", "evidence": "benchmark/cases/vuln/msp-reachability/ConditionalAuthzBypass.java:37"}
+  ]
+}
