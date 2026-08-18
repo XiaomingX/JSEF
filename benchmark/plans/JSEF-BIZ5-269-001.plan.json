@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-BIZ5-269-001",
+  "title": "Privilege Escalation 多步规划（CWE-269 角色篡改提权）",
+  "steps": [
+    {"goal": "定位入口：UserRoleController.changeRole 的 source 为请求体 targetUserId + newRole", "evidence": "benchmark/cases/vuln/bizlogic5/UserRoleController.java:33"},
+    {"goal": "追踪角色服务：RoleService.updateRole 无调用者权限校验，直接透传角色变更", "evidence": "benchmark/cases/vuln/bizlogic5/RoleService.java:21"},
+    {"goal": "判定缺陷：UserStore.persistRole 将外部角色持久化，无权限闸门", "evidence": "benchmark/cases/vuln/bizlogic5/UserStore.java:15"},
+    {"goal": "产出可达性证明：任意用户可把自身或他人提权至 ADMIN", "evidence": "benchmark/cases/vuln/bizlogic5/UserRoleController.java:34"}
+  ]
+}

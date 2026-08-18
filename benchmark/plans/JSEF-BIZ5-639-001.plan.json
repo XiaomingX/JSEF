@@ -1,0 +1,10 @@
+{
+  "id": "JSEF-BIZ5-639-001",
+  "title": "Broken Access Control 多步规划（CWE-639 多租户越权 IDOR）",
+  "steps": [
+    {"goal": "定位入口：TenantInvoiceController.getInvoice 的 source 为 X-Tenant-Id 头与 invoiceId 请求参数", "evidence": "benchmark/cases/vuln/bizlogic5/TenantInvoiceController.java:33"},
+    {"goal": "追踪租户上下文：TenantContext.setTenant 注入当前租户（隔离边界起点）", "evidence": "benchmark/cases/vuln/bizlogic5/TenantContext.java:17"},
+    {"goal": "判定缺陷：TenantDataService.loadInvoice 直接用请求 invoiceId 查库，未与 tenantId 做归属绑定", "evidence": "benchmark/cases/vuln/bizlogic5/TenantDataService.java:16"},
+    {"goal": "产出可达性证明：攻击者构造他人 invoiceId 可越权读取跨租户数据", "evidence": "benchmark/cases/vuln/bizlogic5/TenantInvoiceController.java:34"}
+  ]
+}
