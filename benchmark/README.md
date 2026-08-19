@@ -37,7 +37,7 @@ benchmark/
     └── claude-<model>/
 ```
 
-> 注：`expectedresults.csv` 已落地并持续维护，**当前共 426 个 checkpoint（含表头 427 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
+> 注：`expectedresults.csv` 已落地并持续维护，**当前共 782 个 checkpoint（含表头 783 行）**，覆盖 L0–L5 全梯度与 OWASP Top 10 2021 十类；`results/` 由各被测对象首次运行后填充。
 
 ---
 
@@ -131,6 +131,23 @@ benchmark/
 - 抽象原则：剥离"JSON 库 autotype""Web 框架 SpEL"等具体机制，只保留跨框架不变危险组合——攻击者控制类型/数据 + 系统自动调用隐式方法 + 隐式方法链抵达危险 sink。
 - 高区分度：含 L4 跨文件、L5 gadget chain、跨方法链等难例；全部带 `// [CHECKPOINT]`，vuln+sec 配对算 FP/TN。
 - 设计文档：`plans/02-type-confusion-mechanism-samples.md` / `03-spring-boot-atomic-mechanism-samples.md` / `04-dubbo-atomic-mechanism-samples.md` / `05-struts2-atomic-mechanism-samples.md`。
+
+#### 场景化编排样本族（检测压力 / 级联信任 / 多漏洞链 / 活分支截断）
+
+对标 **CyScenarioBench**（编排 orchestration / 分支决策 / 状态恢复）、**FrontierCyber**（检测压力 detection pressure / 多漏洞链 / 环境-目标-配置）、**Kimi K3 评测**（长程状态保持 / 失败恢复）三篇前沿 benchmark 论文，补充本仓库此前**完全空白**的"约束/分支/编排"维度。核心区别于此前 764 条单数据流样本：它们全是"source→sink 可达性"，本族额外引入**检测约束、级联信任、跨服务边界、活分支截断**语义（id 前缀 `JSEF-DE-` / `JSEF-OS-` / `JSEF-DEAD-`，共 18 条）。
+
+| 样本族 | id 前缀 | 对标来源 | 语义维度 | 样本数 |
+|--------|---------|---------|----------|--------|
+| 检测压力 | `JSEF-DE-` | FrontierCyber | 危险 sink 可达但会被日志/审计/限流记录 → 需判断"能否不被检测利用" | 6 |
+| 跨服务污点 | `JSEF-OS-001*` | plans/07 D5 | 污点经 RestTemplate 调下游服务、回传再进 sink（补落地 D5） | 2 |
+| 级联信任 | `JSEF-OS-002/003` | CyScenarioBench multi-entity | 系统 A 配置/回传决定系统 B 权限/数据流 | 2 |
+| 多漏洞组合链 | `JSEF-OS-004*` | FrontierCyber multi-vuln chain | 信息泄露→凭据→越权，多漏洞类型串成完整链 | 3 |
+| 活分支截断 | `JSEF-DEAD-` | CyScenarioBench branching-dead-ends | 活分支某路径把污点消毒截断→该分支不可达 sink；测"过早下结论" | 5 |
+
+- **category**：`detection-pressure` / `cross-svc-taint` / `cascade-trust` / `multi-vuln-chain` / `branch-dead-end`（5 个新 slug）。
+- **区分度**：检测压力（A 族）与活分支截断（C 族）考 LLM 的**运营/分支语义理解**，纯语法 SAST 普遍只能报"可达"而识别不了"会被检测""某分支已消毒"；级联/多漏洞链（B 族）考**跨系统/跨漏洞编排**。
+- 每 vuln 配 safe 配对算 FP/TN；L4–L5 带 `trace=` 跨文件/跨服务节点。
+- 设计文档：`plans/09-scenario-benchmark-orchestration-samples.md`。
 
 > 历史说明：早期 `MY_PLAN.md` A3 与本文档旧版曾标注"当前 `expectedresults.csv` 中无样本标记为 L0"，该表述已于 Phase 1（L0 基线补全）落地后**更正**——详见 `MY_PLAN.md` Phase G 与 `plans/00-benchmark-gap-completion.md`。
 
@@ -407,4 +424,4 @@ python3 benchmark/scripts/validate_checkpoints.py \
 - VulnGym 独有且 JSEF 原缺失、现经补齐已对齐的子类：`agent-capability-bypass` / `origin-integrity` / `multi-tenant` / `trust-boundary` / `insecure-default` / `priv-esc` / `missing-authorization` / `sandbox-escape`（共 8 类，对应 G1–G8 / G5）。
 - 路径评测维度：JSEF 通过可选 `trace=` 字段（§3）与 scorecard `--check-trace`（§5.1）对标 VulnGym 的 `entry_point → critical_operation → trace` 多节点理念，同时保留 JSEF 在 precision/F1/MCC 上的相对优势。
 
-> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 503 checkpoint，含表头 504 行；其中 LT 系列长程任务样本 16 条、代码质量/性能 DoS + LGTM 缺口样本 28 条、逻辑漏洞样本 12 条、原子范式样本族 TCM/SBM/DBG/STR 共 64 条，详见 §3）。
+> 本节依据 `plans/01-vulngym-gap-completion.md` Phase V4（G10）与 `MY_PLAN.md` Phase H 编写。`category` 列表实查自 `benchmark/expectedresults.csv`（共 782 checkpoint，含表头 783 行；其中 LT 系列长程任务样本 16 条、代码质量/性能 DoS + LGTM 缺口样本 28 条、逻辑漏洞样本 12 条、原子范式样本族 TCM/SBM/DBG/STR 共 64 条、场景化编排样本族（检测压力/级联/多漏洞链/活分支截断，`JSEF-DE-`/`JSEF-OS-`/`JSEF-DEAD-`）共 18 条，详见 §3）。

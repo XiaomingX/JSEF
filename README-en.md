@@ -111,13 +111,14 @@ Beyond the base grading, two "long-horizon / complex task" sample families speci
 
 > Data source: `benchmark/expectedresults.csv` (source of truth, kept in two-way sync with `// [CHECKPOINT]` annotations in source; `validate_checkpoints.py` exits 0)
 
-- **503** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples + long-horizon tasks + code-quality/perf-DoS + LGTM-gap + logic-flaw samples + **atomic-paradigm families TCM/SBM/DBG/STR**)
-- **268 VULN** (should be reported) + **235 SAFE** (should not be reported, used to compute TN/FP)
-- Difficulty distribution: L0 x 18, L1 x 139, L2 x 106, L3 x 115, L4 x 86, L5 x 39 (full L0-L5 gradient)
-- CWE coverage: **69 categories** (VULN only). Top: Expression Injection (917) x 25, Deserialization (502) x 21, SQLi (89) x 17, Command Injection (78) x 12, Authorization Bypass (285) x 10, Hardcoded Credentials/Key (798) x 7, Business Logic (840) x 7, SSRF (918) x 6, IDOR (639) x 6, Path Traversal (22) x 5, ReDoS (1333) x 5, Performance DoS (400) x 5
-- Covers **121 categories** (slug), including all OWASP Top 10 2021 classes; **65** samples carry `trace=` path nodes (enables `--check-trace` path-correctness scoring)
+- **782** machine-readable checkpoint annotations (covering existing `src/main` vulnerabilities + `benchmark/cases` gradient samples + long-horizon tasks + code-quality/perf-DoS + LGTM-gap + logic-flaw samples + **atomic-paradigm families TCM/SBM/DBG/STR** + **scenario-orchestration families (detection-pressure / cascade / multi-vuln chain / branch-dead-end)**)
+- **414 VULN** (should be reported) + **368 SAFE** (should not be reported, used to compute TN/FP)
+- Difficulty distribution: L0 x 18, L1 x 165, L2 x 184, L3 x 181, L4 x 141, L5 x 93 (full L0-L5 gradient)
+- CWE coverage: **86 categories** (VULN only). Top: Expression Injection (917), Deserialization (502), SQLi (89), Command Injection (78), Authorization Bypass (285), Hardcoded Credentials/Key (798), Business Logic (840), SSRF (918), IDOR (639), Path Traversal (22), ReDoS (1333), Performance DoS (400)
+- Covers **189 categories** (slug), including all OWASP Top 10 2021 classes; **139** samples carry `trace=` path nodes (enables `--check-trace` path-correctness scoring)
 - Special families: Long-horizon (LT) x 16, Code-quality/Perf-DoS (PERF) x 15, Trust-boundary (TB)/Reflection (REFLECT)/Format-string (FMT)/Hostname (HOST)/XSLT (XSLT)/Forward (FWD)/Seed (SEED) x 2 each
 - **Atomic-paradigm families (TCM/SBM/DBG/STR)** x 64: distilled from real Fastjson / Spring Boot / Dubbo / Struts2 0day/1day into **library-agnostic** atomic danger patterns, reproduced self-contained with pure Java standard library.
+- **Scenario-orchestration families (DE/OS/DEAD)** x 18: detection-pressure (dangerous sink reachable but monitored, `detection-pressure`), cross-service taint (RestTemplate round-trip, `cross-svc-taint`), cascade trust (system A config decides system B authorization, `cascade-trust`), multi-vulnerability chain (info-leak→privilege-escalation chain, `multi-vuln-chain`), live-branch dead-end (a live branch sanitizes the taint and becomes unreachable, `branch-dead-end`). Benchmarked against CyScenarioBench / FrontierCyber / Kimi K3 evaluations. See `plans/09-scenario-benchmark-orchestration-samples.md`.
 
 ### Atomic-Paradigm Families (TCM / SBM / DBG / STR)
 
