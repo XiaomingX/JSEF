@@ -194,7 +194,7 @@ This project is open-source under the **MIT License**, allowing:
 
 
 ## ⭐ Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=XiaomingX/JSEF&type=Date)](https://star-history.com/#XiaomingX/JSEF&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=xiaomingx%2Fjsef&type=date&legend=top-left)](https://star-history.com/#XiaomingX/JSEF&Date)
 
 
 ## 🙏 Acknowledgements

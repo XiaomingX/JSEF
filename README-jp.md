@@ -194,7 +194,7 @@ LLM / harness が**同じ原理の**脆弱性を検出できるか評価する�
 
 
 ## ⭐ Star履歴
-[![Star History Chart](https://api.star-history.com/svg?repos=XiaomingX/JSEF&type=Date)](https://star-history.com/#XiaomingX/JSEF&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=xiaomingx%2Fjsef&type=date&legend=top-left)](https://star-history.com/#XiaomingX/JSEF&Date)
 
 
 ## 🙏 謝辞

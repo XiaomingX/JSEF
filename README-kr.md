@@ -194,7 +194,7 @@ LLM / harness 가 **동일 원리** 취약점을 탐지할 수 있는지 평가�
 
 
 ## ⭐ Star 기록
-[![Star History Chart](https://api.star-history.com/svg?repos=XiaomingX/JSEF&type=Date)](https://star-history.com/#XiaomingX/JSEF&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=xiaomingx%2Fjsef&type=date&legend=top-left)](https://star-history.com/#XiaomingX/JSEF&Date)
 
 
 ## 🙏 감사의 글

@@ -196,7 +196,7 @@ JSEF 不只是教学平台，还内置了一套用于**验收 SAST 基础能力*
 
 
 ## Star 历史
-[![Star History Chart](https://api.star-history.com/svg?repos=XiaomingX/JSEF&type=Date)](https://star-history.com/#XiaomingX/JSEF&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=xiaomingx%2Fjsef&type=date&legend=top-left)](https://star-history.com/#XiaomingX/JSEF&Date)
 
 
 ## 致谢
