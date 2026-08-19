@@ -1,8 +1,8 @@
 # JSEF 漏洞样本覆盖度审计报告（GAP ANALYSIS）
 
 > 审计对象：`/Users/a0000/mywork/commonLLM/opensource/nnnew/JSEF`
-> 审计日期：2026-08-16
-> 审计范围：`benchmark/expectedresults.csv`（503 条数据行）+ `benchmark/cases/{vuln,sec}/` + `src/main/java/`
+> 审计日期：2026-08-16（后续更新：2026-08-19，样本规模扩至 782）
+> 审计范围：`benchmark/expectedresults.csv`（782 条数据行）+ `benchmark/cases/{vuln,sec}/` + `src/main/java/`
 > 审计方式：只读审计，未修改任何源码或 CSV。
 
 ---
@@ -10,12 +10,12 @@
 ## 0. 数据口径说明（重要）
 
 - CSV 表头：`id,cwe,level,type,file,line,source,sink,category,trace`（10 列）。
-- CSV 数据行 **503 行**（`wc -l` 显示 504 是因末行无换行符）。
+- CSV 数据行 **782 行**（`wc -l` 显示 783 是因末行无换行符）。
 - CSV 中 `file` 路径指向三类位置：
   - `src/main/java/...`（99 个 .java，**83 条** CSV 记录）→ 项目内联教学样本。
   - `benchmark/cases/vuln|sec/...`（递归 175 + 182 个 .java，对应大部分 CSV 记录）。
   - `benchmark/cases/vendor/...`（竞品风格对照样本，如 Juliet/OwaspStyle/PrimeVul，16 条）。
-- 用户描述的"367 vuln / 182 sec"口径与磁盘递归统计（vuln 175 + sec 182）存在差异，原因是 **83 条 vuln 样本来自 `src/main/java` 而非 `benchmark/cases/vuln/`**。报告以 CSV 记录的 503 条为权威事实源。
+- 用户描述的"367 vuln / 182 sec"口径与磁盘递归统计存在差异，原因是 **部分 vuln 样本来自 `src/main/java` 而非 `benchmark/cases/vuln/`**。报告以 CSV 记录的 **782 条**为权威事实源。
 
 ---
 
@@ -174,13 +174,13 @@
    - `ChainServiceA.java`、`ChainServiceB.java`、`level4/ChainSqlService.java`、`longtask/FastjsonCrossFile_A_Source.java`、`longtask/FastjsonCrossFile_B_Transport.java`
    - 这些是 L4/L5 跨文件链的中间节点，sink 在主文件已记录 checkpoint，符合规范（trace 字段已承载中间节点）。**非缺陷**，仅建议在 README 注明此类辅助类不单独计 checkpoint。
 
-3. **"367 vuln / 182 sec" 口径与 CSV 不一致（统计口径问题）**：用户所述数量与 CSV 503 行 + 磁盘递归（vuln 175 + sec 182 + src 83）不符。建议统一口径说明：benchmark 真实记录以 CSV 的 503 条为准，其中 83 条 vuln 位于 `src/main/java` 内联样本中。
+3. **"367 vuln / 182 sec" 口径与 CSV 不一致（统计口径问题）**：用户所述数量与 CSV 782 行 + 磁盘递归不符。建议统一口径说明：benchmark 真实记录以 CSV 的 782 条为准，其中部分 vuln 位于 `src/main/java` 内联样本中。
 
-4. **行号与 trace 有效性（已通过）**：脚本校验全部 503 条的 `line` 均在文件实际行号范围内（0 越界）；含 `trace` 字段的 65 条记录，其 `file:line` 节点文件均真实存在（0 异常）。
+4. **行号与 trace 有效性（已通过）**：脚本校验全部 782 条的 `line` 均在文件实际行号范围内（0 越界）；含 `trace` 字段的 139 条记录，其 `file:line` 节点文件均真实存在（0 异常）。
 
-5. **无重复 id（已通过）**：503 条 id 全部唯一。
+5. **无重复 id（已通过）**：782 条 id 全部唯一。
 
-6. **CSV 引用文件完整性（已通过）**：503 条 `file` 路径 100% 在磁盘存在（0 缺失）。
+6. **CSV 引用文件完整性（已通过）**：782 条 `file` 路径 100% 在磁盘存在（0 缺失）。
 
 ---
 
@@ -199,3 +199,6 @@
 
 ### 总体评估
 JSEF 在**注入类（A03）、失效访问控制（A01）、软件数据完整性/反序列化（A08）、不安全设计（A04）**上覆盖深度行业领先（超 350 条相关样本）；**主要结构性缺口集中在 A07 身份识别与认证失败（尤其会话/口令存储/密码重置）与 A09 日志监控**，以及若干"标注不足"的中低难度变体类别。补齐高/中优先级项后，OWASP Top 10 覆盖将趋于完备。
+
+### 补充更新（2026-08-19）：场景化编排维度已落地
+> 本审计原始范围（A07/A09 等）之外的**三个全新维度**——检测压力 / 级联信任与多漏洞组合链 / 活分支截断——已依据 CyScenarioBench / FrontierCyber / Kimi K3 评测三篇论文补齐，新增 18 条样本（`JSEF-DE-`/`JSEF-OS-`/`JSEF-DEAD-`，category：`detection-pressure`/`cross-svc-taint`/`cascade-trust`/`multi-vuln-chain`/`branch-dead-end`），见 `plans/09-scenario-benchmark-orchestration-samples.md` 与 `benchmark/README.md` §3「场景化编排样本族」。A07/A09 缺口仍待单独补齐。

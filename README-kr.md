@@ -111,13 +111,14 @@ JSEF는 교육 플랫폼일 뿐만 아니라, **SAST 기본 역량 검증**과 *
 
 > 데이터 출처：`benchmark/expectedresults.csv`（진실 원천, 소스의 `// [CHECKPOINT]` 주석과 양방향 일치；`validate_checkpoints.py` 종료 코드 0）
 
-- **503건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 + 장기 태스크 + 코드 품질/성능 DoS + LGTM 누락 + 논리 취약점 샘플 + **원자 패러다임군 TCM/SBM/DBG/STR** 포괄）
-- **268건의 VULN**（보고되어야 함） + **235건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
-- 난이도 분포：L0 x 18、L1 x 139、L2 x 106、L3 x 115、L4 x 86、L5 x 39（완전한 L0-L5 구배）
-- CWE 커버：**69종**（VULN만）. 상위：표현식 주입(917) x 25、역직렬화(502) x 21、SQLi(89) x 17、명령어 주입(78) x 12、인가 우회(285) x 10、하드코딩 자격증명/키(798) x 7、비즈니스 로직(840) x 7、SSRF(918) x 6、IDOR(639) x 6、경로 조작(22) x 5、ReDoS(1333) x 5、성능 DoS(400) x 5
-- **121 카테고리**（slug） 커버（OWASP Top 10 2021 전 클래스 포함）；**65건**의 샘플이 `trace=` 경로 노드 보유（`--check-trace` 경로 정확성 평가 지원）
+- **782건**의 기계 판독 가능 checkpoint 주석（`src/main` 기존 취약점 + `benchmark/cases` 구배 샘플 + 장기 태스크 + 코드 품질/성능 DoS + LGTM 누락 + 논리 취약점 샘플 + **원자 패러다임군 TCM/SBM/DBG/STR** + **시나리오 편성군（검출 압력/캐스케이드/다중 취약점 체인/활성 분기 차단）** 포괄）
+- **414건의 VULN**（보고되어야 함） + **368건의 SAFE**（보고되지 않아야 함, TN/FP 산출용）
+- 난이도 분포：L0 x 18、L1 x 165、L2 x 184、L3 x 181、L4 x 141、L5 x 93（완전한 L0-L5 구배）
+- CWE 커버：**86종**（VULN만）. 상위：표현식 주입(917)、역직렬화(502)、SQLi(89)、명령어 주입(78)、인가 우회(285)、하드코딩 자격증명/키(798)、비즈니스 로직(840)、SSRF(918)、IDOR(639)、경로 조작(22)、ReDoS(1333)、성능 DoS(400)
+- **189 카테고리**（slug） 커버（OWASP Top 10 2021 전 클래스 포함）；**139건**의 샘플이 `trace=` 경로 노드 보유（`--check-trace` 경로 정확성 평가 지원）
 - 전용 샘플군：장기 태스크(LT) x 16、코드 품질/성능 DoS(PERF) x 15、신뢰 경계(TB)/리플렉션(REFLECT)/형식 문자열(FMT)/호스트명(HOST)/XSLT(XSLT)/포워드(FWD)/시드(SEED) 각 x 2
 - **원자 패러다임군（TCM/SBM/DBG/STR）** x 64：Fastjson / Spring Boot / Dubbo / Struts2 의 실제 0day/1day 에서 **라이브러리 비종속** 원자 위험 패러다임을 추출해 순수 Java 표준 라이브러리만으로 자체 재현. 아래 "원자 패러다임군" 절 참조.
+- **시나리오 편성군（DE/OS/DEAD）** x 18：검출 압력（위험 sink 도달 가능하나 모니터링됨, `detection-pressure`）、서비스 간 오염（RestTemplate 왕복, `cross-svc-taint`）、캐스케이드 신뢰（시스템 A 설정이 시스템 B 권한 결정, `cascade-trust`）、다중 취약점 체인（정보 유출→권한 상승 연쇄, `multi-vuln-chain`）、활성 분기 차단（활성 분기가 오염을 소독해 도달 불가, `branch-dead-end`）. CyScenarioBench / FrontierCyber / Kimi K3 평가 대응. `plans/09-scenario-benchmark-orchestration-samples.md` 참조.
 
 ### 원자 패러다임군（TCM / SBM / DBG / STR）
 

@@ -111,13 +111,14 @@ JSEF は教育プラットフォームであるだけでなく、**SAST 基礎�
 
 > データ出所：`benchmark/expectedresults.csv`（真実源、ソースの `// [CHECKPOINT]` 注釈と双方向一致；`validate_checkpoints.py` は終了コード 0）
 
-- **503 件**の機械可読 checkpoint 注釈（`src/main` の既存脆弱性 + `benchmark/cases` 勾配サンプル + 長期タスク + コード品質/性能 DoS + LGTM 欠落 + 論理脆弱性サンプル + **原子パラダイム群 TCM/SBM/DBG/STR** を網羅）
-- **268 件の VULN**（検出すべき） + **235 件の SAFE**（検出すべきでない、TN/FP 算出用）
-- 難易度分布：L0 x 18、L1 x 139、L2 x 106、L3 x 115、L4 x 86、L5 x 39（完全な L0-L5 勾配）
-- CWE カバー:**69 類**（VULN のみ）。上位：式注入(917) x 25、逆シリアライズ(502) x 21、SQLi(89) x 17、コマンド注入(78) x 12、認可回避(285) x 10、ハードコード認証情報/鍵(798) x 7、ビジネスロジック(840) x 7、SSRF(918) x 6、IDOR(639) x 6、パストラバーサル(22) x 5、ReDoS(1333) x 5、性能 DoS(400) x 5
-- **121 カテゴリ**（slug）をカバー（OWASP Top 10 2021 全クラス含む）；**65 件**のサンプルが `trace=` パスノードを持つ（`--check-trace` パス正確性評価に対応）
+- **782 件**の機械可読 checkpoint 注釈（`src/main` の既存脆弱性 + `benchmark/cases` 勾配サンプル + 長期タスク + コード品質/性能 DoS + LGTM 欠落 + 論理脆弱性サンプル + **原子パラダイム群 TCM/SBM/DBG/STR** + **シナリオ編成群（検出圧力/カスケード/複数脆弱性チェーン/活性分岐遮断）** を網羅）
+- **414 件の VULN**（検出すべき） + **368 件の SAFE**（検出すべきでない、TN/FP 算出用）
+- 難易度分布：L0 x 18、L1 x 165、L2 x 184、L3 x 181、L4 x 141、L5 x 93（完全な L0-L5 勾配）
+- CWE カバー:**86 類**（VULN のみ）。上位：式注入(917)、逆シリアライズ(502)、SQLi(89)、コマンド注入(78)、認可回避(285)、ハードコード認証情報/鍵(798)、ビジネスロジック(840)、SSRF(918)、IDOR(639)、パストラバーサル(22)、ReDoS(1333)、性能 DoS(400)
+- **189 カテゴリ**（slug）をカバー（OWASP Top 10 2021 全クラス含む）；**139 件**のサンプルが `trace=` パスノードを持つ（`--check-trace` パス正確性評価に対応）
 - 専用サンプル群：長期タスク(LT) x 16、コード品質/性能 DoS(PERF) x 15、信頼境界(TB)/リフレクション(REFLECT)/書式文字列(FMT)/ホスト名(HOST)/XSLT(XSLT)/フォワード(FWD)/シード(SEED) 各 x 2
 - **原子パラダイム群（TCM/SBM/DBG/STR）** x 64：Fastjson / Spring Boot / Dubbo / Struts2 の実際の 0day/1day から**ライブラリ非依存**の原子危険パラダイムを抽出し、純 Java 標準ライブラリのみで自前再現。以下の「原子パラダイム群」節参照。
+- **シナリオ編成群（DE/OS/DEAD）** x 18：検出圧力（危険 sink は到達可能だが監視される、`detection-pressure`）、サービス間汚染（RestTemplate 往復、`cross-svc-taint`）、カスケード信頼（システム A の設定がシステム B の権限を決定、`cascade-trust`）、複数脆弱性チェーン（情報漏えい→特権昇格の連鎖、`multi-vuln-chain`）、活性分岐遮断（活性分岐が汚染を消毒し到達不能になる、`branch-dead-end`）。CyScenarioBench / FrontierCyber / Kimi K3 評価に対応。`plans/09-scenario-benchmark-orchestration-samples.md` 参照。
 
 ### 原子パラダイム群（TCM / SBM / DBG / STR）
 

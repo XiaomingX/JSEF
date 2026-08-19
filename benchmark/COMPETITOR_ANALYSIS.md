@@ -17,7 +17,7 @@
 | micro_service_seclab | 专为 SAST 漏报/误报测试设计的 SpringBoot 靶场 | 5 大类（重点难点场景） | **强偏 SAST** |
 | WebGoat | OWASP 官方交互式教学应用 | 数十个课程 | 偏教学/DAST 交互 |
 
-JSEF 当前已有 **503 条 checkpoint（367 vuln 样本视角）**，CWE 覆盖广（502×69、917×63、89×33、78×23、285×22…）。
+JSEF 当前已有 **782 条 checkpoint（vuln 414 / safe 368）**，CWE 覆盖广（502、917、89、78、285 等 86 类）。
 **相对竞品，JSEF 最缺的独特高质量类别**：业务逻辑/越权类（IDOR/CWE-639、缺失功能级访问控制/CWE-862、并发竞争）、凭据/会话类（JWT/CWE-347、会话管理）、HTTP 协议类（CRLF/响应拆分 CWE-113、SSRF CWE-918、开放重定向 CWE-601）、弱配置类（弱加密 CWE-327/328、弱随机 CWE-330、Cookie 标志 CWE-614、信任边界 CWE-501）、组件生态（Fastjson 之外如 Log4j2 JNDI、Shiro、XStream、Jackson、SnakeYAML）。
 
 ---
