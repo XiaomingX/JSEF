@@ -13,7 +13,7 @@
 # 流程：
 #   1) 对每个对象：调用 scorecard.py 单对象模式 → <obj>/scorecard.json
 #   2) 调 scorecard.py --results-dir → <results-root>/cross_matrix.json
-#   3) 调 generate_report.py → <results-root>/report.md（同目录 report.json / radar_data.json / ranking.png）
+#   3) 调 ../compare_models.py → <results-root>/compare.md + ranking.png + radar.png
 #
 # -----------------------------------------------------------------------------
 # 公平性约束（明文化，务必遵守）
@@ -50,7 +50,6 @@ fi
 # ---- 定位脚本（相对仓库根，支持从任意目录调用）----
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCORECARD="$SCRIPT_DIR/scripts/scorecard.py"
-REPORTER="$SCRIPT_DIR/reports/generate_report.py"
 
 if [ ! -f "$SCORECARD" ]; then
   echo "[错误] 找不到 scorecard.py: $SCORECARD" >&2
@@ -111,19 +110,29 @@ python3 "$SCORECARD" \
   --timeout-ms "$TIMEOUT_MS" \
   --out "$RESULTS_ROOT/cross_matrix.json"
 
-# ---- 步骤 3：报告生成 ----
+# ---- 步骤 3：横向对比报告（排行表 + 雷达图）----
 echo ""
-echo "[报告] 生成 report.md → $RESULTS_ROOT/report.md"
-python3 "$REPORTER" \
-  --cross-matrix "$RESULTS_ROOT/cross_matrix.json" \
-  --expected "$EXPECTED_CSV" \
-  --out "$RESULTS_ROOT/report.md"
+echo "[报告] 调 compare_models.py 生成 compare.md / ranking.png / radar.png → $RESULTS_ROOT/"
+# compare_models 路径：仓库根（即 benchmark/ 的父目录）
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+COMPARATOR="$REPO_ROOT/compare_models.py"
+if [ ! -f "$COMPARATOR" ]; then
+  echo "[警告] 找不到 compare_models.py: $COMPARATOR；跳过报告生成。" >&2
+else
+  python3 "$COMPARATOR" \
+    --results-dir "$RESULTS_ROOT" \
+    --expected "$EXPECTED_CSV" \
+    --out-dir "$RESULTS_ROOT" \
+    --timeout-ms "$TIMEOUT_MS" || \
+    echo "[警告] compare_models.py 退出非 0，已保留 cross_matrix.json" >&2
+fi
 
 echo ""
 echo "==================================================================="
 echo " 完成。产出："
-echo "   - $RESULTS_ROOT/cross_matrix.json"
-echo "   - $RESULTS_ROOT/report.md"
-echo "   - $RESULTS_ROOT/report.json (机器可读)"
-echo "   - $RESULTS_ROOT/radar_data.json / ranking.png (可选)"
+echo "   - $RESULTS_ROOT/cross_matrix.json   （scorecard 交叉矩阵）"
+echo "   - $RESULTS_ROOT/compare.md          （横向对比 Markdown 排行）"
+echo "   - $RESULTS_ROOT/ranking.png         （条形对比图）"
+echo "   - $RESULTS_ROOT/radar.png           （五维雷达图）"
+echo "   - 各对象子目录下 scorecard.json     （单对象明细）"
 echo "==================================================================="
