@@ -376,6 +376,8 @@ def main():
                     help="默认开启：覆盖率不足 100%% 则以 exit 2 中止，防止截断被误判为完整")
     ap.add_argument("--no-require-complete", dest="require_complete", action="store_false",
                     help="调试用：允许截断运行")
+    ap.add_argument("--trials", type=int, default=1,
+                    help="同一批文件跑 N 次独立试验，写入 <name>/trial_i/result.json（借鉴 DeepSWE N-trial 稳定性）")
     args = ap.parse_args()
 
     # API key 解析
@@ -390,7 +392,6 @@ def main():
 
     object_name = args.name or args.model
     out_dir = os.path.join(RESULTS_BASE, object_name)
-    result_file = os.path.join(out_dir, "result.json")
 
     samples = load_expected()
     by_file = aggregate_by_file(samples)
@@ -424,17 +425,66 @@ def main():
     if args.limit:
         selected = dict(list(selected.items())[:args.limit])
 
+    trials_n = args.trials if args.trials >= 1 else 1
+
+    if args.dry_run:
+        # 预计算待跑清单（首个 trial 或单次）
+        _out_dir, _ = _trial_target(out_dir, 1, trials_n)
+        _done = load_done(_out_dir) if args.resume else set()
+        _todo = [f for f in selected if f not in _done]
+        for f in _todo:
+            print("  WOULD RUN:", f, "(%d samples)" % len(selected[f]))
+        return
+
+    # trials 模式：外层循环 N 次，每次独立 out_dir/result_file/done
+    for trial_idx in range(1, trials_n + 1):
+        trial_out_dir, trial_result_file = _trial_target(out_dir, trial_idx, trials_n)
+        _run_sweep(args, api_key, selected, object_name,
+                   trial_out_dir, trial_result_file)
+        # 写伴生 meta.json（成本/步数维度，可选占位）
+        if trials_n > 1:
+            _write_meta(trial_out_dir, args, trial_idx)
+
+    if trials_n <= 1:
+        print("[done] 结果目录: %s" % out_dir)
+
+
+def _trial_target(base_out_dir, trial_idx, trials_n):
+    """返回 (out_dir, result_file)：单次返回原路径；trials 返回 trial_i/ 下路径。"""
+    if trials_n <= 1:
+        return base_out_dir, os.path.join(base_out_dir, "result.json")
+    tdir = os.path.join(base_out_dir, "trial_%d" % trial_idx)
+    return tdir, os.path.join(tdir, "result.json")
+
+
+def _write_meta(trial_out_dir, args, trial_idx):
+    """写伴生 meta.json（agent 步数/成本，供 compare_models 展示；无真实值用占位）。"""
+    meta = {
+        "model": args.model,
+        "trial": trial_idx,
+        # 以下为可选项：runner 目前未追踪真实 agent 步数/成本，缺省 None；
+        # 用户在真实调用后可手动补充，compare_models 会读取展示。
+        "steps": None,
+        "cost_usd": None,
+        "input_tokens": None,
+        "output_tokens": None,
+    }
+    try:
+        os.makedirs(trial_out_dir, exist_ok=True)
+        with open(os.path.join(trial_out_dir, "meta.json"), "w", encoding="utf-8") as fh:
+            json.dump(meta, fh, indent=2, ensure_ascii=False)
+    except OSError:
+        pass
+
+
+def _run_sweep(args, api_key, selected, object_name, out_dir, result_file):
+    """对一批文件做一次完整 sweep（identify 或 blind），写结果到 out_dir/result_file。"""
     done = load_done(out_dir) if args.resume else set()
     todo = [f for f in selected if f not in done]
 
-    print("[info] provider=%s model=%s mode=%s 总文件=%d 选中=%d 已完成=%d 待跑=%d"
-          % (args.provider, args.model, args.mode, len(by_file), len(selected),
-             len(done & set(selected)), len(todo)))
-
-    if args.dry_run:
-        for f in todo:
-            print("  WOULD RUN:", f, "(%d samples)" % len(selected[f]))
-        return
+    print("[info] provider=%s model=%s mode=%s trial_out=%s 待跑=%d"
+          % (args.provider, args.model, args.mode,
+             os.path.relpath(out_dir, RESULTS_BASE), len(todo)))
 
     os.makedirs(out_dir, exist_ok=True)
 
@@ -511,7 +561,6 @@ def main():
     done_in_selected = len(done & set(selected))
     coverage = done_in_selected / len(selected) if selected else 1.0
     print("[SUMMARY] 选中=%d 已完成=%d 覆盖率=%.1f%%" % (len(selected), done_in_selected, coverage * 100))
-    print("[done] 结果目录: %s" % out_dir)
 
     if done_in_selected < len(selected):
         sys.stderr.write(
