@@ -39,12 +39,13 @@ DONE_FILE = os.path.join(OUT_DIR, ".done.txt")
 TIMEOUT_S = 120  # JSEF 单样本超时阈值
 MAX_TURNS = 20
 
-# mimo 网关配置（也可从环境变量继承，这里提供默认值以便复现）
+# mimo 网关配置（从环境变量继承，不在源码硬编码密钥）
 ENV = {
-    "MIMOFAN_PROVIDER": "anthropic-compatible",
-    "ANTHROPIC_BASE_URL": "https://api.xiaomimimo.com/anthropic",
-    "ANTHROPIC_MODEL": "mimo-v2.5",
-    "ANTHROPIC_AUTH_TOKEN": "sk-REVOKED-REMOVE-FROM-HISTORY",
+    "MIMOFAN_PROVIDER": os.environ.get("MIMOFAN_PROVIDER", "anthropic-compatible"),
+    "ANTHROPIC_BASE_URL": os.environ.get("ANTHROPIC_BASE_URL", "https://api.xiaomimimo.com/anthropic"),
+    "ANTHROPIC_MODEL": os.environ.get("ANTHROPIC_MODEL", "mimo-v2.5"),
+    # 鉴权令牌必须通过环境变量 ANTHROPIC_AUTH_TOKEN 提供；不在源码硬编码密钥。
+    "ANTHROPIC_AUTH_TOKEN": os.environ.get("ANTHROPIC_AUTH_TOKEN", ""),
 }
 
 
@@ -152,6 +153,10 @@ def extract_json_array(text):
 
 def run_mimofan(prompt, timeout_s=TIMEOUT_S):
     """调用 mimofan exec --auto，返回 (text, elapsed_ms, timed_out)。"""
+    if not ENV.get("ANTHROPIC_AUTH_TOKEN"):
+        sys.stderr.write("[FATAL] 缺少 ANTHROPIC_AUTH_TOKEN 环境变量（mimo 鉴权令牌）。"
+                         "请设置后再运行，不要在源码硬编码密钥。\n")
+        raise RuntimeError("missing ANTHROPIC_AUTH_TOKEN")
     cmd = [
         MIMOFAN, "exec", "--auto",
         "--output-format", "stream-json",
